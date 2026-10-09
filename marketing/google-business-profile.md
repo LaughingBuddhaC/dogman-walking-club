@@ -1,10 +1,10 @@
-# Google Business Profile – DogMan Walking Club
+# Google Business Profile – The DogMan
 
 Set it up at **https://business.google.com/create**, signed in with your Google account. It's free.
 Everything below is ready to copy and paste.
 
 ## 1. Name and category
-- **Business name:** `DogMan Walking Club`
+- **Business name:** `The DogMan`
   (Use only the real name. Google can suspend profiles that add keywords like "Hundeluftning Skovlunde" to the name.)
 - **Primary category:** search for `Dog walker` / `Hundelufter` and pick the closest match.
 - **Additional category (optional):** `Pet sitter` / `Dyrepasser`.
@@ -14,7 +14,7 @@ You go to the customers, so this is a *service-area business*. Google still asks
 but it **stays hidden** from the public.
 
 ## 3. Service area
-`Skovlunde`, `Ballerup`, `Herlev`, `Glostrup`. Add or remove areas to match where you really walk.
+`Skovlunde`, `Ballerup`, `Herlev`, `Måløv`, `Glostrup`, `Rødovre`, `Albertslund`. Add or remove areas to match where you really walk.
 
 ## 4. Contact
 - **Phone:** your mobile number
@@ -25,7 +25,7 @@ Monday–Sunday **06:00–00:00**
 
 ## 6. Description (Danish, 750 characters max; this one is ~560)
 ```
-DogMan Walking Club er hundeluftning i Skovlunde og op til 5 km omkring. Jeg hedder Can og går tur med din hund i 30 minutter – jeg henter og afleverer ved din dør, og vi går i de lokale parker og grønne områder.
+The DogMan er hundeluftning i Skovlunde, Ballerup, Herlev og omegn. Jeg hedder Can og går tur med din hund i 30 minutter – jeg henter og afleverer ved din dør, og vi går i de lokale parker og grønne områder.
 
 Book en enkelt tur eller en fast ugentlig tid. Pris: 120 kr. pr. tur, +80 kr. pr. ekstra hund. Ture alle dage kl. 06–24. Du betaler med MobilePay, når turen er bekræftet.
 
@@ -44,7 +44,7 @@ Jeg bor selv med Boris, en rolig golden retriever på 7 år. Booking also in Eng
 (You can add boarding, day care, house sitting and visits later. Keeping it to walks keeps the profile focused.)
 
 ## 8. Photos (upload from `marketing/` and `public/img/`)
-- **Logo:** `marketing/google-logo.png` (square, 720×720)
+- **Logo:** `marketing/google-logo.png` (the hiker logo, square 720×720)
 - **Cover photo:** `marketing/google-cover.jpg` (16:9)
 - **More photos:** `public/img/summit.jpg`, `public/img/snow.jpg`, `public/img/duo.jpg`
 - Add new photos from real walks as you go. Profiles with recent photos rank better.

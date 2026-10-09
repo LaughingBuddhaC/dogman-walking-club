@@ -16,13 +16,13 @@ TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width=
 TICKS = ['Hentet ved døren', 'Alle dage kl. 06–24', 'Enkeltvis eller hver uge', 'Betal med MobilePay']
 
 SHEET = f'''<div class="sheet" style="width:{{w}};height:{{h}}">
-  <div class="top"><div class="brand"><span class="mark raise">{PAW}</span>DogMan Walking Club</div><div class="area inset"><i></i>Skovlunde + 5 km</div></div>
+  <div class="top"><div class="brand"><img class="wm" src="../public/img/brand/wordmark-green.png" alt="The DogMan"></div><div class="area inset"><i></i>Skovlunde · Ballerup · Herlev</div></div>
   <div><h1>Hundeluftning<br><span>i Skovlunde</span></h1><p class="sub">En gåtur på <b>30 minutter</b> for din hund – hentet og afleveret ved din dør.</p></div>
-  <div class="photo raise"><img src="../public/img/river.jpg" alt=""><div class="price raise"><b>120 kr.</b><small>pr. tur · 30 min.</small></div></div>
+  <div class="photo raise"><img src="../public/img/river.jpg" alt=""><span class="sticker raise"><img src="../public/img/brand/hiker-stamp-green.png" alt=""></span><div class="price raise"><b>120 kr.</b><small>pr. tur · 30 min.</small></div></div>
   <ul class="ticks">{''.join(f'<li>{TICK}{t}</li>' for t in TICKS)}</ul>
   <div class="cta inset"><div class="qr raise"><img src="qr.svg" alt="QR-kode til dmw.cansasmaz.com"></div>
     <div><h2>Scan og book<br>på 1 minut</h2><span class="url">dmw.cansasmaz.com</span><p>+80 kr. pr. ekstra hund. Du betaler først, når turen er bekræftet.</p></div></div>
-  <div class="foot"><span>Can og Boris (golden retriever, 7 år)</span><span>Booking also in English</span></div>
+  <div class="foot"><span>The DogMan · Can og Boris (golden retriever, 7 år)</span><span>Booking also in English</span></div>
 </div>'''
 
 

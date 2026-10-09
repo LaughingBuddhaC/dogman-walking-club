@@ -1,16 +1,18 @@
-<title>Hundeluftning i Skovlunde · DogMan Walking Club</title>
+<title>Hundeluftning i Skovlunde · The DogMan</title>
 <meta name="description" content="Hundeluftning i Skovlunde: 30 minutters gåtur, hentet og afleveret ved døren. 120 kr. pr. tur. Book online på få minutter.">
 <link rel="canonical" href="https://dmw.cansasmaz.com/">
 <meta name="theme-color" content="#e7ebf0">
+<link rel="icon" type="image/png" href="/img/brand/favicon-64.png">
+<link rel="apple-touch-icon" href="/img/brand/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dmw.cansasmaz.com/">
-<meta property="og:title" content="Hundeluftning i Skovlunde · DogMan Walking Club">
+<meta property="og:title" content="Hundeluftning i Skovlunde · The DogMan">
 <meta property="og:description" content="30 minutters gåtur, hentet og afleveret ved din dør. 120 kr. pr. tur, alle dage kl. 06–24. Book online på 1 minut.">
 <meta property="og:image" content="https://dmw.cansasmaz.com/img/og.jpg">
 <meta property="og:image:width" content="1500"><meta property="og:image:height" content="844">
 <meta property="og:locale" content="da_DK">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"DogMan Walking Club","description":"Hundeluftning i Skovlunde: 30 minutters gåtur, hentet og afleveret ved din dør.","url":"https://dmw.cansasmaz.com/","image":"https://dmw.cansasmaz.com/img/og.jpg","priceRange":"120 kr.","currenciesAccepted":"DKK","paymentAccepted":"MobilePay","address":{"@type":"PostalAddress","addressLocality":"Skovlunde","postalCode":"2740","addressCountry":"DK"},"areaServed":[{"@type":"Place","name":"Skovlunde"},{"@type":"Place","name":"Ballerup"},{"@type":"Place","name":"Herlev"}],"openingHoursSpecification":{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"06:00","closes":"23:59"},"makesOffer":{"@type":"Offer","name":"Hundeluftning 30 min.","price":"120","priceCurrency":"DKK"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"The DogMan","alternateName":"DogMan Walking Club","logo":"https://dmw.cansasmaz.com/img/brand/icon-512.png","description":"Hundeluftning i Skovlunde: 30 minutters gåtur, hentet og afleveret ved din dør.","url":"https://dmw.cansasmaz.com/","image":"https://dmw.cansasmaz.com/img/og.jpg","priceRange":"120 kr.","currenciesAccepted":"DKK","paymentAccepted":"MobilePay","address":{"@type":"PostalAddress","addressLocality":"Skovlunde","postalCode":"2740","addressCountry":"DK"},"areaServed":[{"@type":"Place","name":"Skovlunde"},{"@type":"Place","name":"Ballerup"},{"@type":"Place","name":"Herlev"},{"@type":"Place","name":"Måløv"},{"@type":"Place","name":"Glostrup"},{"@type":"Place","name":"Rødovre"},{"@type":"Place","name":"Albertslund"}],"openingHoursSpecification":{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"06:00","closes":"23:59"},"makesOffer":{"@type":"Offer","name":"Hundeluftning 30 min.","price":"120","priceCurrency":"DKK"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
@@ -78,7 +80,14 @@ figure{margin:0}
 .trust{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
 .trust span{font-size:.85rem;font-weight:500;color:var(--muted);padding:9px 14px;border-radius:14px;box-shadow:var(--raise-sm)}
 .frame{position:relative;padding:14px;border-radius:40px;box-shadow:var(--raise)}
-.frame img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;object-position:50% 40%;border-radius:28px}
+.frame>img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;object-position:50% 40%;border-radius:28px}
+.sticker{position:absolute;right:-22px;top:-22px;width:128px;height:128px;border-radius:50%;background:#f5f1e7;display:grid;place-items:center;transform:rotate(8deg);box-shadow:var(--raise)}
+.sticker img{height:96px;width:auto}
+.logo-mark{background:#f5f1e7!important;overflow:hidden}
+.logo-mark img{height:76%;width:auto}
+.areas{display:inline-block;min-width:6.2em;color:var(--accent);font-weight:700}
+.areas b{display:inline-block;font-weight:700;animation:areaIn .5s cubic-bezier(.2,.7,.2,1)}
+@keyframes areaIn{from{opacity:0;transform:translateY(60%)}to{opacity:1;transform:none}}
 .badge{position:absolute;left:-18px;bottom:40px;display:flex;align-items:center;gap:12px;padding:12px 18px 12px 12px;border-radius:22px;background:var(--bg);box-shadow:var(--raise)}
 .badge .mark{width:40px;height:40px}
 .badge b{display:block;font-size:.95rem}
@@ -233,6 +242,8 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
   .hero{gap:44px;padding-top:44px}
   .frame{max-width:440px}
   .badge{left:auto;right:-6px;bottom:28px}
+  .sticker{right:-10px;top:-14px;width:104px;height:104px}
+  .sticker img{height:78px}
   .how{grid-template-columns:1fr}
   .panel{padding:28px}
 }
@@ -253,7 +264,6 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
   .day b{font-size:1.05rem}
   section{padding-block:52px}
   .wrap{padding-inline:16px}
-  .badge{right:-4px}
   .others{padding:6px 20px}
   footer{padding-bottom:110px}
   .mobile-cta{display:flex;position:fixed;left:16px;right:16px;bottom:16px;z-index:10;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.25)}
@@ -263,7 +273,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
 
 <header class="top">
   <div class="bar">
-    <a class="brand" href="#"><span class="mark" data-icon="paw"></span><span class="name">DogMan Walking Club</span></a>
+    <a class="brand" href="#"><span class="mark logo-mark"><img src="img/brand/hiker-line-green.png" alt=""></span><span class="name">The DogMan</span></a>
     <nav class="nav">
       <a href="#walk" data-t="navWalk"></a><a href="#about" data-t="navAbout"></a><a href="/account/" id="nav-account" hidden data-t="navMine"></a><a href="#book" class="go" data-t="navBook"></a>
       <div class="seg" role="group" aria-label="Language"><button type="button" data-lang="da">DA</button><button type="button" data-lang="en">EN</button></div>
@@ -274,7 +284,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
 <main class="wrap">
   <div class="hero">
     <div class="reveal">
-      <span class="pill"><i class="dot"></i><span data-t="heroLabel"></span></span>
+      <span class="pill"><i class="dot"></i><span data-t="heroLabel"></span> <span class="areas" id="areas"><b>Skovlunde</b></span></span>
       <h1><span data-t="h1a"></span><br><span class="g" data-t="h1b"></span></h1>
       <p class="lead" id="lead"></p>
       <div class="cta"><a class="btn primary" href="#book" data-t="ctaBook"></a><a class="btn" href="#walk" data-t="ctaMore"></a></div>
@@ -283,7 +293,8 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
     </div>
     <div class="frame reveal">
       <img src="img/river.jpg" width="1200" height="1600" data-ta="altRiver" alt="" fetchpriority="high">
-      <div class="badge"><span class="mark" data-icon="paw"></span><div><b>Boris</b><small data-t="borisSub"></small></div></div>
+      <span class="sticker"><img src="img/brand/hiker-stamp-green.png" alt="The DogMan"></span>
+      <div class="badge"><span class="mark logo-mark"><img src="img/brand/hiker-line-green.png" alt=""></span><div><b>Boris</b><small data-t="borisSub"></small></div></div>
     </div>
   </div>
 
@@ -384,13 +395,13 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
     <div class="ask reveal"><a class="btn" id="pawshake" target="_blank" rel="noopener" data-t="ctaPawshake"></a></div>
   </section>
 
-  <footer><span>© DogMan Walking Club · Skovlunde</span><span><span data-t="footer"></span> · <a href="/privacy/" data-t="privacyLink"></a></span></footer>
+  <footer><span>© The DogMan · Walking Club · Skovlunde</span><span><span data-t="footer"></span> · <a href="/privacy/" data-t="privacyLink"></a></span></footer>
 </main>
 <a class="btn primary mobile-cta" href="#book" id="mobile-cta" data-t="ctaBook"></a>
 
 <script>
 const T={
-da:{navWalk:'Gåturen',navAbout:'Om os',navBook:'Book',heroLabel:'Skovlunde · 5 km omkreds',h1a:'Hundeluftning',h1b:'i Skovlunde',
+da:{navWalk:'Gåturen',navAbout:'Om os',navBook:'Book',heroLabel:'Gåture i',capRiver:'Ved floden',h1a:'Hundeluftning',h1b:'i Skovlunde',
 lead:'En gåtur på <b>30 minutter</b> for din hund – hentet og afleveret ved din dør. <b>{p} pr. tur.</b>',ctaBook:'Book en gåtur',ctaMore:'Sådan foregår turen',demo:'Forhåndsvisning: bookinger gemmes ikke her.',
 trust1:'30 min. pr. tur',trust2:'Hentes ved døren',trust3:'Betal med MobilePay',borisSub:'Golden retriever · 7 år',altRiver:'Can og Boris ved en flod',
 walkLabel:'Gåturen',walkTitle:'En god tur, hver gang',walkText:'Din hund får motion, frisk luft og selskab, mens du er på arbejde eller har travlt.',
@@ -399,7 +410,7 @@ inc1:'Mindst 30 minutters gåtur',inc2:'Jeg henter og afleverer ved din dør',in
 f1:'Hentet ved døren',f1p:'Jeg henter din hund derhjemme og afleverer den igen efter turen.',
 f2:'Parker tæt på',f2p:'Skovlunde har masser af grønne områder – og en stor hundepark ti minutter væk.',
 f3:'Fast ugentlig tur',f3p:'Vælg den samme tid hver uge, så din hund får en fast rytme.',
-f4:'Skovlunde + 5 km',f4p:'Jeg går i Skovlunde og op til 5 km omkring. Bor du lidt længere væk? Skriv alligevel.',
+f4:'Skovlunde og omegn',f4p:'Skovlunde, Ballerup, Herlev, Måløv, Glostrup og nabolagene omkring. Bor du lidt længere væk? Skriv alligevel.',
 bookLabel:'Booking',bookTitle:'Book en gåtur',step1:'Vælg dag og tid',step2:'Om turen',step3:'Dine oplysninger',prevWeek:'Forrige uge',nextWeek:'Næste uge',pickTime:'Ledige tider',noSlots:'Ingen ledige tider denne dag.',
 dogs:'Antal hunde',freq:'Hvor ofte?',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',dog1:'hund',dogN:'hunde',
 fName:'Navn *',fPhone:'Telefon *',fEmail:'E-mail',fAddress:'Adresse (hvor jeg henter hunden)',addrPh:'Begynd at skrive din adresse…',useLoc:'Brug min placering',locating:'Finder din placering…',kmIn:'{km} km fra Skovlunde – inden for området',kmOut:'Ca. {km} km fra Skovlunde – lidt uden for mit område, men book gerne, så vender jeg tilbage.',noAddr:'Ingen forslag – du kan bare skrive adressen.',locErr:'Kunne ikke finde din placering. Skriv adressen i stedet.',navMine:'Mine ture',seeAll:'Se alle →',fDog:'Hundens navn',fBreed:'Race',fSize:'Størrelse',sizeNone:'Vælg',sizeS:'Lille (under 10 kg)',sizeM:'Mellem (10–25 kg)',sizeL:'Stor (over 25 kg)',fNotes:'Andet jeg bør vide (nøgle, adfærd, andre hunde…)',
@@ -410,13 +421,13 @@ eContact:'Skriv dit navn og et telefonnummer.',eTime:'Vælg en ledig tid.',eTake
 doneTitle:'Tak – booking modtaget!',doneText:'Jeg bekræfter på telefon eller sms, og så ses vi ved døren.',doneMp:'Betal med MobilePay, når turen er bekræftet:',again:'Book en tur mere',
 howLabel:'Sådan foregår det',howTitle:'Tre enkle trin',how1:'Du vælger en tid',how1p:'Vælg dag og tidspunkt i kalenderen. Det tager et minut.',how2:'Jeg bekræfter',how2p:'Jeg ringer eller skriver, og vi aftaler det praktiske.',how3:'Vi går en tur',how3p:'Jeg henter din hund, vi går 30 minutter, og du betaler med MobilePay.',
 aboutLabel:'Om os',aboutTitle:'Can og Boris',aboutText:'Jeg hedder Can og bor i Skovlunde med Boris, en rolig golden retriever på 7 år. Vi elsker lange ture – i bjergene, i sneen og langs vandet. Nu vil jeg gerne gå tur med din hund også.',
-factArea:'Område',factAreaV:'Skovlunde + 5 km',factWalk:'Tur',factWalkV:'Mindst 30 minutter',factWhen:'Tider',hoursV:'Kl. {a}–{b}, alle ugens dage',factPay:'Betaling',factPhone:'Telefon',
+factArea:'Område',factAreaV:'Skovlunde, Ballerup, Herlev og omegn',factWalk:'Tur',factWalkV:'Mindst 30 minutter',factWhen:'Tider',hoursV:'Kl. {a}–{b}, alle ugens dage',factPay:'Betaling',factPhone:'Telefon',
 capDuo:'Klar til regnvejr',capSummit:'På toppen',capSnow:'I sneen',altDuo:'Can og Boris i en elevator, Boris i gul regnfrakke',altSummit:'Can og Boris på en bjergtop',altSnow:'Boris i sneen foran Can',
 clubLabel:'Kommer senere',clubTitle:'Fælles ture for hundeejere',clubText:'Klubben starter med daglige gåture. Senere kommer der månedlige ture for hundeejere og deres hunde.',
 moreLabel:'Andre ydelser',moreTitle:'Brug for mere end en gåtur?',moreText:'Jeg tilbyder også pasning og hjemmebesøg. Skriv i bookingen eller find mig på Pawshake.',ctaPawshake:'Se Pawshake-profil',
 boarding:'Hundepasning (24 t hos mig)',daycare:'Hundedagpleje (om dagen hos mig)',housesit:'Huspasning (24 t hos dig)',visit1:'Ét hjemmebesøg om dagen (30 min.)',visit2:'To hjemmebesøg om dagen (2 × 30 min.)',
 uNight:'pr. nat',uDay:'pr. dag',xPet:'+{n} kr. pr. ekstra dyr',footer:'Hundeluftning i Skovlunde',privacyLink:'Privatlivspolitik'},
-en:{navWalk:'The walk',navAbout:'About',navBook:'Book',heroLabel:'Skovlunde · 5 km radius',h1a:'Dog walking',h1b:'in Skovlunde',
+en:{navWalk:'The walk',navAbout:'About',navBook:'Book',heroLabel:'Walks in',capRiver:'By the river',h1a:'Dog walking',h1b:'in Skovlunde',
 lead:'A <b>30-minute walk</b> for your dog – picked up and dropped off at your door. <b>{p} per walk.</b>',ctaBook:'Book a walk',ctaMore:'How the walk works',demo:'Preview: bookings are not saved here.',
 trust1:'30 min. per walk',trust2:'Picked up at your door',trust3:'Pay with MobilePay',borisSub:'Golden retriever · 7 years',altRiver:'Can and Boris by a river',
 walkLabel:'The walk',walkTitle:'A good walk, every time',walkText:'Your dog gets exercise, fresh air and company while you are at work or busy.',
@@ -425,7 +436,7 @@ inc1:'At least 30 minutes of walking',inc2:'Picked up and dropped off at your do
 f1:'Picked up at your door',f1p:'I collect your dog at home and bring it back after the walk.',
 f2:'Parks close by',f2p:'Skovlunde has plenty of green space – and a big dog park ten minutes away.',
 f3:'Weekly walks',f3p:'Pick the same time every week so your dog gets a steady routine.',
-f4:'Skovlunde + 5 km',f4p:'I walk in Skovlunde and up to 5 km around. Live a bit further away? Get in touch anyway.',
+f4:'Skovlunde and around',f4p:'Skovlunde, Ballerup, Herlev, Måløv, Glostrup and the neighbourhoods around. Live a bit further away? Get in touch anyway.',
 bookLabel:'Booking',bookTitle:'Book a walk',step1:'Choose day and time',step2:'About the walk',step3:'Your details',prevWeek:'Previous week',nextWeek:'Next week',pickTime:'Available times',noSlots:'No free times this day.',
 dogs:'Number of dogs',freq:'How often?',once:'Once',weekly:'Every week',multi:'Several times a week',dog1:'dog',dogN:'dogs',
 fName:'Name *',fPhone:'Phone *',fEmail:'Email',fAddress:'Address (where I pick up your dog)',addrPh:'Start typing your address…',useLoc:'Use my location',locating:'Finding your location…',kmIn:'{km} km from Skovlunde – inside my area',kmOut:'About {km} km from Skovlunde – a bit outside my area, but book anyway and I will get back to you.',noAddr:'No suggestions – just type the address.',locErr:'Could not find your location. Please type the address.',navMine:'My walks',seeAll:'See all →',fDog:"Dog's name",fBreed:'Breed',fSize:'Size',sizeNone:'Choose',sizeS:'Small (under 10 kg)',sizeM:'Medium (10–25 kg)',sizeL:'Large (over 25 kg)',fNotes:'Anything else I should know (keys, behaviour, other dogs…)',
@@ -436,7 +447,7 @@ eContact:'Enter your name and a phone number.',eTime:'Choose a free time.',eTake
 doneTitle:'Thanks – booking received!',doneText:'I will confirm by phone or text, and then see you at the door.',doneMp:'Pay with MobilePay once the walk is confirmed:',again:'Book another walk',
 howLabel:'How it works',howTitle:'Three simple steps',how1:'You pick a time',how1p:'Choose a day and time in the calendar. It takes a minute.',how2:'I confirm',how2p:'I call or text you and we sort out the details.',how3:'We go for a walk',how3p:'I pick up your dog, we walk for 30 minutes, and you pay with MobilePay.',
 aboutLabel:'About',aboutTitle:'Can and Boris',aboutText:'I am Can. I live in Skovlunde with Boris, a calm 7-year-old golden retriever. We love long trips – in the mountains, in the snow and by the water. Now I would love to walk your dog too.',
-factArea:'Area',factAreaV:'Skovlunde + 5 km',factWalk:'Walk',factWalkV:'At least 30 minutes',factWhen:'Times',hoursV:'{a}–{b}, every day',factPay:'Payment',factPhone:'Phone',
+factArea:'Area',factAreaV:'Skovlunde, Ballerup, Herlev and around',factWalk:'Walk',factWalkV:'At least 30 minutes',factWhen:'Times',hoursV:'{a}–{b}, every day',factPay:'Payment',factPhone:'Phone',
 capDuo:'Ready for rain',capSummit:'At the summit',capSnow:'In the snow',altDuo:'Can and Boris in a lift, Boris in a yellow raincoat',altSummit:'Can and Boris on a mountain top',altSnow:'Boris in the snow in front of Can',
 clubLabel:'Coming later',clubTitle:'Group walks for dog owners',clubText:'The club starts with daily walks. Monthly outings for dog owners and their dogs will follow.',
 moreLabel:'Other services',moreTitle:'Need more than a walk?',moreText:'I also offer sitting and home visits. Mention it in your booking or find me on Pawshake.',ctaPawshake:'See Pawshake profile',
@@ -593,5 +604,8 @@ if('IntersectionObserver' in window){
     document.querySelectorAll('.reveal').forEach(x=>io.observe(x));
   }
 }
+const AREAS=['Skovlunde','Ballerup','Herlev','Måløv','Glostrup','Rødovre','Albertslund'];
+if(matchMedia('(prefers-reduced-motion: reduce)').matches)$('areas').textContent=AREAS.slice(0,3).join(' · ');
+else{let ai=0;setInterval(()=>{ai=(ai+1)%AREAS.length;$('areas').replaceChildren(el('b',null,AREAS[ai]))},2200)}
 pickFirstDay();render();load();account().then(()=>{prefill();render()});
 </script>
