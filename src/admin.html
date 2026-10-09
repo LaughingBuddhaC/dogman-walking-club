@@ -1,0 +1,121 @@
+<title>DogMan Admin</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#faf8f5;--panel:#fff;--ink:#0e0c0a;--muted:#645d55;--line:#0e0c0a;--soft:#e4dfd8;--accent:#E34520;--on-accent:#0e0c0a;--gold:#F1C891;--ok:#1d6b3a;--err:#a3210a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e0c0a;--panel:#191613;--ink:#f3efe9;--muted:#a79f95;--line:#f3efe9;--soft:#3a342e;--ok:#6fcf8f;--err:#ff8a70;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e0c0a;--panel:#191613;--ink:#f3efe9;--muted:#a79f95;--line:#f3efe9;--soft:#3a342e;--ok:#6fcf8f;--err:#ff8a70;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 "DM Sans",system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:18px 60px;display:flex;flex-direction:column;gap:22px}
+h1,h2{font-family:"Bebas Neue","Arial Narrow",sans-serif;font-weight:400;margin:0;line-height:1}
+h1{font-size:2.4rem}h2{font-size:1.7rem;border-bottom:3px solid var(--line);padding-bottom:6px}
+.label{font:500 .72rem "DM Mono",monospace;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+input,select,textarea,button{font:inherit;border-radius:0}
+input,select,textarea{padding:8px 10px;border:2px solid var(--line);background:var(--panel);color:var(--ink);width:100%}
+button{padding:8px 12px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;font-weight:500}
+button.p{background:var(--accent);color:var(--on-accent)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.card{border:2px solid var(--line);background:var(--panel);padding:14px;display:flex;flex-direction:column;gap:8px}
+.card.cancelled{opacity:.55}
+.when{font:500 1rem "DM Mono",monospace}
+.pill{font:500 .7rem "DM Mono",monospace;text-transform:uppercase;padding:3px 7px;border:2px solid var(--line)}
+.pill.pending{background:var(--gold);color:#0e0c0a}.pill.confirmed{background:var(--ok);color:var(--bg)}.pill.paid{background:var(--ink);color:var(--bg)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:0;font-size:.92rem}
+dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
+.list{display:flex;flex-direction:column;gap:10px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px}
+.slots button{font-family:"DM Mono",monospace;padding:8px 2px}
+.slots .booked{background:var(--soft);cursor:default}
+.msg{font-weight:500;color:var(--err);min-height:1.4em}
+</style>
+<div class="wrap">
+  <div class="row" style="justify-content:space-between"><h1>DogMan Admin</h1><a href="/" class="label">← Site</a></div>
+  <form id="login" class="card" style="max-width:360px"><label class="label" for="pw">Admin password</label><input id="pw" type="password" autocomplete="current-password"><button class="p" type="submit">Log in</button><div class="msg" id="login-msg"></div></form>
+  <div id="app" hidden style="display:flex;flex-direction:column;gap:26px">
+    <div class="msg" id="msg" role="status"></div>
+    <div><h2>Bookings</h2>
+      <div class="row" style="margin-block:10px" id="filters"></div>
+      <div class="list" id="bookings"></div></div>
+    <div><h2>Add a booking</h2>
+      <form id="add" class="grid" style="margin-top:10px">
+        <div class="f"><label class="label" for="a-service">Service</label><select id="a-service"><option value="walk">Dog walking</option><option value="visit">Home visit</option><option value="daycare">Day care</option><option value="boarding">Boarding</option></select></div>
+        <div class="f"><label class="label" for="a-date">Date</label><input id="a-date" type="date" required></div>
+        <div class="f"><label class="label" for="a-time">Time (walk / visit)</label><select id="a-time"></select></div>
+        <div class="f"><label class="label" for="a-nights">Nights (boarding)</label><input id="a-nights" type="number" min="1" value="1"></div>
+        <div class="f"><label class="label" for="a-name">Owner name</label><input id="a-name" required></div>
+        <div class="f"><label class="label" for="a-phone">Phone</label><input id="a-phone" required></div>
+        <div class="f"><label class="label" for="a-dog">Pet's name</label><input id="a-dog"></div>
+        <div class="f"><label class="label" for="a-address">Address</label><input id="a-address"></div>
+        <div class="f"><label class="label" for="a-notes">Notes</label><input id="a-notes"></div>
+        <div class="f" style="justify-content:flex-end"><button class="p" type="submit">Add booking</button></div>
+      </form></div>
+    <div><h2>Block times</h2>
+      <div class="row" style="margin-block:10px"><input id="b-date" type="date" style="max-width:190px" aria-label="Date"><button type="button" id="b-day"></button></div>
+      <div class="slots" id="b-slots"></div><p class="label" style="margin-top:8px">Tap a free time to block it. Tap again to open it.</p></div>
+    <div><h2>Settings</h2>
+      <form id="cfg" class="grid" style="margin-top:10px">
+        <div class="f"><label class="label" for="c-walk">Walk price (kr.)</label><input id="c-walk" type="number" min="0"></div>
+        <div class="f"><label class="label" for="c-visit">Home visit price (kr.)</label><input id="c-visit" type="number" min="0"></div>
+        <div class="f"><label class="label" for="c-daycare">Day care price (kr.)</label><input id="c-daycare" type="number" min="0"></div>
+        <div class="f"><label class="label" for="c-boarding">Boarding price / night (kr.)</label><input id="c-boarding" type="number" min="0"></div>
+        <div class="f"><label class="label" for="c-start">First time (hour)</label><input id="c-start" type="number" min="5" max="22"></div>
+        <div class="f"><label class="label" for="c-end">Closing hour</label><input id="c-end" type="number" min="6" max="23"></div>
+        <div class="f"><label class="label" for="c-mp">MobilePay number</label><input id="c-mp"></div>
+        <div class="f"><label class="label" for="c-phone">Phone shown on site</label><input id="c-phone"></div>
+        <div class="f"><label class="label" for="c-paw">Pawshake link</label><input id="c-paw"></div>
+        <div class="f" style="grid-column:1/-1"><span class="label">Open days</span><div class="row" id="c-days"></div></div>
+        <div class="f"><button class="p" type="submit">Save settings</button></div>
+      </form></div>
+  </div>
+</div>
+<script>
+const $=(id)=>document.getElementById(id);const pad=(n)=>String(n).padStart(2,'0');
+const NAMES={walk:'Dog walking',visit:'Home visit',daycare:'Day care',boarding:'Boarding'};
+let pw='';try{pw=sessionStorage.getItem('pw')||''}catch(e){}
+let D=null,filter='upcoming',openDays=[];
+async function api(body){const r=await fetch('/api/admin',{method:body?'POST':'GET',headers:{'Content-Type':'application/json','x-admin-password':pw},body:body?JSON.stringify(body):undefined});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'server');D=j;return j}
+const ERR={taken:'That time is already taken.',auth:'Wrong password.',contact:'Name and an 8-digit phone number are required.',time:'Pick a time inside opening hours.',date:'Pick a valid date.'};
+async function act(body){$('msg').textContent='';try{await api(body);render()}catch(e){$('msg').textContent=ERR[e.message]||'Could not save: '+e.message}}
+function el(tag,props,...kids){const e=document.createElement(tag);Object.assign(e,props||{});e.append(...kids);return e}
+function render(){
+  $('login').hidden=true;$('app').hidden=false;
+  $('filters').replaceChildren(...['upcoming','pending','all'].map(f=>{const b=el('button',{type:'button',textContent:f[0].toUpperCase()+f.slice(1)+(f==='pending'?' ('+D.bookings.filter(x=>x.status==='pending').length+')':'')});b.setAttribute('aria-pressed',f===filter);b.onclick=()=>{filter=f;render()};return b}));
+  const list=D.bookings.filter(b=>filter==='all'||(filter==='pending'?b.status==='pending':b.date>=D.today&&b.status!=='cancelled'));
+  $('bookings').replaceChildren(...(list.length?list.map(card):[el('p',{className:'label',textContent:'No bookings here yet.'})]));
+  if(!$('b-date').value)$('b-date').value=D.today;if(!$('a-date').value)$('a-date').value=D.today;
+  const hrs=[];for(let h=D.config.hours.start;h<D.config.hours.end;h++)hrs.push(pad(h)+':00');
+  const cur=$('a-time').value;$('a-time').replaceChildren(...hrs.map(h=>el('option',{value:h,textContent:h})));if(hrs.includes(cur))$('a-time').value=cur;
+  const d=$('b-date').value,closed=D.config.closedDates.includes(d);$('b-day').textContent=closed?'Open this whole day':'Close this whole day';
+  $('b-slots').replaceChildren(...hrs.map(h=>{const k=d+'|'+h,bk=D.bookings.find(b=>b.status!=='cancelled'&&b.date===d&&b.time===h),bl=D.blocked.includes(k);
+    const b=el('button',{type:'button',textContent:h,title:bk?bk.name:''});if(bk){b.className='booked';b.disabled=true}else{b.setAttribute('aria-pressed',bl);b.onclick=()=>act({action:bl?'unblock':'block',key:k})}return b}));
+}
+function card(b){
+  const pills=[el('span',{className:'pill '+b.status,textContent:b.status})];if(b.paid)pills.push(el('span',{className:'pill paid',textContent:'paid'}));
+  const rows=[['Owner',b.name],['Phone',b.phone],['Email',b.email],['Address',b.address],['Pet',[b.dog,b.breed,b.size].filter(Boolean).join(' · ')],['Notes',b.notes],['Booked',b.created.slice(0,10)+' via '+b.source]].filter(r=>r[1]);
+  const dl=el('dl',{});rows.forEach(r=>dl.append(el('dt',{textContent:r[0]}),el('dd',{textContent:r[1]})));
+  const btn=(txt,body,cls)=>{const x=el('button',{type:'button',textContent:txt,className:cls||''});x.onclick=()=>act({id:b.id,...body});return x};
+  const actions=el('div',{className:'row'});
+  if(b.status==='pending')actions.append(btn('Confirm',{action:'status',status:'confirmed'},'p'));
+  if(b.status!=='cancelled')actions.append(btn(b.paid?'Mark unpaid':'Mark paid',{action:'paid',paid:!b.paid}),btn('Cancel',{action:'status',status:'cancelled'}));
+  else{const del=el('button',{type:'button',textContent:'Delete'});del.onclick=()=>{if(del.dataset.sure)act({action:'delete',id:b.id});else{del.dataset.sure=1;del.textContent='Delete for good?'}};actions.append(btn('Restore',{action:'status',status:'confirmed'}),del)}
+  return el('div',{className:'card '+b.status},el('div',{className:'row',style:'justify-content:space-between'},el('span',{className:'when',textContent:b.date+(b.time?' '+b.time:'')+' · '+NAMES[b.service]+(b.nights?' · '+b.nights+' nights':'')}),el('span',{className:'row'},...pills)),dl,actions);
+}
+function fillCfg(){const c=D.config;c.services.forEach(s=>$('c-'+s.id).value=s.price??'');$('c-start').value=c.hours.start;$('c-end').value=c.hours.end;$('c-mp').value=c.mobilepay;$('c-phone').value=c.phone;$('c-paw').value=c.pawshake;openDays=[...c.openDays];days()}
+function days(){$('c-days').replaceChildren(...['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((n,i)=>{const b=el('button',{type:'button',textContent:n});b.setAttribute('aria-pressed',openDays.includes(i));b.onclick=()=>{openDays=openDays.includes(i)?openDays.filter(x=>x!==i):[...openDays,i];days()};return b}))}
+function cfgBody(closedDates){const c=D.config;return{action:'config',config:{services:c.services.map(s=>({id:s.id,price:$('c-'+s.id).value})),hours:{start:$('c-start').value,end:$('c-end').value},openDays,closedDates:closedDates||c.closedDates,mobilepay:$('c-mp').value.trim(),phone:$('c-phone').value.trim(),pawshake:$('c-paw').value.trim()}}}
+$('cfg').onsubmit=async(e)=>{e.preventDefault();await act(cfgBody());fillCfg();if(!$('msg').textContent){$('msg').style.color='var(--ok)';$('msg').textContent='Settings saved.';setTimeout(()=>{$('msg').textContent='';$('msg').style.color=''},2500)}};
+$('b-date').onchange=render;
+$('b-day').onclick=()=>{const d=$('b-date').value,c=D.config.closedDates;act(cfgBody(c.includes(d)?c.filter(x=>x!==d):[...c,d]))};
+$('add').onsubmit=async(e)=>{e.preventDefault();const v=(id)=>$('a-'+id).value.trim();
+  await act({action:'add',booking:{service:v('service'),date:v('date'),time:v('time'),nights:v('nights'),name:v('name'),phone:v('phone'),dog:v('dog'),address:v('address'),notes:v('notes')}});
+  if(!$('msg').textContent)['name','phone','dog','address','notes'].forEach(k=>$('a-'+k).value='')};
+async function start(){try{await api();try{sessionStorage.setItem('pw',pw)}catch(e){}fillCfg();render()}catch(e){$('login').hidden=false;$('app').hidden=true;if(pw)$('login-msg').textContent=e.message==='auth'?'Wrong password.':'Admin is not available: '+e.message;pw=''}}
+$('login').onsubmit=(e)=>{e.preventDefault();pw=$('pw').value;$('login-msg').textContent='';start()};
+if(pw)start();
+</script>
