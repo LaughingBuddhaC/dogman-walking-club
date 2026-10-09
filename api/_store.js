@@ -43,7 +43,8 @@ export const DEFAULT_CONFIG = {
   closedDates: [],
   mobilepay: '',
   phone: '',
-  pawshake: 'https://en.pawshake.dk/sitter/can'
+  pawshake: 'https://en.pawshake.dk/sitter/can',
+  googleClientId: ''                // OAuth web client ID for "Sign in with Google" (public, set in admin)
 };
 export async function getConfig() {
   const raw = await cmd('GET', 'config');
@@ -70,6 +71,25 @@ export async function getBookings() {
 export const getBooking = async (id) => { const s = await cmd('HGET', 'bookings', id); return s ? JSON.parse(s) : null; };
 export const saveBooking = (b) => cmd('HSET', 'bookings', b.id, JSON.stringify(b));
 export const deleteBooking = (id) => cmd('HDEL', 'bookings', id);
+
+// Customer accounts (Sign in with Google). Sessions are signed with a key derived from the DB token, so no extra secret is needed.
+const SESSION_KEY = crypto.createHash('sha256').update('dogman-session:' + (TOKEN || 'dev')).digest();
+const sign = (body) => crypto.createHmac('sha256', SESSION_KEY).update(body).digest();
+export function makeSession(sub) {
+  const body = Buffer.from(JSON.stringify({ sub, exp: Date.now() + 30 * 864e5 })).toString('base64url');
+  return body + '.' + sign(body).toString('base64url');
+}
+export function readSession(req) {
+  const m = /(?:^|;\s*)dm_s=([^;]+)/.exec(req.headers.cookie || '');
+  const [body, sig] = m ? m[1].split('.') : [];
+  if (!body || !sig) return null;
+  const want = sign(body), got = Buffer.from(sig, 'base64url');
+  if (got.length !== want.length || !crypto.timingSafeEqual(got, want)) return null;
+  try { const s = JSON.parse(Buffer.from(body, 'base64url').toString()); return s.exp > Date.now() ? s : null; } catch { return null; }
+}
+export const sessionCookie = (value, maxAge) => `dm_s=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+export const getUser = async (sub) => { const s = await cmd('HGET', 'users', sub); return s ? JSON.parse(s) : null; };
+export const saveUser = (u) => cmd('HSET', 'users', u.sub, JSON.stringify(u));
 
 export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen' }).format(new Date());
 export const nowHour = () => Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Copenhagen', hour: '2-digit', hour12: false }).format(new Date()));

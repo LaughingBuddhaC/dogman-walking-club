@@ -39,7 +39,8 @@ export default async function handler(req, res) {
           openDays: (c.openDays || []).map(Number).filter((n) => n >= 0 && n <= 6),
           closedDates: (c.closedDates || []).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)).slice(0, 200),
           mobilepay: String(c.mobilepay || '').slice(0, 30), phone: String(c.phone || '').slice(0, 30),
-          pawshake: /^https:\/\//.test(c.pawshake || '') ? String(c.pawshake).slice(0, 200) : d.pawshake
+          pawshake: /^https:\/\//.test(c.pawshake || '') ? String(c.pawshake).slice(0, 200) : d.pawshake,
+          googleClientId: /^[\w.-]+\.apps\.googleusercontent\.com$/.test(String(c.googleClientId || '').trim()) ? String(c.googleClientId).trim() : ''
         });
       } else return res.status(400).json({ error: 'action' });
     }

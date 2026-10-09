@@ -164,6 +164,19 @@ form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .check svg{width:30px;height:30px}
 .mp{font:700 1.3rem var(--font);letter-spacing:.02em;padding:12px 18px;border-radius:16px;box-shadow:var(--inset-sm);user-select:all}
 
+/* Customer account */
+.acct{border-radius:20px;box-shadow:var(--inset-sm);padding:16px 18px;margin-bottom:22px;display:flex;flex-direction:column;gap:12px}
+#gbtn{min-height:44px}
+#acct-in{display:flex;align-items:center;gap:12px}
+#acct-in img{width:40px;height:40px;border-radius:50%;flex:none}
+#acct-in div{flex:1;min-width:0;display:flex;flex-direction:column}
+#acct-in b{font-size:.95rem}
+.link{font:600 .9rem var(--font);color:var(--accent);background:none;border:0;cursor:pointer;padding:4px}
+.mine{margin-top:36px;padding-top:30px;border-top:1px solid color-mix(in srgb,var(--muted) 22%,transparent)}
+.mrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-radius:18px;box-shadow:var(--raise-sm);margin-top:14px;flex-wrap:wrap}
+.mrow .st{font-size:.8rem;font-weight:600;padding:4px 10px;border-radius:999px;box-shadow:var(--inset-sm);color:var(--muted)}
+.mrow .st.confirmed{color:var(--ok)}.mrow .st.pending{color:var(--accent)}
+
 /* How + about */
 .how{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;padding:0;margin:0;list-style:none}
 .how li{padding:28px;border-radius:30px;box-shadow:var(--raise);display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -299,6 +312,10 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
         </div>
         <div>
           <div class="step"><div class="step-h"><span class="num">3</span><h3 data-t="step3"></h3></div>
+            <div class="acct" id="acct" hidden>
+              <div id="acct-out"><p class="small" data-t="gHint" style="margin-bottom:10px"></p><div id="gbtn"></div></div>
+              <div id="acct-in" hidden><img id="acct-pic" alt="" referrerpolicy="no-referrer"><div><b id="acct-name"></b><span class="small" id="acct-email"></span></div><button type="button" class="link" id="logout" data-t="logout"></button></div>
+            </div>
             <form id="form" novalidate>
               <div class="f"><label for="name" data-t="fName"></label><input id="name" autocomplete="name" required></div>
               <div class="f"><label for="phone" data-t="fPhone"></label><input id="phone" type="tel" autocomplete="tel" required></div>
@@ -323,6 +340,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
         <div id="mp-box" hidden><p data-t="doneMp" style="margin-bottom:10px"></p><div class="mp" id="mp-num"></div></div>
         <button type="button" class="btn" id="again" data-t="again"></button>
       </div>
+      <div class="mine" id="mine" hidden><h3 data-t="mineTitle"></h3><div id="mine-list"></div></div>
     </div>
   </section>
 
@@ -372,7 +390,8 @@ f4:'Skovlunde + 5 km',f4p:'Jeg går i Skovlunde og op til 5 km omkring. Bor du l
 bookLabel:'Booking',bookTitle:'Book en gåtur',step1:'Vælg dag og tid',step2:'Om turen',step3:'Dine oplysninger',prevWeek:'Forrige uge',nextWeek:'Næste uge',pickTime:'Ledige tider',noSlots:'Ingen ledige tider denne dag.',
 dogs:'Antal hunde',freq:'Hvor ofte?',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',dog1:'hund',dogN:'hunde',
 fName:'Navn *',fPhone:'Telefon *',fEmail:'E-mail',fAddress:'Adresse (hvor jeg henter hunden)',fDog:'Hundens navn',fBreed:'Race',fSize:'Størrelse',sizeNone:'Vælg',sizeS:'Lille (under 10 kg)',sizeM:'Mellem (10–25 kg)',sizeL:'Stor (over 25 kg)',fNotes:'Andet jeg bør vide (nøgle, adfærd, andre hunde…)',
-send:'Send booking',sending:'Sender…',privacy:'Dine oplysninger bruges kun til at aftale og udføre turen. Du betaler først, når jeg har bekræftet.',
+send:'Send booking',sending:'Sender…',privacy:'Dine oplysninger bruges kun til at aftale og udføre turen. Log ind med Google er valgfrit – jeg får kun dit navn og din e-mail. Du betaler først, når jeg har bekræftet.',
+gHint:'Log ind med Google, så udfyldes dine oplysninger automatisk, og du kan se og aflyse dine ture.',logout:'Log ud',mineTitle:'Dine kommende ture',st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys',sure:'Aflys turen?',eLogin:'Log ind mislykkedes. Prøv igen.',
 sumPick:'Vælg en dag og en tid.',walk:'Gåtur · 30 min.',est:'Pris',perTurn:'pr. tur',
 eContact:'Skriv dit navn og et telefonnummer.',eTime:'Vælg en ledig tid.',eTaken:'Den tid er lige blevet taget. Vælg en anden.',eServer:'Noget gik galt. Prøv igen om lidt.',eClosed:'Den dag er lukket. Vælg en anden.',
 doneTitle:'Tak – booking modtaget!',doneText:'Jeg bekræfter på telefon eller sms, og så ses vi ved døren.',doneMp:'Betal med MobilePay, når turen er bekræftet:',again:'Book en tur mere',
@@ -397,7 +416,8 @@ f4:'Skovlunde + 5 km',f4p:'I walk in Skovlunde and up to 5 km around. Live a bit
 bookLabel:'Booking',bookTitle:'Book a walk',step1:'Choose day and time',step2:'About the walk',step3:'Your details',prevWeek:'Previous week',nextWeek:'Next week',pickTime:'Available times',noSlots:'No free times this day.',
 dogs:'Number of dogs',freq:'How often?',once:'Once',weekly:'Every week',multi:'Several times a week',dog1:'dog',dogN:'dogs',
 fName:'Name *',fPhone:'Phone *',fEmail:'Email',fAddress:'Address (where I pick up your dog)',fDog:"Dog's name",fBreed:'Breed',fSize:'Size',sizeNone:'Choose',sizeS:'Small (under 10 kg)',sizeM:'Medium (10–25 kg)',sizeL:'Large (over 25 kg)',fNotes:'Anything else I should know (keys, behaviour, other dogs…)',
-send:'Send booking',sending:'Sending…',privacy:'Your details are only used to arrange and carry out the walk. You only pay once I have confirmed.',
+send:'Send booking',sending:'Sending…',privacy:'Your details are only used to arrange and carry out the walk. Signing in with Google is optional – I only get your name and email. You only pay once I have confirmed.',
+gHint:'Sign in with Google to fill in your details automatically and see or cancel your walks.',logout:'Log out',mineTitle:'Your upcoming walks',st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel',sure:'Cancel this walk?',eLogin:'Sign-in failed. Please try again.',
 sumPick:'Choose a day and a time.',walk:'Walk · 30 min.',est:'Price',perTurn:'per walk',
 eContact:'Enter your name and a phone number.',eTime:'Choose a free time.',eTaken:'That time was just taken. Choose another.',eServer:'Something went wrong. Try again shortly.',eClosed:'That day is closed. Choose another.',
 doneTitle:'Thanks – booking received!',doneText:'I will confirm by phone or text, and then see you at the door.',doneMp:'Pay with MobilePay once the walk is confirmed:',again:'Book another walk',
@@ -434,6 +454,28 @@ function slotsFor(d){const out=[],now=new Date();for(let h=S.config.hours.start;
 function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
 function price(){const w=walk();return w.price==null?null:w.price+(w.extra||0)*(S.pets-1)}
 
+const U={user:null,bookings:[],gis:false};
+async function account(body){try{const r=await fetch('/api/account',{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  const j=await r.json();if(r.ok){U.user=j.user;U.bookings=j.bookings||[]}return r.ok}catch(e){return false}}
+function prefill(){if(U.user)['name','phone','email','address','dog','breed','size'].forEach(k=>{if(U.user[k]&&!$(k).value)$(k).value=U.user[k]})}
+function drawGbtn(){if(!window.google?.accounts?.id||U.user)return;$('gbtn').replaceChildren();
+  google.accounts.id.renderButton($('gbtn'),{theme:matchMedia('(prefers-color-scheme: dark)').matches?'filled_black':'outline',size:'large',shape:'pill',text:'continue_with',locale:lang,width:260})}
+function loadGis(){if(!S.config.googleClientId||U.gis)return;U.gis=true;const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;
+  sc.onload=()=>{google.accounts.id.initialize({client_id:S.config.googleClientId,use_fedcm_for_prompt:true,callback:async(r)=>{
+    if(await account({action:'login',credential:r.credential})){prefill();render()}else{const m=$('msg');m.className='f full msg err';m.textContent=t('eLogin')}}});drawGbtn()};
+  document.head.append(sc)}
+function renderAcct(){
+  $('acct').hidden=!S.config.googleClientId&&!U.user;
+  $('acct-out').hidden=!!U.user;$('acct-in').hidden=!U.user;
+  if(U.user){$('acct-name').textContent=U.user.name||U.user.email;$('acct-email').textContent=U.user.email;$('acct-pic').hidden=!U.user.picture;if(U.user.picture)$('acct-pic').src=U.user.picture}
+  const list=U.bookings.filter(b=>b.status!=='cancelled');
+  $('mine').hidden=!U.user||!list.length;
+  $('mine-list').replaceChildren(...list.map(b=>{const r=el('div','mrow'),l=el('div');
+    l.append(el('b',null,fmtDate(b.date)+(b.time?' · '+b.time:'')),el('div','small',[t('walk'),b.pets>1?b.pets+' '+t('dogN'):'',b.estimate!=null?kr(b.estimate):''].filter(Boolean).join(' · ')));
+    const c=el('button','link',t('cancel'));c.type='button';c.onclick=async()=>{if(!c.dataset.sure){c.dataset.sure=1;c.textContent=t('sure');return}await account({action:'cancel',id:b.id});load()};
+    const right=el('div');right.style.cssText='display:flex;gap:12px;align-items:center';right.append(el('span','st '+b.status,t('st_'+b.status)),c);
+    r.append(l,right);return r}));
+}
 function render(){
   const w=walk();
   document.documentElement.lang=lang;
@@ -464,6 +506,7 @@ function render(){
   else $('slots').replaceChildren(...list.map(x=>{const b=el('button','slot',x.time);b.type='button';b.disabled=!x.free;b.setAttribute('aria-pressed',x.time===S.time);b.onclick=()=>{S.time=x.time;render()};return b}));
   $('pets').textContent=S.pets;$('pets-minus').disabled=S.pets<=1;$('pets-plus').disabled=S.pets>=4;
   $('freq').replaceChildren(...['once','weekly','multi'].map(f=>{const b=el('button','chip',t(f));b.type='button';b.setAttribute('aria-pressed',f===S.freq);b.onclick=()=>{S.freq=f;render()};return b}));
+  renderAcct();
   const sum=$('summary');
   if(!S.date||!S.time)sum.replaceChildren(el('div','muted',t('sumPick')));
   else{const p=price(),row=el('div','est');row.append(el('span','muted',t('est')),el('b',null,p!=null?kr(p):'—'));
@@ -471,12 +514,13 @@ function render(){
 }
 function pickFirstDay(){for(let i=0;i<14;i++){const d=parse(S.today);d.setDate(d.getDate()+i);const s=iso(d);if(dayOpen(s)&&slotsFor(s).some(x=>x.free)){S.date=s;S.week=Math.floor(i/7);return}}}
 async function load(){try{const r=await fetch('/api/public');if(!r.ok)throw 0;const j=await r.json();S.config=j.config;S.today=j.today;S.taken=new Set(j.taken);S.live=true}catch(e){S.live=false}
-  if(!S.date||!dayOpen(S.date))pickFirstDay();render()}
+  if(!S.date||!dayOpen(S.date))pickFirstDay();render();loadGis()}
 
 document.querySelectorAll('[data-icon]').forEach(e=>e.innerHTML=ICON[e.dataset.icon]);
-document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('lang',lang)}catch(e){}render()});
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('lang',lang)}catch(e){}render();drawGbtn()});
 $('prev').onclick=()=>{S.week=Math.max(0,S.week-1);render()};$('next').onclick=()=>{S.week=Math.min(7,S.week+1);render()};
 $('pets-minus').onclick=()=>{S.pets=Math.max(1,S.pets-1);render()};$('pets-plus').onclick=()=>{S.pets=Math.min(4,S.pets+1);render()};
+$('logout').onclick=async()=>{await account({action:'logout'});try{google.accounts.id.disableAutoSelect()}catch(e){}render();drawGbtn()};
 $('again').onclick=()=>{$('done').hidden=true;$('book-ui').hidden=false;S.time=null;load()};
 $('form').onsubmit=async(e)=>{e.preventDefault();const msg=$('msg');msg.className='f full msg err';
   const v=(id)=>$(id).value.trim();
@@ -486,7 +530,7 @@ $('form').onsubmit=async(e)=>{e.preventDefault();const msg=$('msg');msg.classNam
   const btn=$('submit');btn.disabled=true;btn.textContent=t('sending');msg.textContent='';
   let mp=S.config.mobilepay,ok=!S.live,err='eServer';
   if(S.live){try{const r=await fetch('/api/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
-    if(r.ok){ok=true;mp=j.mobilepay||mp}else err={taken:'eTaken',time:'eTime',contact:'eContact',closed:'eClosed',date:'eClosed'}[j.error]||'eServer'}catch(x){}}
+    if(r.ok){ok=true;mp=j.mobilepay||mp;if(U.user)account().then(render)}else err={taken:'eTaken',time:'eTime',contact:'eContact',closed:'eClosed',date:'eClosed'}[j.error]||'eServer'}catch(x){}}
   btn.disabled=false;btn.textContent=t('send');
   if(!ok){msg.textContent=t(err);if(err==='eTaken'){S.time=null;load()}return}
   const p=price();
@@ -502,7 +546,7 @@ if('IntersectionObserver' in window){
     document.querySelectorAll('.reveal').forEach(x=>io.observe(x));
   }
 }
-pickFirstDay();render();load();
+pickFirstDay();render();load();account().then(()=>{prefill();render()});
 </script>
 
 </body></html>

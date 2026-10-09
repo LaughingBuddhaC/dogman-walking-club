@@ -72,6 +72,7 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
         <div class="f"><label class="label" for="c-mp">MobilePay number</label><input id="c-mp"></div>
         <div class="f"><label class="label" for="c-phone">Phone shown on site</label><input id="c-phone"></div>
         <div class="f"><label class="label" for="c-paw">Pawshake link</label><input id="c-paw"></div>
+        <div class="f" style="grid-column:1/-1"><label class="label" for="c-gid">Google client ID (for "Sign in with Google")</label><input id="c-gid" placeholder="1234-abc.apps.googleusercontent.com"></div>
         <div class="f" style="grid-column:1/-1"><span class="label">Open days</span><div class="row" id="c-days"></div></div>
         <div class="f"><button class="p" type="submit">Save settings</button></div>
       </form></div>
@@ -101,7 +102,7 @@ function render(){
     const b=el('button',{type:'button',textContent:h,title:bk?bk.name:''});if(bk){b.className='booked';b.disabled=true}else{b.setAttribute('aria-pressed',bl);b.onclick=()=>act({action:bl?'unblock':'block',key:k})}return b}));
 }
 function card(b){
-  const pills=[el('span',{className:'pill '+b.status,textContent:b.status})];if(b.paid)pills.push(el('span',{className:'pill paid',textContent:'paid'}));
+  const pills=[el('span',{className:'pill '+b.status,textContent:b.status})];if(b.paid)pills.push(el('span',{className:'pill paid',textContent:'paid'}));if(b.user)pills.push(el('span',{className:'pill',textContent:'google'}));
   const rows=[['Owner',b.name],['Phone',b.phone],['Email',b.email],['Address',b.address],['Pet',[b.dog,b.breed,b.size,b.pets>1?b.pets+' pets':''].filter(Boolean).join(' · ')],['Estimate',b.estimate!=null?b.estimate+' kr.':''],['How often',{weekly:'Every week',multi:'Several times a week'}[b.freq]||''],['Notes',b.notes],['Booked',b.created.slice(0,10)+' via '+b.source]].filter(r=>r[1]);
   const dl=el('dl',{});rows.forEach(r=>dl.append(el('dt',{textContent:r[0]}),el('dd',{textContent:r[1]})));
   const btn=(txt,body,cls)=>{const x=el('button',{type:'button',textContent:txt,className:cls||''});x.onclick=()=>act({id:b.id,...body});return x};
@@ -113,9 +114,9 @@ function card(b){
 }
 function fillCfg(){const c=D.config;
   $('a-service').replaceChildren(...c.services.map(s=>el('option',{value:s.id,textContent:NAMES[s.id]||s.id})));$('a-service').value='walk';
-  $('c-prices').replaceChildren(el('span',{className:'label',textContent:'Service'}),el('span',{className:'label',textContent:'Price'}),el('span',{className:'label',textContent:'+ per extra pet'}),...c.services.flatMap(s=>[el('span',{textContent:NAMES[s.id]+' (per '+UNIT[s.mode]+')'}),el('input',{id:'c-'+s.id,type:'number',min:0,value:s.price??'',ariaLabel:NAMES[s.id]+' price'}),el('input',{id:'c-'+s.id+'-x',type:'number',min:0,value:s.extra??'',ariaLabel:NAMES[s.id]+' extra pet'})]));$('c-start').value=c.hours.start;$('c-end').value=c.hours.end;$('c-mp').value=c.mobilepay;$('c-phone').value=c.phone;$('c-paw').value=c.pawshake;openDays=[...c.openDays];days()}
+  $('c-prices').replaceChildren(el('span',{className:'label',textContent:'Service'}),el('span',{className:'label',textContent:'Price'}),el('span',{className:'label',textContent:'+ per extra pet'}),...c.services.flatMap(s=>[el('span',{textContent:NAMES[s.id]+' (per '+UNIT[s.mode]+')'}),el('input',{id:'c-'+s.id,type:'number',min:0,value:s.price??'',ariaLabel:NAMES[s.id]+' price'}),el('input',{id:'c-'+s.id+'-x',type:'number',min:0,value:s.extra??'',ariaLabel:NAMES[s.id]+' extra pet'})]));$('c-start').value=c.hours.start;$('c-end').value=c.hours.end;$('c-mp').value=c.mobilepay;$('c-phone').value=c.phone;$('c-paw').value=c.pawshake;$('c-gid').value=c.googleClientId||'';openDays=[...c.openDays];days()}
 function days(){$('c-days').replaceChildren(...['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((n,i)=>{const b=el('button',{type:'button',textContent:n});b.setAttribute('aria-pressed',openDays.includes(i));b.onclick=()=>{openDays=openDays.includes(i)?openDays.filter(x=>x!==i):[...openDays,i];days()};return b}))}
-function cfgBody(closedDates){const c=D.config;return{action:'config',config:{services:c.services.map(s=>({id:s.id,price:$('c-'+s.id).value,extra:$('c-'+s.id+'-x').value})),hours:{start:$('c-start').value,end:$('c-end').value},openDays,closedDates:closedDates||c.closedDates,mobilepay:$('c-mp').value.trim(),phone:$('c-phone').value.trim(),pawshake:$('c-paw').value.trim()}}}
+function cfgBody(closedDates){const c=D.config;return{action:'config',config:{services:c.services.map(s=>({id:s.id,price:$('c-'+s.id).value,extra:$('c-'+s.id+'-x').value})),hours:{start:$('c-start').value,end:$('c-end').value},openDays,closedDates:closedDates||c.closedDates,mobilepay:$('c-mp').value.trim(),phone:$('c-phone').value.trim(),pawshake:$('c-paw').value.trim(),googleClientId:$('c-gid').value.trim()}}}
 $('cfg').onsubmit=async(e)=>{e.preventDefault();await act(cfgBody());fillCfg();if(!$('msg').textContent){$('msg').style.color='var(--ok)';$('msg').textContent='Settings saved.';setTimeout(()=>{$('msg').textContent='';$('msg').style.color=''},2500)}};
 $('b-date').onchange=render;
 $('b-day').onclick=()=>{const d=$('b-date').value,c=D.config.closedDates;act(cfgBody(c.includes(d)?c.filter(x=>x!==d):[...c,d]))};
