@@ -38,7 +38,7 @@ export const DEFAULT_CONFIG = {
     { id: 'visit2', mode: 'days', price: 250, extra: null },
     { id: 'walk', mode: 'slot', price: 120, extra: 80 }
   ],
-  hours: { start: 8, end: 19 },      // first slot 08:00, last slot 18:00
+  hours: { start: 6, end: 24 },      // first slot 06:00, last slot 23:00
   openDays: [0, 1, 2, 3, 4, 5, 6],   // 0 = Sunday
   closedDates: [],
   mobilepay: '',

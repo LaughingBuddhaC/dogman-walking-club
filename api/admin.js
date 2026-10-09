@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       } else if (b.action === 'unblock' && (await s.slotOwner(b.key)) === 'blocked') await s.freeSlot(b.key);
       else if (b.action === 'config' && b.config) {
         const c = b.config, d = s.DEFAULT_CONFIG, num = (v) => (v === '' || v == null || isNaN(v) ? null : Math.max(0, Math.round(Number(v))));
-        const start = Math.min(22, Math.max(5, parseInt(c.hours?.start, 10) || 8)), end = Math.min(23, Math.max(start + 1, parseInt(c.hours?.end, 10) || 19));
+        const start = Math.min(23, Math.max(0, parseInt(c.hours?.start, 10) || 6)), end = Math.min(24, Math.max(start + 1, parseInt(c.hours?.end, 10) || 24));
         await s.setConfig({
           services: d.services.map((x) => { const y = c.services?.find((z) => z.id === x.id); return { ...x, price: num(y?.price), extra: num(y?.extra) }; }),
           hours: { start, end },

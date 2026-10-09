@@ -1,0 +1,33 @@
+/* Shared print styles for the A5 flyer and A4 poster. Sizes scale with --u (1 unit = 1mm on A5). */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:"Inter",-apple-system,"Segoe UI",sans-serif;color:#1d1d1f;letter-spacing:-.01em;background:#fff}
+:root{--bg:#e9edf2;--sh-d:#c6cdd7;--sh-l:#ffffff;--accent:#b44d08;--grad:linear-gradient(135deg,#ffad5c,#f07a1e);--muted:#5d5e65}
+.sheet{background:var(--bg);border-radius:calc(var(--u)*7);padding:calc(var(--u)*8);display:flex;flex-direction:column;gap:calc(var(--u)*5.2);overflow:hidden}
+.raise{box-shadow:calc(var(--u)*1.4) calc(var(--u)*1.4) calc(var(--u)*3) var(--sh-d),calc(var(--u)*-1.4) calc(var(--u)*-1.4) calc(var(--u)*3) var(--sh-l)}
+.inset{box-shadow:inset calc(var(--u)*.8) calc(var(--u)*.8) calc(var(--u)*1.6) var(--sh-d),inset calc(var(--u)*-.8) calc(var(--u)*-.8) calc(var(--u)*1.6) var(--sh-l)}
+.top{display:flex;justify-content:space-between;align-items:center}
+.brand{display:flex;align-items:center;gap:calc(var(--u)*2.4);font-weight:700;font-size:calc(var(--u)*4.4)}
+.mark{width:calc(var(--u)*9);height:calc(var(--u)*9);border-radius:50%;display:grid;place-items:center;color:var(--accent);background:var(--bg)}
+.mark svg{width:55%;height:55%}
+.area{font-size:calc(var(--u)*3.2);font-weight:600;color:var(--muted);padding:calc(var(--u)*1.8) calc(var(--u)*3.4);border-radius:999px;display:flex;align-items:center;gap:calc(var(--u)*1.6)}
+.area i{width:calc(var(--u)*2);height:calc(var(--u)*2);border-radius:50%;background:#1f7a45;display:block}
+h1{font-size:calc(var(--u)*12.6);line-height:1.02;font-weight:800;letter-spacing:-.035em}
+h1 span{background:linear-gradient(90deg,#d9620c,#a8740a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:calc(var(--u)*4.4);color:var(--muted);margin-top:calc(var(--u)*2.2);line-height:1.35}
+.sub b{color:#1d1d1f}
+.photo{position:relative;flex:1;min-height:0;border-radius:calc(var(--u)*7);background:var(--bg)}
+.photo img{position:absolute;inset:calc(var(--u)*2.4);width:calc(100% - var(--u)*4.8);height:calc(100% - var(--u)*4.8);object-fit:cover;object-position:50% 38%;border-radius:calc(var(--u)*5)}
+.price{position:absolute;right:calc(var(--u)*-1);bottom:calc(var(--u)*-3);background:var(--grad);border-radius:calc(var(--u)*5);padding:calc(var(--u)*3) calc(var(--u)*4.6);text-align:center;color:#1d1d1f}
+.price b{display:block;font-size:calc(var(--u)*10);line-height:1;font-weight:800;letter-spacing:-.04em}
+.price small{display:block;font-size:calc(var(--u)*3.2);font-weight:600;margin-top:calc(var(--u)*.8)}
+.ticks{display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--u)*2.6) calc(var(--u)*4);list-style:none;margin-top:calc(var(--u)*1.5)}
+.ticks li{display:flex;align-items:center;gap:calc(var(--u)*2.2);font-size:calc(var(--u)*3.7);font-weight:600}
+.ticks svg{width:calc(var(--u)*5);height:calc(var(--u)*5);flex:none;color:#1f7a45}
+.cta{display:flex;align-items:center;gap:calc(var(--u)*5);border-radius:calc(var(--u)*6);padding:calc(var(--u)*4.4)}
+.qr{flex:none;width:calc(var(--u)*30);height:calc(var(--u)*30);padding:calc(var(--u)*2.4);background:#fff;border-radius:calc(var(--u)*3.4)}
+.qr img{display:block;width:100%;height:100%}
+.cta h2{font-size:calc(var(--u)*6.2);font-weight:800;letter-spacing:-.03em;line-height:1.05}
+.cta .url{display:inline-block;margin-top:calc(var(--u)*2.2);font-size:calc(var(--u)*4.4);font-weight:700;color:var(--accent)}
+.cta p{font-size:calc(var(--u)*3.3);color:var(--muted);margin-top:calc(var(--u)*1.8);line-height:1.35}
+.foot{display:flex;justify-content:space-between;font-size:calc(var(--u)*3);color:var(--muted);margin-top:auto}

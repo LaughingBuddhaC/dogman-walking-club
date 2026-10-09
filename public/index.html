@@ -1,8 +1,20 @@
-<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Hundeluftning i Skovlunde · DogMan Walking Club</title>
 <meta name="description" content="Hundeluftning i Skovlunde: 30 minutters gåtur, hentet og afleveret ved døren. 120 kr. pr. tur. Book online på få minutter.">
+<link rel="canonical" href="https://dmw.cansasmaz.com/">
+<meta name="theme-color" content="#e7ebf0">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dmw.cansasmaz.com/">
+<meta property="og:title" content="Hundeluftning i Skovlunde · DogMan Walking Club">
+<meta property="og:description" content="30 minutters gåtur, hentet og afleveret ved din dør. 120 kr. pr. tur, alle dage kl. 06–24. Book online på 1 minut.">
+<meta property="og:image" content="https://dmw.cansasmaz.com/img/og.jpg">
+<meta property="og:image:width" content="1500"><meta property="og:image:height" content="844">
+<meta property="og:locale" content="da_DK">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"DogMan Walking Club","description":"Hundeluftning i Skovlunde: 30 minutters gåtur, hentet og afleveret ved din dør.","url":"https://dmw.cansasmaz.com/","image":"https://dmw.cansasmaz.com/img/og.jpg","priceRange":"120 kr.","currenciesAccepted":"DKK","paymentAccepted":"MobilePay","address":{"@type":"PostalAddress","addressLocality":"Skovlunde","postalCode":"2740","addressCountry":"DK"},"areaServed":[{"@type":"Place","name":"Skovlunde"},{"@type":"Place","name":"Ballerup"},{"@type":"Place","name":"Herlev"}],"openingHoursSpecification":{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"06:00","closes":"23:59"},"makesOffer":{"@type":"Offer","name":"Hundeluftning 30 min.","price":"120","priceCurrency":"DKK"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <style>
 /* Soft UI: one surface colour, depth from paired light/dark shadows. Raised = tappable, inset = chosen or input. */
 :root{
@@ -410,7 +422,7 @@ const $=(id)=>document.getElementById(id);
 const pad=(n)=>String(n).padStart(2,'0');
 const iso=(d)=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parse=(s)=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
-const DEFAULT={services:[{id:'boarding',mode:'nights',price:275,extra:125},{id:'daycare',mode:'days',price:200,extra:80},{id:'housesit',mode:'nights',price:250,extra:null},{id:'visit1',mode:'days',price:140,extra:null},{id:'visit2',mode:'days',price:250,extra:null},{id:'walk',mode:'slot',price:120,extra:80}],hours:{start:8,end:19},openDays:[0,1,2,3,4,5,6],closedDates:[],mobilepay:'',phone:'',pawshake:'https://en.pawshake.dk/sitter/can'};
+const DEFAULT={services:[{id:'boarding',mode:'nights',price:275,extra:125},{id:'daycare',mode:'days',price:200,extra:80},{id:'housesit',mode:'nights',price:250,extra:null},{id:'visit1',mode:'days',price:140,extra:null},{id:'visit2',mode:'days',price:250,extra:null},{id:'walk',mode:'slot',price:120,extra:80}],hours:{start:6,end:24},openDays:[0,1,2,3,4,5,6],closedDates:[],mobilepay:'',phone:'',pawshake:'https://en.pawshake.dk/sitter/can'};
 let lang='da';try{lang=localStorage.getItem('lang')||((navigator.language||'da').toLowerCase().startsWith('da')?'da':'en')}catch(e){}
 const S={config:DEFAULT,today:iso(new Date()),taken:new Set(),date:null,time:null,week:0,pets:1,freq:'once',live:false};
 const t=(k)=>T[lang][k]??k;
