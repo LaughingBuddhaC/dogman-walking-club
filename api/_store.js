@@ -29,11 +29,14 @@ function memCmd([c, k, f, v]) {
 const pairs = (a) => { const o = {}; for (let i = 0; i < (a || []).length; i += 2) o[a[i]] = a[i + 1]; return o; };
 
 export const DEFAULT_CONFIG = {
+  // price = DKK per unit (night / day / walk), extra = DKK per extra pet per unit (null = not set)
   services: [
-    { id: 'walk', mode: 'slot', price: null },
-    { id: 'visit', mode: 'slot', price: null },
-    { id: 'daycare', mode: 'day', price: null },
-    { id: 'boarding', mode: 'nights', price: null }
+    { id: 'boarding', mode: 'nights', price: 275, extra: 125 },
+    { id: 'daycare', mode: 'days', price: 200, extra: 80 },
+    { id: 'housesit', mode: 'nights', price: 250, extra: null },
+    { id: 'visit1', mode: 'days', price: 140, extra: null },
+    { id: 'visit2', mode: 'days', price: 250, extra: null },
+    { id: 'walk', mode: 'slot', price: 120, extra: 80 }
   ],
   hours: { start: 8, end: 19 },      // first slot 08:00, last slot 18:00
   openDays: [0, 1, 2, 3, 4, 5, 6],   // 0 = Sunday
@@ -44,7 +47,17 @@ export const DEFAULT_CONFIG = {
 };
 export async function getConfig() {
   const raw = await cmd('GET', 'config');
-  return raw ? { ...DEFAULT_CONFIG, ...JSON.parse(raw) } : DEFAULT_CONFIG;
+  const saved = raw ? JSON.parse(raw) : {};
+  // The service list comes from code; only saved prices for known ids are applied.
+  const services = DEFAULT_CONFIG.services.map((d) => {
+    const s = (saved.services || []).find((x) => x.id === d.id);
+    return s ? { ...d, price: s.price ?? null, extra: s.extra ?? null } : d;
+  });
+  return { ...DEFAULT_CONFIG, ...saved, services };
+}
+export function estimate(svc, units, pets) {
+  if (svc.price == null) return null;
+  return (svc.price + (svc.extra || 0) * (pets - 1)) * units;
 }
 export const setConfig = (c) => cmd('SET', 'config', JSON.stringify(c));
 export const getSlots = async () => pairs(await cmd('HGETALL', 'slots'));
@@ -83,13 +96,18 @@ export function buildBooking(input, config, { admin = false } = {}) {
     if (!/^\d{2}:00$/.test(time) || h < config.hours.start || h >= config.hours.end) return { error: 'time' };
     if (!admin && date === t && h <= nowHour()) return { error: 'time' };
   }
-  const nights = svc.mode === 'nights' ? Math.min(30, Math.max(1, parseInt(input.nights, 10) || 1)) : 0;
+  const count = (v) => Math.min(30, Math.max(1, parseInt(v, 10) || 1));
+  const nights = svc.mode === 'nights' ? count(input.nights) : 0;
+  const days = svc.mode === 'days' ? count(input.days) : 0;
+  const pets = Math.min(6, Math.max(1, parseInt(input.pets, 10) || 1));
   const name = clean(input.name, 80), phone = clean(input.phone, 30);
   if (!name || phone.replace(/\D/g, '').length < 8) return { error: 'contact' };
   return { booking: {
-    id: newId(), created: new Date().toISOString(), service: svc.id, date, time, nights, name, phone,
+    id: newId(), created: new Date().toISOString(), service: svc.id, date, time, nights, days, pets,
+    estimate: estimate(svc, nights || days || 1, pets), name, phone,
     email: clean(input.email, 120), address: clean(input.address, 160), dog: clean(input.dog, 60),
     breed: clean(input.breed, 60), size: clean(input.size, 10), notes: clean(input.notes, 600),
+    freq: ['once', 'weekly', 'multi'].includes(input.freq) ? input.freq : 'once',
     lang: input.lang === 'en' ? 'en' : 'da', status: admin ? 'confirmed' : 'pending', paid: false, source: admin ? 'admin' : 'web'
   } };
 }

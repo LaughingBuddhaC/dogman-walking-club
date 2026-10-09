@@ -1,279 +1,493 @@
-<title>DogMan Walking Club</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap">
+<title>Hundeluftning i Skovlunde · DogMan Walking Club</title>
+<meta name="description" content="Hundeluftning i Skovlunde: 30 minutters gåtur, hentet og afleveret ved døren. 120 kr. pr. tur. Book online på få minutter.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
-/* Layout: Bauhaus poster. Hard edges, thick rules, one orange field, geometry instead of decoration. */
+/* Soft UI: one surface colour, depth from paired light/dark shadows. Raised = tappable, inset = chosen or input. */
 :root{
-  --bg:#faf8f5; --panel:#ffffff; --ink:#0e0c0a; --muted:#645d55; --line:#0e0c0a; --soft:#e4dfd8;
-  --accent:#E34520; --on-accent:#0e0c0a; --gold:#F1C891; --ok:#1d6b3a; --err:#a3210a;
-  --display:"Bebas Neue","Arial Narrow",Impact,sans-serif; --body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  --bg:#e7ebf0; --text:#1d1d1f; --muted:#62636a; --sh-d:#c3cad4; --sh-l:#ffffff;
+  --accent:#b44d08; --grad:linear-gradient(135deg,#ffad5c,#f07a1e); --on-grad:#1d1d1f;
+  --title-grad:linear-gradient(90deg,#d9620c,#a8740a); --ok:#1f7a45; --err:#b8311a;
+  --raise:9px 9px 20px var(--sh-d),-9px -9px 20px var(--sh-l);
+  --raise-sm:5px 5px 11px var(--sh-d),-5px -5px 11px var(--sh-l);
+  --inset:inset 5px 5px 10px var(--sh-d),inset -5px -5px 10px var(--sh-l);
+  --inset-sm:inset 3px 3px 6px var(--sh-d),inset -3px -3px 6px var(--sh-l);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,"Segoe UI",sans-serif;
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,"Segoe UI",sans-serif;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e0c0a;--panel:#191613;--ink:#f3efe9;--muted:#a79f95;--line:#f3efe9;--soft:#3a342e;--ok:#6fcf8f;--err:#ff8a70;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0e0c0a;--panel:#191613;--ink:#f3efe9;--muted:#a79f95;--line:#f3efe9;--soft:#3a342e;--ok:#6fcf8f;--err:#ff8a70;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--title-grad:linear-gradient(90deg,#ffb067,#ffd27a);--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--title-grad:linear-gradient(90deg,#ffb067,#ffd27a);--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--body)}
-.wrap{max-width:1080px;margin:0 auto;padding-inline:20px}
-h1,h2,h3{font-family:var(--display);font-weight:400;line-height:.95;margin:0;letter-spacing:.01em;text-wrap:balance}
-h1{font-size:clamp(3.4rem,13vw,8rem)}
-h2{font-size:clamp(2.2rem,6vw,3.6rem)}
-h3{font-size:1.7rem}
-p{margin:0;max-width:62ch}
-.label{font:500 .74rem/1.2 var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{background:var(--bg);color:var(--text);font:400 17px/1.5 var(--font);-webkit-font-smoothing:antialiased;letter-spacing:-.011em}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.025em;text-wrap:balance}
+h1{font-size:clamp(2.8rem,7vw,5.2rem);line-height:1.02;font-weight:800}
+.g{background:var(--title-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:clamp(2rem,4.6vw,3.2rem);line-height:1.08;font-weight:700}
+h3{font-size:1.2rem;line-height:1.25;font-weight:600}
+p{margin:0}
 a{color:inherit}
-:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px;border-bottom:3px solid var(--line);flex-wrap:wrap}
-.brand{font:400 1.5rem/1 var(--display);letter-spacing:.04em;display:flex;align-items:center;gap:10px}
-.brand i{width:18px;height:18px;border-radius:50%;background:var(--accent);display:block}
-.nav{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-.nav a{font:500 .8rem var(--mono);text-transform:uppercase;letter-spacing:.08em;text-decoration:none}
-.nav a:hover{color:var(--accent)}
-.lang{display:flex;border:2px solid var(--line)}
-.lang button{font:500 .78rem var(--mono);padding:6px 10px;border:0;background:transparent;color:var(--ink);cursor:pointer}
-.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.btn{display:inline-block;font:400 1.35rem/1 var(--display);letter-spacing:.05em;padding:14px 22px;background:var(--accent);color:var(--on-accent);border:3px solid var(--line);text-decoration:none;cursor:pointer}
-.btn:hover{background:var(--ink);color:var(--bg)}
-.btn[disabled]{opacity:.45;cursor:not-allowed}
-.btn.ghost{background:transparent;color:var(--ink)}
-.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;padding-block:44px;align-items:end}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.eyebrow{font-size:.95rem;font-weight:600;color:var(--accent);letter-spacing:-.005em}
+.muted{color:var(--muted)}
+svg{display:block}
+figure{margin:0}
+
+/* Header */
+.top{position:sticky;top:12px;z-index:10;margin:12px auto 0;max-width:1120px;padding-inline:12px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px 10px 16px;border-radius:999px;background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:var(--raise-sm)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.02rem;text-decoration:none;letter-spacing:-.02em;white-space:nowrap}
+.mark{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;color:var(--accent);box-shadow:var(--raise-sm)}
+.mark svg{width:18px;height:18px}
+.nav{display:flex;gap:6px;align-items:center}
+.nav a{font-size:.9rem;font-weight:500;text-decoration:none;padding:8px 12px;border-radius:999px;color:var(--muted)}
+.nav a:hover{color:var(--text)}
+.nav a.go{color:var(--on-grad);background:var(--grad);font-weight:600;box-shadow:var(--raise-sm)}
+.seg{display:flex;padding:4px;border-radius:999px;box-shadow:var(--inset-sm);margin-left:6px}
+.seg button{font:600 .78rem var(--font);padding:6px 11px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--bg);color:var(--text);box-shadow:2px 2px 5px var(--sh-d),-2px -2px 5px var(--sh-l)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 1rem var(--font);padding:15px 26px;border-radius:999px;border:0;text-decoration:none;cursor:pointer;background:var(--bg);color:var(--text);box-shadow:var(--raise-sm);transition:box-shadow .2s,transform .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{box-shadow:var(--inset-sm);transform:none}
+.btn.primary{background:var(--grad);color:var(--on-grad)}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:1.08fr .92fr;gap:56px;align-items:center;padding-block:64px 72px}
 .hero>*{min-width:0}
-.hero .lead{font-size:1.15rem;margin-block:18px 24px}
-.hero .cta{display:flex;gap:12px;flex-wrap:wrap}
-.art{position:relative;aspect-ratio:1;max-width:100%;border:3px solid var(--line);background:var(--gold);overflow:hidden}
-.art .c{position:absolute;left:14%;top:14%;width:58%;height:58%;border-radius:50%;background:var(--accent)}
-.art .s{position:absolute;right:0;bottom:0;width:44%;height:44%;background:#0e0c0a}
-.art .q{position:absolute;right:0;bottom:0;width:44%;height:44%;background:#faf8f5;border-top-left-radius:100%}
-.art .l{position:absolute;left:0;bottom:22%;width:56%;height:3px;background:#0e0c0a}
-.art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.demo{background:var(--gold);color:#0e0c0a;border:3px solid var(--line);padding:10px 14px;margin-top:18px;font:500 .85rem var(--mono)}
-section{padding-block:44px;border-top:3px solid var(--line)}
-.head{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
-.services{display:grid;grid-template-columns:repeat(4,1fr);border:3px solid var(--line)}
-.svc{padding:20px;display:flex;flex-direction:column;gap:10px;border-right:3px solid var(--line);min-width:0;background:var(--panel)}
-.svc:last-child{border-right:0}
-.svc p{font-size:.95rem;color:var(--muted);flex:1}
-.price{font:500 .9rem var(--mono);padding-top:10px;border-top:2px solid var(--soft)}
-.price b{font:400 2rem/1 var(--display);color:var(--accent);margin-right:4px}
-.book{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600;padding:8px 14px;border-radius:999px;box-shadow:var(--inset-sm);color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 22%,transparent)}
+.hero h1{margin-top:22px}
+.lead{font-size:clamp(1.1rem,1.7vw,1.3rem);color:var(--muted);margin-block:22px 32px;max-width:36ch;line-height:1.45}
+.lead b{color:var(--text);font-weight:600}
+.cta{display:flex;gap:16px;flex-wrap:wrap}
+.trust{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
+.trust span{font-size:.85rem;font-weight:500;color:var(--muted);padding:9px 14px;border-radius:14px;box-shadow:var(--raise-sm)}
+.frame{position:relative;padding:14px;border-radius:40px;box-shadow:var(--raise)}
+.frame img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;object-position:50% 40%;border-radius:28px}
+.badge{position:absolute;left:-18px;bottom:40px;display:flex;align-items:center;gap:12px;padding:12px 18px 12px 12px;border-radius:22px;background:var(--bg);box-shadow:var(--raise)}
+.badge .mark{width:40px;height:40px}
+.badge b{display:block;font-size:.95rem}
+.badge small{display:block;font-size:.8rem;color:var(--muted)}
+.demo{margin-top:22px;font-size:.88rem;padding:12px 16px;border-radius:16px;box-shadow:var(--inset-sm);color:var(--muted)}
+
+/* Sections */
+section{padding-block:72px}
+.head{display:flex;flex-direction:column;gap:10px;margin-bottom:40px;max-width:640px}
+.head p{color:var(--muted);font-size:1.1rem}
+
+/* The walk */
+.walk{display:grid;grid-template-columns:.9fr 1.1fr;gap:28px;align-items:stretch}
+.walk>*{min-width:0}
+.offer{border-radius:36px;box-shadow:var(--raise);padding:36px;display:flex;flex-direction:column;gap:16px}
+.offer .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.offer .big b{font:800 clamp(3.4rem,7vw,4.6rem)/1 var(--display);letter-spacing:-.04em}
+.offer .big span{color:var(--muted);font-size:1.1rem}
+.offer ul{list-style:none;margin:6px 0 10px;padding:0;display:flex;flex-direction:column;gap:12px}
+.offer li{display:flex;gap:12px;align-items:flex-start;font-size:.98rem}
+.offer li svg{width:20px;height:20px;flex:none;color:var(--ok);margin-top:2px}
+.offer .btn{margin-top:auto;align-self:stretch}
+.extra{font-size:.85rem;font-weight:500;color:var(--muted);padding:8px 13px;border-radius:12px;box-shadow:var(--inset-sm);align-self:flex-start}
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.feat{border-radius:30px;box-shadow:var(--raise);padding:26px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.feat p{color:var(--muted);font-size:.95rem}
+.icon{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;color:var(--accent);box-shadow:var(--inset-sm);margin-bottom:8px;flex:none}
+.icon svg{width:24px;height:24px}
+
+/* Booking */
+.panel{border-radius:40px;box-shadow:var(--raise);padding:40px}
+.book{display:grid;grid-template-columns:1fr 1fr;gap:48px}
 .book>*{min-width:0}
-.step{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
-.step-h{display:flex;align-items:baseline;gap:10px}
-.step-h span{font:400 1.6rem/1 var(--display);background:var(--ink);color:var(--bg);width:34px;height:34px;display:grid;place-items:center;flex:none}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font:500 .9rem var(--body);padding:10px 14px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
-.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.day{padding:8px 2px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;text-align:center;font:500 .7rem var(--mono);text-transform:uppercase}
-.day b{display:block;font:400 1.5rem/1.1 var(--display)}
-.day[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.day[disabled]{opacity:.3;cursor:not-allowed}
-.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
-.slot{padding:10px 4px;border:2px solid var(--line);background:var(--panel);color:var(--ink);font:500 .9rem var(--mono);font-variant-numeric:tabular-nums;cursor:pointer}
-.slot[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
-.slot[disabled]{border-color:var(--soft);color:var(--muted);text-decoration:line-through;cursor:not-allowed;background:transparent}
-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.step{display:flex;flex-direction:column;gap:16px;margin-bottom:36px}
+.step:last-child{margin-bottom:0}
+.step-h{display:flex;align-items:center;gap:12px}
+.num{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.9rem;color:var(--accent);box-shadow:var(--raise-sm)}
+.small{font-size:.85rem;color:var(--muted);font-weight:500}
+.week{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.arrow{width:40px;height:40px;border-radius:50%;border:0;background:var(--bg);color:var(--text);box-shadow:var(--raise-sm);cursor:pointer;display:grid;place-items:center}
+.arrow:active{box-shadow:var(--inset-sm)}
+.arrow[disabled]{opacity:.35;cursor:not-allowed}
+.arrow svg{width:16px;height:16px}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.day{padding:10px 2px;border:0;border-radius:16px;background:var(--bg);color:var(--muted);box-shadow:var(--raise-sm);cursor:pointer;text-align:center;font:500 .72rem var(--font);text-transform:uppercase;letter-spacing:.04em}
+.day b{display:block;font:600 1.25rem/1.3 var(--display);color:var(--text);letter-spacing:-.02em;text-transform:none}
+.day[aria-pressed="true"]{box-shadow:var(--inset-sm);color:var(--accent)}
+.day[aria-pressed="true"] b{color:var(--accent)}
+.day[disabled]{opacity:.35;cursor:not-allowed;box-shadow:none}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px}
+.slot{padding:11px 4px;border:0;border-radius:14px;background:var(--bg);color:var(--text);box-shadow:var(--raise-sm);font:500 .92rem var(--font);font-variant-numeric:tabular-nums;cursor:pointer}
+.slot[aria-pressed="true"]{box-shadow:var(--inset-sm);color:var(--accent);font-weight:700}
+.slot[disabled]{box-shadow:none;color:var(--muted);opacity:.5;text-decoration:line-through;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{font:500 .9rem var(--font);padding:10px 15px;border-radius:999px;border:0;background:var(--bg);color:var(--text);box-shadow:var(--raise-sm);cursor:pointer}
+.chip[aria-pressed="true"]{box-shadow:var(--inset-sm);color:var(--accent);font-weight:600}
+.counts{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.count{display:flex;flex-direction:column;gap:10px}
+.stepper{display:flex;align-items:center;gap:6px;padding:5px;border-radius:999px;box-shadow:var(--inset-sm);align-self:flex-start}
+.stepper button{width:36px;height:36px;border-radius:50%;border:0;background:var(--bg);color:var(--text);font:500 1.2rem/1 var(--font);box-shadow:2px 2px 5px var(--sh-d),-2px -2px 5px var(--sh-l);cursor:pointer}
+.stepper button[disabled]{opacity:.35;cursor:not-allowed}
+.stepper output{min-width:34px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.f{display:flex;flex-direction:column;gap:7px;min-width:0}
 .f.full{grid-column:1/-1}
-.f input,.f select,.f textarea{font:400 1rem var(--body);padding:11px 12px;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:0;width:100%}
+.f label{font-size:.82rem;font-weight:600;color:var(--muted);padding-left:4px}
+.f input,.f select,.f textarea{font:400 1rem var(--font);padding:13px 16px;border:0;border-radius:16px;background:var(--bg);color:var(--text);box-shadow:var(--inset-sm);width:100%;outline:none;-webkit-appearance:none;appearance:none}
+.f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23888' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.f input:focus,.f select:focus,.f textarea:focus{box-shadow:var(--inset-sm),0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+.f textarea{resize:vertical}
 .hp{position:absolute;left:-9999px}
-.summary{border:3px solid var(--line);background:var(--panel);padding:16px;font:500 .9rem var(--mono);display:flex;flex-direction:column;gap:4px}
-.msg{font-weight:500}.msg.err{color:var(--err)}
-.done{border:3px solid var(--line);background:var(--accent);color:var(--on-accent);padding:24px;display:flex;flex-direction:column;gap:10px}
-.done .mp{font:500 1.05rem var(--mono);background:#0e0c0a;color:#faf8f5;padding:10px 12px;align-self:flex-start;user-select:all}
-.how{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;counter-reset:n}
-.how li{list-style:none;counter-increment:n;border-top:3px solid var(--line);padding-top:12px;min-width:0}
-.how li::before{content:counter(n);font:400 3rem/1 var(--display);color:var(--accent);display:block}
-.how{padding:0;margin:0}
-.about{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.summary{border-radius:22px;box-shadow:var(--inset);padding:20px 22px;display:flex;flex-direction:column;gap:4px;font-size:.95rem}
+.summary .s1{font-weight:600}
+.summary .est{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:10px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--muted) 25%,transparent)}
+.summary .est b{font:700 1.6rem/1 var(--display);letter-spacing:-.03em}
+.submit{width:100%;padding-block:17px;font-size:1.05rem}
+.msg{font-weight:500;font-size:.95rem}.msg.err{color:var(--err)}
+.fine{font-size:.8rem;color:var(--muted)}
+.done{display:flex;flex-direction:column;gap:14px;align-items:flex-start;max-width:560px;margin-inline:auto}
+.check{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;color:var(--ok);box-shadow:var(--raise)}
+.check svg{width:30px;height:30px}
+.mp{font:700 1.3rem var(--font);letter-spacing:.02em;padding:12px 18px;border-radius:16px;box-shadow:var(--inset-sm);user-select:all}
+
+/* How + about */
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;padding:0;margin:0;list-style:none}
+.how li{padding:28px;border-radius:30px;box-shadow:var(--raise);display:flex;flex-direction:column;gap:10px;min-width:0}
+.how p{color:var(--muted);font-size:.95rem}
+.about{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
 .about>*{min-width:0}
-.facts{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:.95rem;margin:0}
-.facts dt{font:500 .74rem var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding-top:3px}
-.facts dd{margin:0}
-.club{background:var(--ink);color:var(--bg);border:0}
-.club .label{color:var(--gold)}
-.club p{margin-top:12px}
-footer{padding-block:24px;border-top:3px solid var(--line);display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap;font:400 .8rem var(--mono);color:var(--muted)}
-@media (max-width:820px){
-  .hero,.book,.about{grid-template-columns:1fr}
-  .art{max-width:340px}
-  .services{grid-template-columns:1fr 1fr}
-  .svc:nth-child(2){border-right:0}.svc:nth-child(-n+2){border-bottom:3px solid var(--line)}
+.about .text{color:var(--muted);font-size:1.1rem;margin-top:6px}
+.facts{margin:0;border-radius:28px;box-shadow:var(--inset);padding:8px 24px}
+.facts div{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--muted) 22%,transparent)}
+.facts div:last-child{border-bottom:0}
+.facts dt{color:var(--muted);font-size:.92rem}
+.facts dd{margin:0;font-weight:600;text-align:right;font-size:.95rem}
+.gallery{display:grid;grid-template-columns:.8fr 1.2fr;grid-template-rows:1fr 1fr;gap:28px;margin-top:56px;height:min(84vw,720px)}
+.shot{position:relative;padding:12px;border-radius:34px;box-shadow:var(--raise);min-height:0;min-width:0}
+.shot img{width:100%;height:100%;object-fit:cover;border-radius:24px;display:block}
+.shot.tall{grid-row:1/3}
+.shot figcaption{position:absolute;left:26px;bottom:26px;font-size:.82rem;font-weight:600;color:#1d1d1f;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+
+/* Other services */
+.others{border-radius:32px;box-shadow:var(--inset);padding:10px 28px}
+.orow{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px solid color-mix(in srgb,var(--muted) 22%,transparent);flex-wrap:wrap}
+.orow:last-child{border-bottom:0}
+.orow b{font-weight:600}
+.orow span{color:var(--muted);font-size:.92rem}
+.orow .p{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.ask{margin-top:24px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.club{border-radius:40px;box-shadow:var(--raise);padding:48px;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+.club .icon{width:72px;height:72px;border-radius:24px;margin:0}
+.club .icon svg{width:32px;height:32px}
+.club p{color:var(--muted);margin-top:10px;max-width:58ch}
+footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.mobile-cta{display:none}
+
+/* Motion */
+.anim .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.anim .reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+
+@media (max-width:900px){
+  .hero,.book,.about,.walk{grid-template-columns:1fr}
+  .hero{gap:44px;padding-top:44px}
+  .frame{max-width:440px}
+  .badge{left:auto;right:-6px;bottom:28px}
   .how{grid-template-columns:1fr}
+  .panel{padding:28px}
 }
-@media (max-width:480px){.services{grid-template-columns:1fr}.svc{border-right:0;border-bottom:3px solid var(--line)}.svc:last-child{border-bottom:0}form{grid-template-columns:1fr}.nav a{display:none}}
+@media (max-width:640px){
+  .nav a:not(.go){display:none}
+  .brand span.name{display:none}
+  .feats{grid-template-columns:1fr}
+  .gallery{grid-template-columns:1fr;grid-template-rows:none;height:auto}
+  .shot.tall{grid-row:auto}
+  .shot img{aspect-ratio:4/5;height:auto}
+  .shot.wide img{aspect-ratio:3/2}
+  .club{grid-template-columns:1fr;padding:30px}
+  .panel{padding:22px;border-radius:30px}
+  .offer{padding:28px}
+  form{grid-template-columns:1fr}
+  .days{gap:6px}
+  .day{border-radius:12px;padding:8px 0}
+  .day b{font-size:1.05rem}
+  section{padding-block:52px}
+  .wrap{padding-inline:16px}
+  .badge{right:-4px}
+  .others{padding:6px 20px}
+  footer{padding-bottom:110px}
+  .mobile-cta{display:flex;position:fixed;left:16px;right:16px;bottom:16px;z-index:10;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .mobile-cta.away{opacity:0;pointer-events:none}
+}
 </style>
 
-<div class="wrap">
-  <header class="top">
-    <div class="brand"><i></i>DogMan Walking Club</div>
+<header class="top">
+  <div class="bar">
+    <a class="brand" href="#"><span class="mark" data-icon="paw"></span><span class="name">DogMan Walking Club</span></a>
     <nav class="nav">
-      <a href="#services" data-t="navServices"></a><a href="#book" data-t="navBook"></a><a href="#about" data-t="navAbout"></a>
-      <div class="lang" role="group" aria-label="Language"><button type="button" id="lang-da" data-lang="da">DA</button><button type="button" id="lang-en" data-lang="en">EN</button></div>
+      <a href="#walk" data-t="navWalk"></a><a href="#about" data-t="navAbout"></a><a href="#book" class="go" data-t="navBook"></a>
+      <div class="seg" role="group" aria-label="Language"><button type="button" data-lang="da">DA</button><button type="button" data-lang="en">EN</button></div>
     </nav>
-  </header>
+  </div>
+</header>
 
+<main class="wrap">
   <div class="hero">
-    <div>
-      <div class="label" data-t="heroLabel"></div>
-      <h1>DogMan<br>Walking<br>Club</h1>
-      <p class="lead" data-t="heroLead"></p>
-      <div class="cta"><a class="btn" href="#book" data-t="ctaBook"></a><a class="btn ghost" id="pawshake" target="_blank" rel="noopener" data-t="ctaPawshake"></a></div>
+    <div class="reveal">
+      <span class="pill"><i class="dot"></i><span data-t="heroLabel"></span></span>
+      <h1><span data-t="h1a"></span><br><span class="g" data-t="h1b"></span></h1>
+      <p class="lead" id="lead"></p>
+      <div class="cta"><a class="btn primary" href="#book" data-t="ctaBook"></a><a class="btn" href="#walk" data-t="ctaMore"></a></div>
+      <div class="trust"><span data-t="trust1"></span><span data-t="trust2"></span><span data-t="trust3"></span></div>
       <div class="demo" id="demo" hidden data-t="demo"></div>
     </div>
-    <div class="art" aria-hidden="true"><span class="c"></span><span class="s"></span><span class="q"></span><span class="l"></span><img src="photo.jpg" alt="" onerror="this.remove()"></div>
+    <div class="frame reveal">
+      <img src="img/river.jpg" width="1200" height="1600" data-ta="altRiver" alt="" fetchpriority="high">
+      <div class="badge"><span class="mark" data-icon="paw"></span><div><b>Boris</b><small data-t="borisSub"></small></div></div>
+    </div>
   </div>
 
-  <section id="services">
-    <div class="head"><div class="label" data-t="servicesLabel"></div><h2 data-t="servicesTitle"></h2></div>
-    <div class="services" id="svc-list"></div>
+  <section id="walk">
+    <div class="head reveal"><span class="eyebrow" data-t="walkLabel"></span><h2 data-t="walkTitle"></h2><p data-t="walkText"></p></div>
+    <div class="walk">
+      <div class="offer reveal">
+        <span class="eyebrow" data-t="offerLabel"></span>
+        <div class="big"><b id="walk-price"></b><span data-t="perWalk"></span></div>
+        <span class="extra" id="walk-extra"></span>
+        <ul><li data-check="inc1"></li><li data-check="inc2"></li><li data-check="inc3"></li><li data-check="inc4"></li></ul>
+        <a class="btn primary" href="#book" data-t="ctaBook"></a>
+      </div>
+      <div class="feats reveal">
+        <div class="feat"><span class="icon" data-icon="door"></span><h3 data-t="f1"></h3><p data-t="f1p"></p></div>
+        <div class="feat"><span class="icon" data-icon="tree"></span><h3 data-t="f2"></h3><p data-t="f2p"></p></div>
+        <div class="feat"><span class="icon" data-icon="repeat"></span><h3 data-t="f3"></h3><p data-t="f3p"></p></div>
+        <div class="feat"><span class="icon" data-icon="pin"></span><h3 data-t="f4"></h3><p data-t="f4p"></p></div>
+      </div>
+    </div>
   </section>
 
   <section id="book">
-    <div class="head"><div class="label" data-t="bookLabel"></div><h2 data-t="bookTitle"></h2></div>
-    <div class="book" id="book-ui">
-      <div>
-        <div class="step"><div class="step-h"><span>1</span><h3 data-t="step1"></h3></div><div class="chips" id="svc-chips"></div></div>
-        <div class="step"><div class="step-h"><span>2</span><h3 data-t="step2"></h3></div>
-          <div class="label" id="week-label"></div><div class="days" id="days"></div>
-          <div class="chips"><button type="button" class="chip" id="prev" data-t="prevWeek"></button><button type="button" class="chip" id="next" data-t="nextWeek"></button></div>
-          <div id="slot-area"><div class="label" data-t="pickTime" style="margin-bottom:8px"></div><div class="slots" id="slots"></div></div>
-          <div class="f" id="nights-area" hidden><label class="label" for="nights" data-t="nights"></label><input id="nights" type="number" min="1" max="30" value="1" style="max-width:120px"></div>
+    <div class="head reveal"><span class="eyebrow" data-t="bookLabel"></span><h2 data-t="bookTitle"></h2></div>
+    <div class="panel reveal">
+      <div class="book" id="book-ui">
+        <div>
+          <div class="step"><div class="step-h"><span class="num">1</span><h3 data-t="step1"></h3></div>
+            <div class="week"><button type="button" class="arrow" id="prev" data-ta="prevWeek"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><span class="small" id="week-label"></span><button type="button" class="arrow" id="next" data-ta="nextWeek"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button></div>
+            <div class="days" id="days"></div>
+            <div><div class="small" data-t="pickTime" style="margin-bottom:12px"></div><div class="slots" id="slots"></div></div>
+          </div>
+          <div class="step"><div class="step-h"><span class="num">2</span><h3 data-t="step2"></h3></div>
+            <div class="counts">
+              <div class="count"><span class="small" data-t="dogs"></span><div class="stepper"><button type="button" id="pets-minus" aria-label="−">−</button><output id="pets">1</output><button type="button" id="pets-plus" aria-label="+">+</button></div></div>
+              <div class="count"><span class="small" data-t="freq"></span><div class="chips" id="freq"></div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="step"><div class="step-h"><span class="num">3</span><h3 data-t="step3"></h3></div>
+            <form id="form" novalidate>
+              <div class="f"><label for="name" data-t="fName"></label><input id="name" autocomplete="name" required></div>
+              <div class="f"><label for="phone" data-t="fPhone"></label><input id="phone" type="tel" autocomplete="tel" required></div>
+              <div class="f full"><label for="address" data-t="fAddress"></label><input id="address" autocomplete="street-address"></div>
+              <div class="f full"><label for="email" data-t="fEmail"></label><input id="email" type="email" autocomplete="email"></div>
+              <div class="f"><label for="dog" data-t="fDog"></label><input id="dog"></div>
+              <div class="f"><label for="breed" data-t="fBreed"></label><input id="breed"></div>
+              <div class="f full"><label for="size" data-t="fSize"></label><select id="size"><option value="" data-t="sizeNone"></option><option value="S" data-t="sizeS"></option><option value="M" data-t="sizeM"></option><option value="L" data-t="sizeL"></option></select></div>
+              <div class="f full"><label for="notes" data-t="fNotes"></label><textarea id="notes" rows="3"></textarea></div>
+              <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" tabindex="-1" autocomplete="off"></div>
+              <div class="f full summary" id="summary"></div>
+              <div class="f full"><button class="btn primary submit" type="submit" id="submit" data-t="send"></button></div>
+              <div class="f full msg" id="msg" role="status"></div>
+              <p class="f full fine" data-t="privacy"></p>
+            </form>
+          </div>
         </div>
       </div>
-      <div>
-        <div class="step"><div class="step-h"><span>3</span><h3 data-t="step3"></h3></div>
-          <form id="form" novalidate>
-            <div class="f"><label class="label" for="name" data-t="fName"></label><input id="name" autocomplete="name" required></div>
-            <div class="f"><label class="label" for="phone" data-t="fPhone"></label><input id="phone" type="tel" autocomplete="tel" required></div>
-            <div class="f full"><label class="label" for="email" data-t="fEmail"></label><input id="email" type="email" autocomplete="email"></div>
-            <div class="f full"><label class="label" for="address" data-t="fAddress"></label><input id="address" autocomplete="street-address"></div>
-            <div class="f"><label class="label" for="dog" data-t="fDog"></label><input id="dog"></div>
-            <div class="f"><label class="label" for="breed" data-t="fBreed"></label><input id="breed"></div>
-            <div class="f full"><label class="label" for="size" data-t="fSize"></label><select id="size"><option value="" data-t="sizeNone"></option><option value="S" data-t="sizeS"></option><option value="M" data-t="sizeM"></option><option value="L" data-t="sizeL"></option></select></div>
-            <div class="f full"><label class="label" for="notes" data-t="fNotes"></label><textarea id="notes" rows="3"></textarea></div>
-            <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" tabindex="-1" autocomplete="off"></div>
-            <div class="f full summary" id="summary"></div>
-            <div class="f full"><button class="btn" type="submit" id="submit" data-t="send"></button></div>
-            <div class="f full msg" id="msg" role="status"></div>
-            <p class="f full label" data-t="privacy" style="text-transform:none;letter-spacing:0;font-size:.78rem"></p>
-          </form>
-        </div>
+      <div class="done" id="done" hidden>
+        <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+        <h3 data-t="doneTitle" style="font-size:1.6rem"></h3><p id="done-text" class="muted"></p>
+        <div id="mp-box" hidden><p data-t="doneMp" style="margin-bottom:10px"></p><div class="mp" id="mp-num"></div></div>
+        <button type="button" class="btn" id="again" data-t="again"></button>
       </div>
     </div>
-    <div class="done" id="done" hidden><h3 data-t="doneTitle"></h3><p id="done-text"></p><div id="mp-box" hidden><p data-t="doneMp"></p><div class="mp" id="mp-num"></div></div><div><button type="button" class="btn ghost" id="again" data-t="again"></button></div></div>
   </section>
 
   <section>
-    <div class="head"><div class="label" data-t="howLabel"></div><h2 data-t="howTitle"></h2></div>
-    <ol class="how"><li><h3 data-t="how1"></h3><p data-t="how1p"></p></li><li><h3 data-t="how2"></h3><p data-t="how2p"></p></li><li><h3 data-t="how3"></h3><p data-t="how3p"></p></li></ol>
+    <div class="head reveal"><span class="eyebrow" data-t="howLabel"></span><h2 data-t="howTitle"></h2></div>
+    <ol class="how reveal"><li><span class="num">1</span><h3 data-t="how1"></h3><p data-t="how1p"></p></li><li><span class="num">2</span><h3 data-t="how2"></h3><p data-t="how2p"></p></li><li><span class="num">3</span><h3 data-t="how3"></h3><p data-t="how3p"></p></li></ol>
   </section>
 
   <section id="about">
     <div class="about">
-      <div class="head"><div class="label" data-t="aboutLabel"></div><h2 data-t="aboutTitle"></h2><p data-t="aboutText" style="margin-top:10px"></p></div>
-      <dl class="facts"><dt data-t="factArea"></dt><dd data-t="factAreaV"></dd><dt data-t="factPets"></dt><dd data-t="factPetsV"></dd><dt data-t="factWhen"></dt><dd data-t="factWhenV"></dd><dt data-t="factPhone" id="phone-dt" hidden></dt><dd id="phone-dd" hidden style="user-select:all"></dd></dl>
+      <div class="head reveal" style="margin:0"><span class="eyebrow" data-t="aboutLabel"></span><h2 data-t="aboutTitle"></h2><p class="text" data-t="aboutText"></p></div>
+      <dl class="facts reveal"><div><dt data-t="factArea"></dt><dd data-t="factAreaV"></dd></div><div><dt data-t="factWalk"></dt><dd data-t="factWalkV"></dd></div><div><dt data-t="factWhen"></dt><dd id="hours"></dd></div><div><dt data-t="factPay"></dt><dd>MobilePay</dd></div><div id="phone-row" hidden><dt data-t="factPhone"></dt><dd id="phone-dd" style="user-select:all"></dd></div></dl>
+    </div>
+    <div class="gallery reveal">
+      <figure class="shot tall"><img src="img/duo.jpg" width="900" height="1600" loading="lazy" data-ta="altDuo" alt=""><figcaption data-t="capDuo"></figcaption></figure>
+      <figure class="shot wide"><img src="img/summit.jpg" width="1600" height="1066" loading="lazy" data-ta="altSummit" alt="" style="object-position:50% 45%"><figcaption data-t="capSummit"></figcaption></figure>
+      <figure class="shot wide"><img src="img/snow.jpg" width="1100" height="1466" loading="lazy" data-ta="altSnow" alt="" style="object-position:50% 62%"><figcaption data-t="capSnow"></figcaption></figure>
     </div>
   </section>
-</div>
 
-<section class="club"><div class="wrap"><div class="label" data-t="clubLabel"></div><h2 data-t="clubTitle"></h2><p data-t="clubText"></p></div></section>
-<div class="wrap"><footer><span>DogMan Walking Club · Skovlunde</span><span data-t="footer"></span></footer></div>
+  <section>
+    <div class="club reveal"><span class="icon" data-icon="group"></span><div><span class="eyebrow" data-t="clubLabel"></span><h2 data-t="clubTitle" style="margin-top:6px"></h2><p data-t="clubText"></p></div></div>
+  </section>
+
+  <section id="more">
+    <div class="head reveal"><span class="eyebrow" data-t="moreLabel"></span><h2 data-t="moreTitle" style="font-size:clamp(1.6rem,3.4vw,2.2rem)"></h2><p data-t="moreText"></p></div>
+    <div class="others reveal" id="others"></div>
+    <div class="ask reveal"><a class="btn" id="pawshake" target="_blank" rel="noopener" data-t="ctaPawshake"></a></div>
+  </section>
+
+  <footer><span>© DogMan Walking Club · Skovlunde</span><span data-t="footer"></span></footer>
+</main>
+<a class="btn primary mobile-cta" href="#book" id="mobile-cta" data-t="ctaBook"></a>
 
 <script>
 const T={
-da:{navServices:'Ydelser',navBook:'Book',navAbout:'Om os',heroLabel:'Skovlunde · 5 km omkreds',heroLead:'Hundeluftning, hjemmebesøg, dagpleje og pasning. Af Can og golden retrieveren Boris.',ctaBook:'Book en tid',ctaPawshake:'Se Pawshake-profil',demo:'Forhåndsvisning: bookinger gemmes ikke her.',
-servicesLabel:'Ydelser',servicesTitle:'Det kan jeg hjælpe med',
-walk:'Hundeluftning',walkD:'Jeg henter din hund derhjemme, går en tur i de lokale parker og afleverer den igen.',walkU:'kr. pr. tur',
-visit:'Hjemmebesøg',visitD:'Fodring, leg og selskab hjemme hos dig. Til hunde og katte.',visitU:'kr. pr. besøg',
-daycare:'Hundedagpleje',daycareD:'Din hund tilbringer dagen hjemme hos mig og Boris.',daycareU:'kr. pr. dag',
-boarding:'Pasning med overnatning',boardingD:'Din hund bor hos os, mens du er væk.',boardingU:'kr. pr. nat',
-noPrice:'Pris efter aftale',
-bookLabel:'Booking',bookTitle:'Vælg en tid',step1:'Vælg ydelse',step2:'Vælg dag og tid',step3:'Dine oplysninger',prevWeek:'← Forrige uge',nextWeek:'Næste uge →',pickTime:'Ledige tider',nights:'Antal nætter',noSlots:'Ingen ledige tider denne dag.',
-fName:'Navn *',fPhone:'Telefon *',fEmail:'E-mail',fAddress:'Adresse (til afhentning)',fDog:'Kæledyrets navn',fBreed:'Race',fSize:'Størrelse',sizeNone:'Vælg',sizeS:'Lille (under 10 kg)',sizeM:'Mellem (10–25 kg)',sizeL:'Stor (over 25 kg)',fNotes:'Andet jeg bør vide',
-send:'Send booking',sending:'Sender…',privacy:'Dine oplysninger bruges kun til at aftale og udføre bookingen.',
-sumPick:'Vælg ydelse, dag og tid.',nightsN:'nætter',
+da:{navWalk:'Gåturen',navAbout:'Om os',navBook:'Book',heroLabel:'Skovlunde · 5 km omkreds',h1a:'Hundeluftning',h1b:'i Skovlunde',
+lead:'En gåtur på <b>30 minutter</b> for din hund – hentet og afleveret ved din dør. <b>{p} pr. tur.</b>',ctaBook:'Book en gåtur',ctaMore:'Sådan foregår turen',demo:'Forhåndsvisning: bookinger gemmes ikke her.',
+trust1:'30 min. pr. tur',trust2:'Hentes ved døren',trust3:'Betal med MobilePay',borisSub:'Golden retriever · 7 år',altRiver:'Can og Boris ved en flod',
+walkLabel:'Gåturen',walkTitle:'En god tur, hver gang',walkText:'Din hund får motion, frisk luft og selskab, mens du er på arbejde eller har travlt.',
+offerLabel:'Hundeluftning',perWalk:'pr. tur',extra:'+{n} kr. pr. ekstra hund',
+inc1:'Mindst 30 minutters gåtur',inc2:'Jeg henter og afleverer ved din dør',inc3:'Lokale parker og grønne områder',inc4:'Book enkeltvis eller fast hver uge',
+f1:'Hentet ved døren',f1p:'Jeg henter din hund derhjemme og afleverer den igen efter turen.',
+f2:'Parker tæt på',f2p:'Skovlunde har masser af grønne områder – og en stor hundepark ti minutter væk.',
+f3:'Fast ugentlig tur',f3p:'Vælg den samme tid hver uge, så din hund får en fast rytme.',
+f4:'Skovlunde + 5 km',f4p:'Jeg går i Skovlunde og op til 5 km omkring. Bor du lidt længere væk? Skriv alligevel.',
+bookLabel:'Booking',bookTitle:'Book en gåtur',step1:'Vælg dag og tid',step2:'Om turen',step3:'Dine oplysninger',prevWeek:'Forrige uge',nextWeek:'Næste uge',pickTime:'Ledige tider',noSlots:'Ingen ledige tider denne dag.',
+dogs:'Antal hunde',freq:'Hvor ofte?',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',dog1:'hund',dogN:'hunde',
+fName:'Navn *',fPhone:'Telefon *',fEmail:'E-mail',fAddress:'Adresse (hvor jeg henter hunden)',fDog:'Hundens navn',fBreed:'Race',fSize:'Størrelse',sizeNone:'Vælg',sizeS:'Lille (under 10 kg)',sizeM:'Mellem (10–25 kg)',sizeL:'Stor (over 25 kg)',fNotes:'Andet jeg bør vide (nøgle, adfærd, andre hunde…)',
+send:'Send booking',sending:'Sender…',privacy:'Dine oplysninger bruges kun til at aftale og udføre turen. Du betaler først, når jeg har bekræftet.',
+sumPick:'Vælg en dag og en tid.',walk:'Gåtur · 30 min.',est:'Pris',perTurn:'pr. tur',
 eContact:'Skriv dit navn og et telefonnummer.',eTime:'Vælg en ledig tid.',eTaken:'Den tid er lige blevet taget. Vælg en anden.',eServer:'Noget gik galt. Prøv igen om lidt.',eClosed:'Den dag er lukket. Vælg en anden.',
-doneTitle:'Booking modtaget',doneText:'Jeg bekræfter din booking på telefon eller sms.',doneMp:'Betal med MobilePay, når bookingen er bekræftet:',again:'Book en tid mere',
-howLabel:'Sådan foregår det',howTitle:'Tre trin',how1:'Du vælger en tid',how1p:'Vælg ydelse, dag og tidspunkt i kalenderen.',how2:'Jeg bekræfter',how2p:'Jeg ringer eller skriver og bekræfter aftalen.',how3:'Du betaler med MobilePay',how3p:'Betaling sker, når bookingen er bekræftet.',
-aboutLabel:'Om os',aboutTitle:'Can og Boris',aboutText:'Jeg hedder Can og bor i Skovlunde med Boris, en rolig golden retriever på 7 år. Der er mange parker lige i nærheden og en stor hundepark ti minutters gang herfra.',
-factArea:'Område',factAreaV:'Skovlunde og 5 km omkreds',factPets:'Dyr',factPetsV:'Hunde og katte i alle størrelser',factWhen:'Tider',factWhenV:'Hverdage og de fleste weekender',factPhone:'Telefon',
-clubLabel:'Kommer senere',clubTitle:'Fælles ture for hundeejere',clubText:'Klubben starter med daglige gåture. Senere kommer der månedlige ture for hundeejere og deres hunde.',footer:'Hundeluftning og pasning i Skovlunde'},
-en:{navServices:'Services',navBook:'Book',navAbout:'About',heroLabel:'Skovlunde · 5 km radius',heroLead:'Dog walking, home visits, day care and boarding. By Can and Boris the golden retriever.',ctaBook:'Book a time',ctaPawshake:'See Pawshake profile',demo:'Preview: bookings are not saved here.',
-servicesLabel:'Services',servicesTitle:'How I can help',
-walk:'Dog walking',walkD:'I pick your dog up at home, walk in the local parks and bring it back.',walkU:'kr. per walk',
-visit:'Home visit',visitD:'Feeding, play and company at your home. For dogs and cats.',visitU:'kr. per visit',
-daycare:'Doggy day care',daycareD:'Your dog spends the day at home with me and Boris.',daycareU:'kr. per day',
-boarding:'Overnight boarding',boardingD:'Your dog stays with us while you are away.',boardingU:'kr. per night',
-noPrice:'Price on request',
-bookLabel:'Booking',bookTitle:'Pick a time',step1:'Choose a service',step2:'Choose day and time',step3:'Your details',prevWeek:'← Previous week',nextWeek:'Next week →',pickTime:'Available times',nights:'Number of nights',noSlots:'No free times this day.',
-fName:'Name *',fPhone:'Phone *',fEmail:'Email',fAddress:'Address (for pick-up)',fDog:"Pet's name",fBreed:'Breed',fSize:'Size',sizeNone:'Choose',sizeS:'Small (under 10 kg)',sizeM:'Medium (10–25 kg)',sizeL:'Large (over 25 kg)',fNotes:'Anything else I should know',
-send:'Send booking',sending:'Sending…',privacy:'Your details are only used to arrange and carry out the booking.',
-sumPick:'Choose a service, day and time.',nightsN:'nights',
+doneTitle:'Tak – booking modtaget!',doneText:'Jeg bekræfter på telefon eller sms, og så ses vi ved døren.',doneMp:'Betal med MobilePay, når turen er bekræftet:',again:'Book en tur mere',
+howLabel:'Sådan foregår det',howTitle:'Tre enkle trin',how1:'Du vælger en tid',how1p:'Vælg dag og tidspunkt i kalenderen. Det tager et minut.',how2:'Jeg bekræfter',how2p:'Jeg ringer eller skriver, og vi aftaler det praktiske.',how3:'Vi går en tur',how3p:'Jeg henter din hund, vi går 30 minutter, og du betaler med MobilePay.',
+aboutLabel:'Om os',aboutTitle:'Can og Boris',aboutText:'Jeg hedder Can og bor i Skovlunde med Boris, en rolig golden retriever på 7 år. Vi elsker lange ture – i bjergene, i sneen og langs vandet. Nu vil jeg gerne gå tur med din hund også.',
+factArea:'Område',factAreaV:'Skovlunde + 5 km',factWalk:'Tur',factWalkV:'Mindst 30 minutter',factWhen:'Tider',hoursV:'Kl. {a}–{b}, alle ugens dage',factPay:'Betaling',factPhone:'Telefon',
+capDuo:'Klar til regnvejr',capSummit:'På toppen',capSnow:'I sneen',altDuo:'Can og Boris i en elevator, Boris i gul regnfrakke',altSummit:'Can og Boris på en bjergtop',altSnow:'Boris i sneen foran Can',
+clubLabel:'Kommer senere',clubTitle:'Fælles ture for hundeejere',clubText:'Klubben starter med daglige gåture. Senere kommer der månedlige ture for hundeejere og deres hunde.',
+moreLabel:'Andre ydelser',moreTitle:'Brug for mere end en gåtur?',moreText:'Jeg tilbyder også pasning og hjemmebesøg. Skriv i bookingen eller find mig på Pawshake.',ctaPawshake:'Se Pawshake-profil',
+boarding:'Hundepasning (24 t hos mig)',daycare:'Hundedagpleje (om dagen hos mig)',housesit:'Huspasning (24 t hos dig)',visit1:'Ét hjemmebesøg om dagen (30 min.)',visit2:'To hjemmebesøg om dagen (2 × 30 min.)',
+uNight:'pr. nat',uDay:'pr. dag',xPet:'+{n} kr. pr. ekstra dyr',footer:'Hundeluftning i Skovlunde'},
+en:{navWalk:'The walk',navAbout:'About',navBook:'Book',heroLabel:'Skovlunde · 5 km radius',h1a:'Dog walking',h1b:'in Skovlunde',
+lead:'A <b>30-minute walk</b> for your dog – picked up and dropped off at your door. <b>{p} per walk.</b>',ctaBook:'Book a walk',ctaMore:'How the walk works',demo:'Preview: bookings are not saved here.',
+trust1:'30 min. per walk',trust2:'Picked up at your door',trust3:'Pay with MobilePay',borisSub:'Golden retriever · 7 years',altRiver:'Can and Boris by a river',
+walkLabel:'The walk',walkTitle:'A good walk, every time',walkText:'Your dog gets exercise, fresh air and company while you are at work or busy.',
+offerLabel:'Dog walking',perWalk:'per walk',extra:'+{n} kr. per extra dog',
+inc1:'At least 30 minutes of walking',inc2:'Picked up and dropped off at your door',inc3:'Local parks and green areas',inc4:'Book once or every week',
+f1:'Picked up at your door',f1p:'I collect your dog at home and bring it back after the walk.',
+f2:'Parks close by',f2p:'Skovlunde has plenty of green space – and a big dog park ten minutes away.',
+f3:'Weekly walks',f3p:'Pick the same time every week so your dog gets a steady routine.',
+f4:'Skovlunde + 5 km',f4p:'I walk in Skovlunde and up to 5 km around. Live a bit further away? Get in touch anyway.',
+bookLabel:'Booking',bookTitle:'Book a walk',step1:'Choose day and time',step2:'About the walk',step3:'Your details',prevWeek:'Previous week',nextWeek:'Next week',pickTime:'Available times',noSlots:'No free times this day.',
+dogs:'Number of dogs',freq:'How often?',once:'Once',weekly:'Every week',multi:'Several times a week',dog1:'dog',dogN:'dogs',
+fName:'Name *',fPhone:'Phone *',fEmail:'Email',fAddress:'Address (where I pick up your dog)',fDog:"Dog's name",fBreed:'Breed',fSize:'Size',sizeNone:'Choose',sizeS:'Small (under 10 kg)',sizeM:'Medium (10–25 kg)',sizeL:'Large (over 25 kg)',fNotes:'Anything else I should know (keys, behaviour, other dogs…)',
+send:'Send booking',sending:'Sending…',privacy:'Your details are only used to arrange and carry out the walk. You only pay once I have confirmed.',
+sumPick:'Choose a day and a time.',walk:'Walk · 30 min.',est:'Price',perTurn:'per walk',
 eContact:'Enter your name and a phone number.',eTime:'Choose a free time.',eTaken:'That time was just taken. Choose another.',eServer:'Something went wrong. Try again shortly.',eClosed:'That day is closed. Choose another.',
-doneTitle:'Booking received',doneText:'I will confirm your booking by phone or text.',doneMp:'Pay with MobilePay once the booking is confirmed:',again:'Book another time',
-howLabel:'How it works',howTitle:'Three steps',how1:'You pick a time',how1p:'Choose a service, day and time in the calendar.',how2:'I confirm',how2p:'I call or text you to confirm.',how3:'You pay with MobilePay',how3p:'Payment happens once the booking is confirmed.',
-aboutLabel:'About',aboutTitle:'Can and Boris',aboutText:'I am Can. I live in Skovlunde with Boris, a calm 7-year-old golden retriever. There are many parks close by and a big dog park ten minutes away on foot.',
-factArea:'Area',factAreaV:'Skovlunde and 5 km around',factPets:'Pets',factPetsV:'Dogs and cats of all sizes',factWhen:'Times',factWhenV:'Weekdays and most weekends',factPhone:'Phone',
-clubLabel:'Coming later',clubTitle:'Group walks for dog owners',clubText:'The club starts with daily walks. Monthly outings for dog owners and their dogs will follow.',footer:'Dog walking and sitting in Skovlunde'}};
+doneTitle:'Thanks – booking received!',doneText:'I will confirm by phone or text, and then see you at the door.',doneMp:'Pay with MobilePay once the walk is confirmed:',again:'Book another walk',
+howLabel:'How it works',howTitle:'Three simple steps',how1:'You pick a time',how1p:'Choose a day and time in the calendar. It takes a minute.',how2:'I confirm',how2p:'I call or text you and we sort out the details.',how3:'We go for a walk',how3p:'I pick up your dog, we walk for 30 minutes, and you pay with MobilePay.',
+aboutLabel:'About',aboutTitle:'Can and Boris',aboutText:'I am Can. I live in Skovlunde with Boris, a calm 7-year-old golden retriever. We love long trips – in the mountains, in the snow and by the water. Now I would love to walk your dog too.',
+factArea:'Area',factAreaV:'Skovlunde + 5 km',factWalk:'Walk',factWalkV:'At least 30 minutes',factWhen:'Times',hoursV:'{a}–{b}, every day',factPay:'Payment',factPhone:'Phone',
+capDuo:'Ready for rain',capSummit:'At the summit',capSnow:'In the snow',altDuo:'Can and Boris in a lift, Boris in a yellow raincoat',altSummit:'Can and Boris on a mountain top',altSnow:'Boris in the snow in front of Can',
+clubLabel:'Coming later',clubTitle:'Group walks for dog owners',clubText:'The club starts with daily walks. Monthly outings for dog owners and their dogs will follow.',
+moreLabel:'Other services',moreTitle:'Need more than a walk?',moreText:'I also offer sitting and home visits. Mention it in your booking or find me on Pawshake.',ctaPawshake:'See Pawshake profile',
+boarding:'Dog boarding (24h at my home)',daycare:'Doggy day care (daytime at my home)',housesit:'House sitting (24h at your home)',visit1:'One home visit a day (30 min.)',visit2:'Two home visits a day (2 × 30 min.)',
+uNight:'per night',uDay:'per day',xPet:'+{n} kr. per extra pet',footer:'Dog walking in Skovlunde'}};
+const SV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
+const PAW='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="10" r="2.1"/><circle cx="9.2" cy="5.4" r="2.1"/><circle cx="14.8" cy="5.4" r="2.1"/><circle cx="18.5" cy="10" r="2.1"/><path d="M12 11.2c-3 0-6 4-6 6.4 0 1.7 1.3 2.6 3 2.6 1.3 0 2-.6 3-.6s1.7.6 3 .6c1.7 0 3-.9 3-2.6 0-2.4-3-6.4-6-6.4z"/></svg>';
+const ICON={paw:PAW,
+  door:SV+'<path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></svg>',
+  tree:SV+'<path d="M12 21v-5"/><path d="M12 3 6.5 10.5H9L5 16h14l-4-5.5h2.5z"/></svg>',
+  repeat:SV+'<path d="M17 2.5l3.5 3.5L17 9.5"/><path d="M3.5 11V9.5A3.5 3.5 0 0 1 7 6h13.5"/><path d="M7 21.5 3.5 18 7 14.5"/><path d="M20.5 13v1.5A3.5 3.5 0 0 1 17 18H3.5"/></svg>',
+  pin:SV+'<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  group:SV+'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.8-.4 5 1.9 5 4.8"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'};
 const $=(id)=>document.getElementById(id);
 const pad=(n)=>String(n).padStart(2,'0');
 const iso=(d)=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parse=(s)=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
-const DEFAULT={services:[{id:'walk',mode:'slot',price:null},{id:'visit',mode:'slot',price:null},{id:'daycare',mode:'day',price:null},{id:'boarding',mode:'nights',price:null}],hours:{start:8,end:19},openDays:[0,1,2,3,4,5,6],closedDates:[],mobilepay:'',phone:'',pawshake:'https://en.pawshake.dk/sitter/can'};
+const DEFAULT={services:[{id:'boarding',mode:'nights',price:275,extra:125},{id:'daycare',mode:'days',price:200,extra:80},{id:'housesit',mode:'nights',price:250,extra:null},{id:'visit1',mode:'days',price:140,extra:null},{id:'visit2',mode:'days',price:250,extra:null},{id:'walk',mode:'slot',price:120,extra:80}],hours:{start:8,end:19},openDays:[0,1,2,3,4,5,6],closedDates:[],mobilepay:'',phone:'',pawshake:'https://en.pawshake.dk/sitter/can'};
 let lang='da';try{lang=localStorage.getItem('lang')||((navigator.language||'da').toLowerCase().startsWith('da')?'da':'en')}catch(e){}
-const S={config:DEFAULT,today:iso(new Date()),taken:new Set(),service:'walk',date:null,time:null,week:0,live:false};
+const S={config:DEFAULT,today:iso(new Date()),taken:new Set(),date:null,time:null,week:0,pets:1,freq:'once',live:false};
 const t=(k)=>T[lang][k]??k;
-const svc=()=>S.config.services.find(s=>s.id===S.service);
+const walk=()=>S.config.services.find(s=>s.id==='walk')||DEFAULT.services[5];
+const kr=(n)=>n.toLocaleString(lang==='da'?'da-DK':'en-GB')+' kr.';
 const fmtDate=(s)=>parse(s).toLocaleDateString(lang==='da'?'da-DK':'en-GB',{weekday:'long',day:'numeric',month:'long'});
 const dayOpen=(d)=>d>=S.today&&S.config.openDays.includes(parse(d).getDay())&&!S.config.closedDates.includes(d);
 function slotsFor(d){const out=[],now=new Date();for(let h=S.config.hours.start;h<S.config.hours.end;h++){const time=pad(h)+':00';const past=d===S.today&&h<=now.getHours();out.push({time,free:!past&&!S.taken.has(d+'|'+time)})}return out}
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+function price(){const w=walk();return w.price==null?null:w.price+(w.extra||0)*(S.pets-1)}
 
 function render(){
+  const w=walk();
   document.documentElement.lang=lang;
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
-  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+  document.querySelectorAll('[data-ta]').forEach(e=>e.setAttribute(e.tagName==='IMG'?'alt':'aria-label',t(e.dataset.ta)));
+  document.querySelectorAll('[data-check]').forEach(e=>{e.innerHTML=ICON.check;e.append(el('span',null,t(e.dataset.check)))});
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+  // Lead contains <b>: build it from escaped parts.
+  const lp=t('lead').split(/(<b>.*?<\/b>)/);$('lead').replaceChildren(...lp.filter(Boolean).map(x=>x.startsWith('<b>')?el('b',null,x.slice(3,-4).replace('{p}',w.price!=null?kr(w.price):'')):document.createTextNode(x)));
+  $('walk-price').textContent=w.price!=null?kr(w.price):'—';
+  $('walk-extra').hidden=w.extra==null;$('walk-extra').textContent=t('extra').replace('{n}',w.extra);
+  $('hours').textContent=t('hoursV').replace('{a}',pad(S.config.hours.start)+':00').replace('{b}',pad(S.config.hours.end)+':00');
   $('pawshake').href=S.config.pawshake;$('demo').hidden=S.live;
-  $('phone-dt').hidden=$('phone-dd').hidden=!S.config.phone;$('phone-dd').textContent=S.config.phone;
-  $('svc-list').replaceChildren(...S.config.services.map(s=>{const d=document.createElement('div');d.className='svc';
-    const h=document.createElement('h3');h.textContent=t(s.id);const p=document.createElement('p');p.textContent=t(s.id+'D');
-    const pr=document.createElement('div');pr.className='price';
-    if(s.price!=null){const b=document.createElement('b');b.textContent=s.price;pr.append(b,t(s.id+'U'))}else pr.textContent=t('noPrice');
-    d.append(h,p,pr);return d}));
-  $('svc-chips').replaceChildren(...S.config.services.map(s=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t(s.id);b.setAttribute('aria-pressed',s.id===S.service);b.onclick=()=>{S.service=s.id;if(svc().mode!=='slot')S.time=null;render()};return b}));
+  $('phone-row').hidden=!S.config.phone;$('phone-dd').textContent=S.config.phone;
+  $('others').replaceChildren(...S.config.services.filter(s=>s.id!=='walk').map(s=>{const r=el('div','orow');const l=el('div');l.append(el('b',null,t(s.id)));
+    if(s.extra!=null){l.append(document.createElement('br'),el('span',null,t('xPet').replace('{n}',s.extra)))}
+    r.append(l,el('div','p',s.price!=null?kr(s.price)+' '+t(s.mode==='nights'?'uNight':'uDay'):'—'));return r}));
   const start=parse(S.today);start.setDate(start.getDate()+S.week*7);const days=[];
   for(let i=0;i<7;i++){const d=new Date(start);d.setDate(d.getDate()+i);days.push(iso(d))}
-  $('week-label').textContent=fmtDate(days[0])+' – '+fmtDate(days[6]);
-  $('days').replaceChildren(...days.map(d=>{const b=document.createElement('button');b.type='button';b.className='day';
-    const dt=parse(d);b.append(dt.toLocaleDateString(lang==='da'?'da-DK':'en-GB',{weekday:'short'}));const n=document.createElement('b');n.textContent=dt.getDate();b.append(n);
+  const short=(s)=>parse(s).toLocaleDateString(lang==='da'?'da-DK':'en-GB',{day:'numeric',month:'short'});
+  $('week-label').textContent=short(days[0])+' – '+short(days[6]);
+  $('days').replaceChildren(...days.map(d=>{const b=el('button','day');b.type='button';
+    const dt=parse(d);b.append(dt.toLocaleDateString(lang==='da'?'da-DK':'en-GB',{weekday:'short'}).replace('.',''));b.append(el('b',null,dt.getDate()));
     b.disabled=!dayOpen(d);b.setAttribute('aria-pressed',d===S.date);b.setAttribute('aria-label',fmtDate(d));b.onclick=()=>{S.date=d;S.time=null;render()};return b}));
   $('prev').disabled=S.week===0;$('next').disabled=S.week>=7;
-  const mode=svc().mode;$('slot-area').hidden=mode!=='slot';$('nights-area').hidden=mode!=='nights';
-  if(mode==='slot'){const list=S.date?slotsFor(S.date):[];
-    if(S.date&&!list.some(x=>x.free)){const p=document.createElement('p');p.className='label';p.textContent=t('noSlots');$('slots').replaceChildren(p)}
-    else $('slots').replaceChildren(...list.map(x=>{const b=document.createElement('button');b.type='button';b.className='slot';b.textContent=x.time;b.disabled=!x.free;b.setAttribute('aria-pressed',x.time===S.time);b.onclick=()=>{S.time=x.time;render()};return b}))}
-  const ready=S.date&&(mode!=='slot'||S.time);
-  const lines=ready?[t(S.service),fmtDate(S.date)+(S.time?' · '+S.time:'')+(mode==='nights'?' · '+$('nights').value+' '+t('nightsN'):''),svc().price!=null?svc().price+' '+t(S.service+'U'):t('noPrice')]:[t('sumPick')];
-  $('summary').replaceChildren(...lines.map(l=>{const d=document.createElement('div');d.textContent=l;return d}));
+  const list=S.date?slotsFor(S.date):[];
+  if(S.date&&!list.some(x=>x.free))$('slots').replaceChildren(el('p','small',t('noSlots')));
+  else $('slots').replaceChildren(...list.map(x=>{const b=el('button','slot',x.time);b.type='button';b.disabled=!x.free;b.setAttribute('aria-pressed',x.time===S.time);b.onclick=()=>{S.time=x.time;render()};return b}));
+  $('pets').textContent=S.pets;$('pets-minus').disabled=S.pets<=1;$('pets-plus').disabled=S.pets>=4;
+  $('freq').replaceChildren(...['once','weekly','multi'].map(f=>{const b=el('button','chip',t(f));b.type='button';b.setAttribute('aria-pressed',f===S.freq);b.onclick=()=>{S.freq=f;render()};return b}));
+  const sum=$('summary');
+  if(!S.date||!S.time)sum.replaceChildren(el('div','muted',t('sumPick')));
+  else{const p=price(),row=el('div','est');row.append(el('span','muted',t('est')),el('b',null,p!=null?kr(p):'—'));
+    sum.replaceChildren(el('div','s1',t('walk')),el('div','muted',[fmtDate(S.date)+' · '+S.time,S.pets+' '+t(S.pets===1?'dog1':'dogN'),t(S.freq)].join(' · ')),row)}
 }
 function pickFirstDay(){for(let i=0;i<14;i++){const d=parse(S.today);d.setDate(d.getDate()+i);const s=iso(d);if(dayOpen(s)&&slotsFor(s).some(x=>x.free)){S.date=s;S.week=Math.floor(i/7);return}}}
 async function load(){try{const r=await fetch('/api/public');if(!r.ok)throw 0;const j=await r.json();S.config=j.config;S.today=j.today;S.taken=new Set(j.taken);S.live=true}catch(e){S.live=false}
   if(!S.date||!dayOpen(S.date))pickFirstDay();render()}
 
-document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('lang',lang)}catch(e){}render()});
+document.querySelectorAll('[data-icon]').forEach(e=>e.innerHTML=ICON[e.dataset.icon]);
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('lang',lang)}catch(e){}render()});
 $('prev').onclick=()=>{S.week=Math.max(0,S.week-1);render()};$('next').onclick=()=>{S.week=Math.min(7,S.week+1);render()};
-$('nights').oninput=render;
+$('pets-minus').onclick=()=>{S.pets=Math.max(1,S.pets-1);render()};$('pets-plus').onclick=()=>{S.pets=Math.min(4,S.pets+1);render()};
 $('again').onclick=()=>{$('done').hidden=true;$('book-ui').hidden=false;S.time=null;load()};
-$('form').onsubmit=async(e)=>{e.preventDefault();const msg=$('msg');msg.className='msg err';
+$('form').onsubmit=async(e)=>{e.preventDefault();const msg=$('msg');msg.className='f full msg err';
   const v=(id)=>$(id).value.trim();
-  if(!S.date||(svc().mode==='slot'&&!S.time)){msg.textContent=t('eTime');return}
+  if(!S.date||!S.time){msg.textContent=t('eTime');return}
   if(!v('name')||v('phone').replace(/\D/g,'').length<8){msg.textContent=t('eContact');return}
-  const body={service:S.service,date:S.date,time:S.time,nights:v('nights'),name:v('name'),phone:v('phone'),email:v('email'),address:v('address'),dog:v('dog'),breed:v('breed'),size:v('size'),notes:v('notes'),website:v('website'),lang};
+  const body={service:'walk',date:S.date,time:S.time,pets:S.pets,freq:S.freq,name:v('name'),phone:v('phone'),email:v('email'),address:v('address'),dog:v('dog'),breed:v('breed'),size:v('size'),notes:v('notes'),website:v('website'),lang};
   const btn=$('submit');btn.disabled=true;btn.textContent=t('sending');msg.textContent='';
   let mp=S.config.mobilepay,ok=!S.live,err='eServer';
   if(S.live){try{const r=await fetch('/api/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
     if(r.ok){ok=true;mp=j.mobilepay||mp}else err={taken:'eTaken',time:'eTime',contact:'eContact',closed:'eClosed',date:'eClosed'}[j.error]||'eServer'}catch(x){}}
   btn.disabled=false;btn.textContent=t('send');
   if(!ok){msg.textContent=t(err);if(err==='eTaken'){S.time=null;load()}return}
-  $('done-text').textContent=t(S.service)+' · '+fmtDate(S.date)+(S.time?' · '+S.time:'')+'. '+t('doneText');
+  const p=price();
+  $('done-text').textContent=fmtDate(S.date)+' · '+S.time+(p!=null?' · '+kr(p):'')+' — '+t('doneText');
   $('mp-box').hidden=!mp;$('mp-num').textContent=mp;$('book-ui').hidden=true;$('done').hidden=false;$('done').scrollIntoView({block:'center'});
 };
+// Hide the floating mobile button while the booking section is on screen.
+if('IntersectionObserver' in window){
+  new IntersectionObserver(es=>es.forEach(x=>$('mobile-cta').classList.toggle('away',x.isIntersecting)),{threshold:.05}).observe($('book'));
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    document.documentElement.classList.add('anim');
+    const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(x=>io.observe(x));
+  }
+}
 pickFirstDay();render();load();
 </script>

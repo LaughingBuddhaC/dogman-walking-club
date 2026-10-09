@@ -34,7 +34,7 @@ export default async function handler(req, res) {
         const c = b.config, d = s.DEFAULT_CONFIG, num = (v) => (v === '' || v == null || isNaN(v) ? null : Math.max(0, Math.round(Number(v))));
         const start = Math.min(22, Math.max(5, parseInt(c.hours?.start, 10) || 8)), end = Math.min(23, Math.max(start + 1, parseInt(c.hours?.end, 10) || 19));
         await s.setConfig({
-          services: d.services.map((x) => ({ ...x, price: num(c.services?.find((y) => y.id === x.id)?.price) })),
+          services: d.services.map((x) => { const y = c.services?.find((z) => z.id === x.id); return { ...x, price: num(y?.price), extra: num(y?.extra) }; }),
           hours: { start, end },
           openDays: (c.openDays || []).map(Number).filter((n) => n >= 0 && n <= 6),
           closedDates: (c.closedDates || []).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)).slice(0, 200),
