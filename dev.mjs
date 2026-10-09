@@ -11,5 +11,5 @@ http.createServer(async (req, res) => {
   }
   let f = path.join('public', u.pathname); if (fs.existsSync(f) && fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
   if (!fs.existsSync(f)) { res.statusCode = 404; return res.end('not found'); }
-  res.setHeader('Content-Type', f.endsWith('.html') ? 'text/html; charset=utf-8' : f.endsWith('.jpg') ? 'image/jpeg' : 'application/octet-stream'); res.end(fs.readFileSync(f));
+  res.setHeader('Content-Type', f.endsWith('.html') ? 'text/html; charset=utf-8' : f.endsWith('.jpg') ? 'image/jpeg' : f.endsWith('.png') ? 'image/png' : f.endsWith('.js') ? 'text/javascript' : 'application/octet-stream'); res.end(fs.readFileSync(f));
 }).listen(3000, () => console.log('http://localhost:3000'));

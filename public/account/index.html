@@ -74,6 +74,15 @@ h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-to
 .empty p{color:var(--muted)}
 .msg{color:var(--err);font-weight:600;margin-bottom:16px}
 .skeleton{height:120px;border-radius:28px;box-shadow:var(--inset-sm);opacity:.6}
+.badges{margin-top:48px;scroll-margin-top:100px}
+.badges h2{font-size:1.5rem;margin-bottom:20px}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:24px}
+.bcard{border-radius:28px;box-shadow:var(--raise);padding:22px 16px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bcard .rosette{width:112px;margin-bottom:4px}
+.bcard b{font-size:1.05rem}
+.bcard p{font-size:.85rem;color:var(--muted)}
+.bcard small{font-size:.78rem;color:var(--accent);font-weight:600}
+.bcard.locked .slot{width:100px;height:100px;border-radius:50%;box-shadow:var(--inset-sm);display:grid;place-items:center;font-size:2.2rem;font-weight:800;color:var(--muted);margin:10px 0 12px;opacity:.7}
 @media (max-width:640px){
   main{padding:32px 16px 56px}
   .brand span.name{display:none}
@@ -115,17 +124,19 @@ h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-to
       <dl id="details"></dl>
     </div>
     <div class="list" id="list"></div>
+    <section class="badges" id="badges"><h2 data-t="badgesTitle"></h2><div class="badge-grid" id="badge-grid"></div></section>
   </div>
 </main>
 
+<script src="/js/badges.js"></script>
 <script>
 const T={
-da:{bookNew:'Book en tur',eyebrow:'Din konto',title:'Mine ture',loginTitle:'Log ind for at se dine ture',loginText:'Log ind med den Google-konto, du bookede med, så kan du se og aflyse dine kommende gåture.',guest:'Eller book uden at logge ind →',
+da:{bookNew:'Book en tur',eyebrow:'Din konto',title:'Mine ture',loginTitle:'Log ind for at se dine ture',loginText:'Log ind med Google og få dit velkomstmærke. Så kan du også se og aflyse dine kommende gåture.',badgesTitle:'Mine mærker',moreBadges:'Flere mærker på vej',moreBadgesP:'Gå tur, saml mærker. Nye kommer snart.',guest:'Eller book uden at logge ind →',
 logout:'Log ud',phone:'Telefon',address:'Adresse',dog:'Hund',walk:'Gåtur · 30 min.',dog1:'hund',dogN:'hunde',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',
 st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys turen',sure:'Ja, aflys',calendar:'Tilføj til kalender',
 emptyTitle:'Ingen kommende ture',emptyText:'Når du booker en gåtur, kan du se den her.',today:'I dag',tomorrow:'I morgen',
 cancelled:'Turen er aflyst.',eServer:'Noget gik galt. Prøv igen om lidt.',eLogin:'Log ind mislykkedes. Prøv igen.',calTitle:'Gåtur med The DogMan'},
-en:{bookNew:'Book a walk',eyebrow:'Your account',title:'My walks',loginTitle:'Sign in to see your walks',loginText:'Sign in with the Google account you booked with to see and cancel your upcoming walks.',guest:'Or book without signing in →',
+en:{bookNew:'Book a walk',eyebrow:'Your account',title:'My walks',loginTitle:'Sign in to see your walks',loginText:'Sign in with Google and get your welcome badge. You can also see and cancel your upcoming walks.',badgesTitle:'My badges',moreBadges:'More badges on the way',moreBadgesP:'Walk and collect badges. New ones are coming soon.',guest:'Or book without signing in →',
 logout:'Log out',phone:'Phone',address:'Address',dog:'Dog',walk:'Walk · 30 min.',dog1:'dog',dogN:'dogs',once:'Once',weekly:'Every week',multi:'Several times a week',
 st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel walk',sure:'Yes, cancel',calendar:'Add to calendar',
 emptyTitle:'No upcoming walks',emptyText:'When you book a walk, it will show up here.',today:'Today',tomorrow:'Tomorrow',
@@ -176,6 +187,10 @@ function render(){
   if(S.state!=='in')return;
   const u=S.user;$('name').textContent=u.name||u.email;$('email').textContent=u.email;$('pic').hidden=!u.picture;if(u.picture)$('pic').src=u.picture;
   $('details').replaceChildren(...[['phone',u.phone],['address',u.address],['dog',[u.dog,u.breed].filter(Boolean).join(', ')]].filter(r=>r[1]).map(([k,v])=>{const d=el('div');d.append(el('dt',null,t(k)),el('dd',null,v));return d}));
+  const earned=u.badges||{},bu=DogBadges.ui(lang);
+  $('badge-grid').replaceChildren(...DogBadges.ids.filter(id=>earned[id]).map(id=>{const c=el('div','bcard'),r=el('div','rosette');r.innerHTML=DogBadges.svg(id);
+    const [name,desc]=DogBadges.texts(id,lang);c.append(r,el('b',null,name),el('p',null,desc),el('small',null,bu.earned+' '+parse(earned[id].slice(0,10)).toLocaleDateString(loc(),{day:'numeric',month:'short',year:'numeric'})));return c}),
+    (()=>{const c=el('div','bcard locked');c.append(el('div','slot','?'),el('b',null,t('moreBadges')),el('p',null,t('moreBadgesP')));return c})());
   const list=S.bookings.filter(b=>b.status!=='cancelled');
   if(!list.length){const e=el('div','card empty');e.append(el('h2',null,t('emptyTitle')),el('p',null,t('emptyText')));const a=el('a','btn primary',t('bookNew'));a.href='/#book';e.append(a);$('list').replaceChildren(e)}
   else $('list').replaceChildren(...list.map(walkCard));
@@ -194,6 +209,7 @@ $('logout').onclick=async()=>{try{await account({action:'logout'})}catch(e){}S.s
   const [pub]=await Promise.all([fetch('/api/public').then(r=>r.json()).catch(()=>null),account().catch(()=>{S.state='out'})]);
   if(pub){S.config=pub.config;S.today=pub.today}
   render();loadGis();
+  if(S.user)DogBadges.celebrate(S.user.badges,lang,null);
 })();
 </script>
 

@@ -83,7 +83,7 @@ figure{margin:0}
 .trust span{font-size:.85rem;font-weight:500;color:var(--muted);padding:9px 14px;border-radius:14px;box-shadow:var(--raise-sm)}
 .frame{position:relative;padding:14px;border-radius:40px;box-shadow:var(--raise)}
 .frame>img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;object-position:50% 40%;border-radius:28px}
-.sticker{position:absolute;right:-22px;top:-22px;width:128px;height:128px;border-radius:50%;background:#f5f1e7;display:grid;place-items:center;transform:rotate(8deg);box-shadow:var(--raise)}
+.sticker{position:absolute;right:-12px;top:-22px;width:128px;height:128px;border-radius:50%;background:#f5f1e7;display:grid;place-items:center;transform:rotate(8deg);box-shadow:var(--raise)}
 .sticker img{height:96px;width:auto}
 .logo-mark{background:#f5f1e7!important;overflow:hidden}
 .logo-mark img{height:76%;width:auto}
@@ -195,6 +195,9 @@ form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 #acct-in img{width:40px;height:40px;border-radius:50%;flex:none}
 #acct-in div{flex:1;min-width:0;display:flex;flex-direction:column}
 #acct-in b{font-size:.95rem}
+.mini-badges{display:flex;gap:4px}
+.mini-badges a{display:block;width:34px}
+.mini-badges .rosette svg{filter:none}
 .link{font:600 .9rem var(--font);color:var(--accent);background:none;border:0;cursor:pointer;padding:4px}
 .mine{margin-top:36px;padding-top:30px;border-top:1px solid color-mix(in srgb,var(--muted) 22%,transparent)}
 .mrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-radius:18px;box-shadow:var(--raise-sm);margin-top:14px;flex-wrap:wrap}
@@ -340,7 +343,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
           <div class="step"><div class="step-h"><span class="num">3</span><h3 data-t="step3"></h3></div>
             <div class="acct" id="acct" hidden>
               <div id="acct-out"><p class="small" data-t="gHint" style="margin-bottom:10px"></p><div id="gbtn"></div></div>
-              <div id="acct-in" hidden><img id="acct-pic" alt="" referrerpolicy="no-referrer"><div><b id="acct-name"></b><span class="small" id="acct-email"></span></div><button type="button" class="link" id="logout" data-t="logout"></button></div>
+              <div id="acct-in" hidden><img id="acct-pic" alt="" referrerpolicy="no-referrer"><div><b id="acct-name"></b><span class="small" id="acct-email"></span></div><span class="mini-badges" id="mini-badges"></span><button type="button" class="link" id="logout" data-t="logout"></button></div>
             </div>
             <form id="form" novalidate>
               <div class="f"><label for="name" data-t="fName"></label><input id="name" autocomplete="name" required></div>
@@ -401,6 +404,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
 </main>
 <a class="btn primary mobile-cta" href="#book" id="mobile-cta" data-t="ctaBook"></a>
 
+<script src="/js/badges.js"></script>
 <script>
 const T={
 da:{navWalk:'Gåturen',navAbout:'Om os',navBook:'Book',heroLabel:'Gåture i',capRiver:'Ved floden',h1a:'Hundeluftning',h1b:'i Skovlunde',
@@ -417,7 +421,7 @@ bookLabel:'Booking',bookTitle:'Book en gåtur',step1:'Vælg dag og tid',step2:'O
 dogs:'Antal hunde',freq:'Hvor ofte?',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',dog1:'hund',dogN:'hunde',
 fName:'Navn *',fPhone:'Telefon *',fEmail:'E-mail',fAddress:'Adresse (hvor jeg henter hunden)',addrPh:'Begynd at skrive din adresse…',useLoc:'Brug min placering',locating:'Finder din placering…',kmIn:'{km} km fra Skovlunde – inden for området',kmOut:'Ca. {km} km fra Skovlunde – lidt uden for mit område, men book gerne, så vender jeg tilbage.',noAddr:'Ingen forslag – du kan bare skrive adressen.',locErr:'Kunne ikke finde din placering. Skriv adressen i stedet.',navMine:'Mine ture',seeAll:'Se alle →',fDog:'Hundens navn',fBreed:'Race',fSize:'Størrelse',sizeNone:'Vælg',sizeS:'Lille (under 10 kg)',sizeM:'Mellem (10–25 kg)',sizeL:'Stor (over 25 kg)',fNotes:'Andet jeg bør vide (nøgle, adfærd, andre hunde…)',
 send:'Send booking',sending:'Sender…',privacy:'Dine oplysninger bruges kun til at aftale og udføre turen. Log ind med Google er valgfrit – jeg får kun dit navn og din e-mail. Du betaler først, når jeg har bekræftet.',
-gHint:'Log ind med Google, så udfyldes dine oplysninger automatisk, og du kan se og aflyse dine ture.',logout:'Log ud',mineTitle:'Dine kommende ture',st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys',sure:'Aflys turen?',eLogin:'Log ind mislykkedes. Prøv igen.',
+gHint:'Log ind med Google og få dit velkomstmærke. Så udfyldes dine oplysninger automatisk, og du kan se og aflyse dine ture.',logout:'Log ud',mineTitle:'Dine kommende ture',st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys',sure:'Aflys turen?',eLogin:'Log ind mislykkedes. Prøv igen.',
 sumPick:'Vælg en dag og en tid.',walk:'Gåtur · 30 min.',est:'Pris',perTurn:'pr. tur',
 eContact:'Skriv dit navn og et telefonnummer.',eTime:'Vælg en ledig tid.',eTaken:'Den tid er lige blevet taget. Vælg en anden.',eServer:'Noget gik galt. Prøv igen om lidt.',eClosed:'Den dag er lukket. Vælg en anden.',
 doneTitle:'Tak – booking modtaget!',doneText:'Jeg bekræfter på telefon eller sms, og så ses vi ved døren.',doneMp:'Betal med MobilePay, når turen er bekræftet:',again:'Book en tur mere',
@@ -443,7 +447,7 @@ bookLabel:'Booking',bookTitle:'Book a walk',step1:'Choose day and time',step2:'A
 dogs:'Number of dogs',freq:'How often?',once:'Once',weekly:'Every week',multi:'Several times a week',dog1:'dog',dogN:'dogs',
 fName:'Name *',fPhone:'Phone *',fEmail:'Email',fAddress:'Address (where I pick up your dog)',addrPh:'Start typing your address…',useLoc:'Use my location',locating:'Finding your location…',kmIn:'{km} km from Skovlunde – inside my area',kmOut:'About {km} km from Skovlunde – a bit outside my area, but book anyway and I will get back to you.',noAddr:'No suggestions – just type the address.',locErr:'Could not find your location. Please type the address.',navMine:'My walks',seeAll:'See all →',fDog:"Dog's name",fBreed:'Breed',fSize:'Size',sizeNone:'Choose',sizeS:'Small (under 10 kg)',sizeM:'Medium (10–25 kg)',sizeL:'Large (over 25 kg)',fNotes:'Anything else I should know (keys, behaviour, other dogs…)',
 send:'Send booking',sending:'Sending…',privacy:'Your details are only used to arrange and carry out the walk. Signing in with Google is optional – I only get your name and email. You only pay once I have confirmed.',
-gHint:'Sign in with Google to fill in your details automatically and see or cancel your walks.',logout:'Log out',mineTitle:'Your upcoming walks',st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel',sure:'Cancel this walk?',eLogin:'Sign-in failed. Please try again.',
+gHint:'Sign in with Google and get your welcome badge. Your details are filled in automatically, and you can see or cancel your walks.',logout:'Log out',mineTitle:'Your upcoming walks',st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel',sure:'Cancel this walk?',eLogin:'Sign-in failed. Please try again.',
 sumPick:'Choose a day and a time.',walk:'Walk · 30 min.',est:'Price',perTurn:'per walk',
 eContact:'Enter your name and a phone number.',eTime:'Choose a free time.',eTaken:'That time was just taken. Choose another.',eServer:'Something went wrong. Try again shortly.',eClosed:'That day is closed. Choose another.',
 doneTitle:'Thanks – booking received!',doneText:'I will confirm by phone or text, and then see you at the door.',doneMp:'Pay with MobilePay once the walk is confirmed:',again:'Book another walk',
@@ -488,11 +492,12 @@ function drawGbtn(){if(!window.google?.accounts?.id||U.user)return;$('gbtn').rep
   google.accounts.id.renderButton($('gbtn'),{theme:matchMedia('(prefers-color-scheme: dark)').matches?'filled_black':'outline',size:'large',shape:'pill',text:'continue_with',locale:lang,width:260})}
 function loadGis(){if(!S.config.googleClientId||U.gis)return;U.gis=true;const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;
   sc.onload=()=>{google.accounts.id.initialize({client_id:S.config.googleClientId,use_fedcm_for_prompt:true,callback:async(r)=>{
-    if(await account({action:'login',credential:r.credential})){prefill();render()}else{const m=$('msg');m.className='f full msg err';m.textContent=t('eLogin')}}});drawGbtn()};
+    if(await account({action:'login',credential:r.credential})){prefill();render();DogBadges.celebrate(U.user.badges,lang,'/account/#badges')}else{const m=$('msg');m.className='f full msg err';m.textContent=t('eLogin')}}});drawGbtn()};
   document.head.append(sc)}
 function renderAcct(){
   $('acct').hidden=!S.config.googleClientId&&!U.user;$('nav-account').hidden=!U.user;
   $('acct-out').hidden=!!U.user;$('acct-in').hidden=!U.user;
+  if(U.user)$('mini-badges').replaceChildren(...DogBadges.ids.filter(id=>U.user.badges?.[id]).map(id=>{const l=el('a','rosette');l.href='/account/#badges';l.title=DogBadges.texts(id,lang)[0];l.innerHTML=DogBadges.svg(id);return l}));
   if(U.user){$('acct-name').textContent=U.user.name||U.user.email;$('acct-email').textContent=U.user.email;$('acct-pic').hidden=!U.user.picture;if(U.user.picture)$('acct-pic').src=U.user.picture}
   const list=U.bookings.filter(b=>b.status!=='cancelled');
   $('mine').hidden=!U.user||!list.length;
@@ -609,7 +614,7 @@ if('IntersectionObserver' in window){
 const AREAS=['Skovlunde','Ballerup','Herlev','Måløv','Glostrup','Rødovre','Albertslund'];
 if(matchMedia('(prefers-reduced-motion: reduce)').matches)$('areas').textContent=AREAS.slice(0,3).join(' · ');
 else{let ai=0;setInterval(()=>{ai=(ai+1)%AREAS.length;$('areas').replaceChildren(el('b',null,AREAS[ai]))},2200)}
-pickFirstDay();render();load();account().then(()=>{prefill();render()});
+pickFirstDay();render();load();account().then(()=>{prefill();render();if(U.user)DogBadges.celebrate(U.user.badges,lang,'/account/#badges')});
 </script>
 
 </body></html>

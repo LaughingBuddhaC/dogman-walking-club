@@ -3,7 +3,9 @@ import * as s from './_store.js';
 
 async function me(user) {
   const t = s.today();
-  const bookings = (await s.getBookings()).filter((b) => b.user === user.sub && b.date >= t)
+  const all = (await s.getBookings()).filter((b) => b.user === user.sub);
+  await s.awardBadges(user, all);
+  const bookings = all.filter((b) => b.date >= t)
     .map(({ id, service, date, time, pets, freq, status, estimate }) => ({ id, service, date, time, pets, freq, status, estimate }));
   const { sub, ...profile } = user;
   return { user: profile, bookings };

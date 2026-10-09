@@ -94,6 +94,21 @@ export const sessionCookie = (value, maxAge) => `dm_s=${value}; Path=/; HttpOnly
 export const getUser = async (sub) => { const s = await cmd('HGET', 'users', sub); return s ? JSON.parse(s) : null; };
 export const saveUser = (u) => cmd('HSET', 'users', u.sub, JSON.stringify(u));
 
+// Badges ("rozetter"). Each rule gets the customer and all their bookings; when it first returns true the
+// badge is stored with the date. Artwork and names live in public/js/badges.js.
+export const BADGE_RULES = {
+  welcome: () => true, // every new customer
+};
+export async function awardBadges(user, bookings) {
+  const have = { ...(user.badges || {}) };
+  let changed = false;
+  for (const [id, rule] of Object.entries(BADGE_RULES)) {
+    if (!have[id] && rule(user, bookings)) { have[id] = new Date().toISOString(); changed = true; }
+  }
+  if (changed) { user.badges = have; await saveUser(user); }
+  return have;
+}
+
 export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen' }).format(new Date());
 export const nowHour = () => Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Copenhagen', hour: '2-digit', hour12: false }).format(new Date()));
 export const addDays = (d, n) => { const t = new Date(d + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
