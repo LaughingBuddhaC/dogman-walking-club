@@ -9,4 +9,6 @@ fs.writeFileSync('public/index.html', wrap('src/site.html', 'da'));
 fs.writeFileSync('public/admin/index.html', wrap('src/admin.html', 'en'));
 fs.mkdirSync('public/privacy', { recursive: true });
 fs.writeFileSync('public/privacy/index.html', wrap('src/privacy.html', 'da'));
+fs.mkdirSync('public/account', { recursive: true });
+fs.writeFileSync('public/account/index.html', wrap('src/account.html', 'da'));
 console.log('built');

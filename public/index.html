@@ -164,6 +164,21 @@ form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .check svg{width:30px;height:30px}
 .mp{font:700 1.3rem var(--font);letter-spacing:.02em;padding:12px 18px;border-radius:16px;box-shadow:var(--inset-sm);user-select:all}
 
+/* Address search */
+.ac{position:relative}
+.ac-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ac-list{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:20;list-style:none;margin:0;padding:6px;border-radius:18px;background:var(--bg);box-shadow:var(--raise);max-height:300px;overflow:auto}
+.ac-list li{padding:10px 12px;border-radius:12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.ac-list li[aria-selected="true"],.ac-list li:hover{box-shadow:var(--inset-sm)}
+.ac-list li b{font-weight:600;font-size:.95rem}
+.ac-list li span{font-size:.8rem;color:var(--muted);white-space:nowrap}
+.ac-list li.none{cursor:default;color:var(--muted);font-size:.9rem}
+.ac-list li.none:hover{box-shadow:none}
+.ac-hint{font-size:.82rem;font-weight:500;padding-left:4px;color:var(--muted)}
+.ac-hint.ok{color:var(--ok)}
+.locbtn{display:inline-flex;align-items:center;gap:6px;font:600 .8rem var(--font);color:var(--accent);background:none;border:0;cursor:pointer;padding:0}
+.locbtn svg{width:14px;height:14px}
+
 /* Customer account */
 .acct{border-radius:20px;box-shadow:var(--inset-sm);padding:16px 18px;margin-bottom:22px;display:flex;flex-direction:column;gap:12px}
 #gbtn{min-height:44px}
@@ -252,7 +267,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
   <div class="bar">
     <a class="brand" href="#"><span class="mark" data-icon="paw"></span><span class="name">DogMan Walking Club</span></a>
     <nav class="nav">
-      <a href="#walk" data-t="navWalk"></a><a href="#about" data-t="navAbout"></a><a href="#book" class="go" data-t="navBook"></a>
+      <a href="#walk" data-t="navWalk"></a><a href="#about" data-t="navAbout"></a><a href="/account/" id="nav-account" hidden data-t="navMine"></a><a href="#book" class="go" data-t="navBook"></a>
       <div class="seg" role="group" aria-label="Language"><button type="button" data-lang="da">DA</button><button type="button" data-lang="en">EN</button></div>
     </nav>
   </div>
@@ -319,7 +334,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
             <form id="form" novalidate>
               <div class="f"><label for="name" data-t="fName"></label><input id="name" autocomplete="name" required></div>
               <div class="f"><label for="phone" data-t="fPhone"></label><input id="phone" type="tel" autocomplete="tel" required></div>
-              <div class="f full"><label for="address" data-t="fAddress"></label><input id="address" autocomplete="street-address"></div>
+              <div class="f full ac"><div class="ac-top"><label for="address" data-t="fAddress"></label><button type="button" class="locbtn" id="locate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span data-t="useLoc"></span></button></div><input id="address" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="addr-list" data-tp="addrPh"><ul class="ac-list" id="addr-list" role="listbox" hidden></ul><span class="ac-hint" id="addr-hint" role="status"></span></div>
               <div class="f full"><label for="email" data-t="fEmail"></label><input id="email" type="email" autocomplete="email"></div>
               <div class="f"><label for="dog" data-t="fDog"></label><input id="dog"></div>
               <div class="f"><label for="breed" data-t="fBreed"></label><input id="breed"></div>
@@ -340,7 +355,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
         <div id="mp-box" hidden><p data-t="doneMp" style="margin-bottom:10px"></p><div class="mp" id="mp-num"></div></div>
         <button type="button" class="btn" id="again" data-t="again"></button>
       </div>
-      <div class="mine" id="mine" hidden><h3 data-t="mineTitle"></h3><div id="mine-list"></div></div>
+      <div class="mine" id="mine" hidden><div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><h3 data-t="mineTitle"></h3><a class="link" href="/account/" data-t="seeAll"></a></div><div id="mine-list"></div></div>
     </div>
   </section>
 
@@ -389,7 +404,7 @@ f3:'Fast ugentlig tur',f3p:'Vælg den samme tid hver uge, så din hund får en f
 f4:'Skovlunde + 5 km',f4p:'Jeg går i Skovlunde og op til 5 km omkring. Bor du lidt længere væk? Skriv alligevel.',
 bookLabel:'Booking',bookTitle:'Book en gåtur',step1:'Vælg dag og tid',step2:'Om turen',step3:'Dine oplysninger',prevWeek:'Forrige uge',nextWeek:'Næste uge',pickTime:'Ledige tider',noSlots:'Ingen ledige tider denne dag.',
 dogs:'Antal hunde',freq:'Hvor ofte?',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',dog1:'hund',dogN:'hunde',
-fName:'Navn *',fPhone:'Telefon *',fEmail:'E-mail',fAddress:'Adresse (hvor jeg henter hunden)',fDog:'Hundens navn',fBreed:'Race',fSize:'Størrelse',sizeNone:'Vælg',sizeS:'Lille (under 10 kg)',sizeM:'Mellem (10–25 kg)',sizeL:'Stor (over 25 kg)',fNotes:'Andet jeg bør vide (nøgle, adfærd, andre hunde…)',
+fName:'Navn *',fPhone:'Telefon *',fEmail:'E-mail',fAddress:'Adresse (hvor jeg henter hunden)',addrPh:'Begynd at skrive din adresse…',useLoc:'Brug min placering',locating:'Finder din placering…',kmIn:'{km} km fra Skovlunde – inden for området',kmOut:'Ca. {km} km fra Skovlunde – lidt uden for mit område, men book gerne, så vender jeg tilbage.',noAddr:'Ingen forslag – du kan bare skrive adressen.',locErr:'Kunne ikke finde din placering. Skriv adressen i stedet.',navMine:'Mine ture',seeAll:'Se alle →',fDog:'Hundens navn',fBreed:'Race',fSize:'Størrelse',sizeNone:'Vælg',sizeS:'Lille (under 10 kg)',sizeM:'Mellem (10–25 kg)',sizeL:'Stor (over 25 kg)',fNotes:'Andet jeg bør vide (nøgle, adfærd, andre hunde…)',
 send:'Send booking',sending:'Sender…',privacy:'Dine oplysninger bruges kun til at aftale og udføre turen. Log ind med Google er valgfrit – jeg får kun dit navn og din e-mail. Du betaler først, når jeg har bekræftet.',
 gHint:'Log ind med Google, så udfyldes dine oplysninger automatisk, og du kan se og aflyse dine ture.',logout:'Log ud',mineTitle:'Dine kommende ture',st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys',sure:'Aflys turen?',eLogin:'Log ind mislykkedes. Prøv igen.',
 sumPick:'Vælg en dag og en tid.',walk:'Gåtur · 30 min.',est:'Pris',perTurn:'pr. tur',
@@ -415,7 +430,7 @@ f3:'Weekly walks',f3p:'Pick the same time every week so your dog gets a steady r
 f4:'Skovlunde + 5 km',f4p:'I walk in Skovlunde and up to 5 km around. Live a bit further away? Get in touch anyway.',
 bookLabel:'Booking',bookTitle:'Book a walk',step1:'Choose day and time',step2:'About the walk',step3:'Your details',prevWeek:'Previous week',nextWeek:'Next week',pickTime:'Available times',noSlots:'No free times this day.',
 dogs:'Number of dogs',freq:'How often?',once:'Once',weekly:'Every week',multi:'Several times a week',dog1:'dog',dogN:'dogs',
-fName:'Name *',fPhone:'Phone *',fEmail:'Email',fAddress:'Address (where I pick up your dog)',fDog:"Dog's name",fBreed:'Breed',fSize:'Size',sizeNone:'Choose',sizeS:'Small (under 10 kg)',sizeM:'Medium (10–25 kg)',sizeL:'Large (over 25 kg)',fNotes:'Anything else I should know (keys, behaviour, other dogs…)',
+fName:'Name *',fPhone:'Phone *',fEmail:'Email',fAddress:'Address (where I pick up your dog)',addrPh:'Start typing your address…',useLoc:'Use my location',locating:'Finding your location…',kmIn:'{km} km from Skovlunde – inside my area',kmOut:'About {km} km from Skovlunde – a bit outside my area, but book anyway and I will get back to you.',noAddr:'No suggestions – just type the address.',locErr:'Could not find your location. Please type the address.',navMine:'My walks',seeAll:'See all →',fDog:"Dog's name",fBreed:'Breed',fSize:'Size',sizeNone:'Choose',sizeS:'Small (under 10 kg)',sizeM:'Medium (10–25 kg)',sizeL:'Large (over 25 kg)',fNotes:'Anything else I should know (keys, behaviour, other dogs…)',
 send:'Send booking',sending:'Sending…',privacy:'Your details are only used to arrange and carry out the walk. Signing in with Google is optional – I only get your name and email. You only pay once I have confirmed.',
 gHint:'Sign in with Google to fill in your details automatically and see or cancel your walks.',logout:'Log out',mineTitle:'Your upcoming walks',st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel',sure:'Cancel this walk?',eLogin:'Sign-in failed. Please try again.',
 sumPick:'Choose a day and a time.',walk:'Walk · 30 min.',est:'Price',perTurn:'per walk',
@@ -465,7 +480,7 @@ function loadGis(){if(!S.config.googleClientId||U.gis)return;U.gis=true;const sc
     if(await account({action:'login',credential:r.credential})){prefill();render()}else{const m=$('msg');m.className='f full msg err';m.textContent=t('eLogin')}}});drawGbtn()};
   document.head.append(sc)}
 function renderAcct(){
-  $('acct').hidden=!S.config.googleClientId&&!U.user;
+  $('acct').hidden=!S.config.googleClientId&&!U.user;$('nav-account').hidden=!U.user;
   $('acct-out').hidden=!!U.user;$('acct-in').hidden=!U.user;
   if(U.user){$('acct-name').textContent=U.user.name||U.user.email;$('acct-email').textContent=U.user.email;$('acct-pic').hidden=!U.user.picture;if(U.user.picture)$('acct-pic').src=U.user.picture}
   const list=U.bookings.filter(b=>b.status!=='cancelled');
@@ -480,6 +495,7 @@ function render(){
   const w=walk();
   document.documentElement.lang=lang;
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
+  document.querySelectorAll('[data-tp]').forEach(e=>e.placeholder=t(e.dataset.tp));
   document.querySelectorAll('[data-ta]').forEach(e=>e.setAttribute(e.tagName==='IMG'?'alt':'aria-label',t(e.dataset.ta)));
   document.querySelectorAll('[data-check]').forEach(e=>{e.innerHTML=ICON.check;e.append(el('span',null,t(e.dataset.check)))});
   document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
@@ -520,6 +536,39 @@ document.querySelectorAll('[data-icon]').forEach(e=>e.innerHTML=ICON[e.dataset.i
 document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('lang',lang)}catch(e){}render();drawGbtn()});
 $('prev').onclick=()=>{S.week=Math.max(0,S.week-1);render()};$('next').onclick=()=>{S.week=Math.min(7,S.week+1);render()};
 $('pets-minus').onclick=()=>{S.pets=Math.max(1,S.pets-1);render()};$('pets-plus').onclick=()=>{S.pets=Math.min(4,S.pets+1);render()};
+// Address search: suggestions while typing, keyboard navigation, distance hint, "use my location".
+const A={items:[],active:-1,seq:0,timer:0};
+const addr=$('address'),alist=$('addr-list');
+function addrHint(item){const h=$('addr-hint');if(!item){h.textContent='';h.className='ac-hint';return}
+  const inside=item.km<=5.5;h.className='ac-hint'+(inside?' ok':'');h.textContent=t(inside?'kmIn':'kmOut').replace('{km}',item.km.toLocaleString(lang==='da'?'da-DK':'en-GB'))}
+function closeList(){alist.hidden=true;addr.setAttribute('aria-expanded','false');addr.removeAttribute('aria-activedescendant');A.active=-1}
+function showList(){
+  if(!A.items.length){alist.replaceChildren(Object.assign(el('li','none',t('noAddr')),{role:'option'}))}
+  else alist.replaceChildren(...A.items.map((it,i)=>{const li=el('li');li.id='addr-'+i;li.setAttribute('role','option');li.setAttribute('aria-selected',i===A.active);
+    li.append(el('b',null,it.label),el('span',null,it.km.toLocaleString(lang==='da'?'da-DK':'en-GB')+' km'));
+    li.onmousedown=(e)=>{e.preventDefault();pickAddr(it)};return li}));
+  alist.hidden=false;addr.setAttribute('aria-expanded','true');
+  if(A.active>=0)addr.setAttribute('aria-activedescendant','addr-'+A.active);else addr.removeAttribute('aria-activedescendant')}
+// A bare street keeps the house number the customer already typed; otherwise they continue typing the number.
+function pickAddr(it){
+  if(!it.exact){const num=(addr.value.match(/\b\d+ ?[A-Za-z]?\b/)||[''])[0].replace(/\s/g,'');
+    if(!num){addr.value=it.line1+' ';closeList();addr.focus();return}
+    addr.value=it.line1+' '+num+(it.line2?', '+it.line2:'')}
+  else addr.value=it.label;
+  addrHint(it);closeList()}
+async function searchAddr(params){const n=++A.seq;
+  try{const r=await fetch('/api/address?'+new URLSearchParams(params));const j=await r.json();if(n!==A.seq)return null;A.items=r.ok?j.items:[];A.active=-1;return A.items}catch(e){return null}}
+addr.oninput=()=>{addrHint(null);clearTimeout(A.timer);const q=addr.value.trim();if(q.length<3){A.seq++;closeList();return}
+  A.timer=setTimeout(async()=>{if(await searchAddr({q}))showList()},250)};
+addr.onkeydown=(e)=>{if(alist.hidden||!A.items.length)return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();A.active=(A.active+(e.key==='ArrowDown'?1:-1)+A.items.length)%A.items.length;showList()}
+  else if(e.key==='Enter'&&A.active>=0){e.preventDefault();pickAddr(A.items[A.active])}
+  else if(e.key==='Escape')closeList()};
+addr.onblur=()=>setTimeout(closeList,120);
+$('locate').onclick=()=>{const h=$('addr-hint');if(!navigator.geolocation){h.textContent=t('locErr');return}
+  h.className='ac-hint';h.textContent=t('locating');
+  navigator.geolocation.getCurrentPosition(async(pos)=>{const items=await searchAddr({lat:pos.coords.latitude.toFixed(5),lon:pos.coords.longitude.toFixed(5)});
+    if(items&&items[0])pickAddr(items[0]);else h.textContent=t('locErr')},()=>{h.textContent=t('locErr')},{enableHighAccuracy:true,timeout:10000})};
 $('logout').onclick=async()=>{await account({action:'logout'});try{google.accounts.id.disableAutoSelect()}catch(e){}render();drawGbtn()};
 $('again').onclick=()=>{$('done').hidden=true;$('book-ui').hidden=false;S.time=null;load()};
 $('form').onsubmit=async(e)=>{e.preventDefault();const msg=$('msg');msg.className='f full msg err';

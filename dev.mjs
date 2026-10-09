@@ -1,5 +1,5 @@
 import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
-const routes = { '/api/public': './api/public.js', '/api/book': './api/book.js', '/api/admin': './api/admin.js', '/api/account': './api/account.js' };
+const routes = { '/api/public': './api/public.js', '/api/book': './api/book.js', '/api/admin': './api/admin.js', '/api/account': './api/account.js', '/api/address': './api/address.js' };
 http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x');
   if (routes[u.pathname]) {

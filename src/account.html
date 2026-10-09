@@ -1,0 +1,192 @@
+<title>Mine ture · DogMan Walking Club</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://dmw.cansasmaz.com/account/">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#e7ebf0; --text:#1d1d1f; --muted:#62636a; --sh-d:#c3cad4; --sh-l:#ffffff;
+  --accent:#b44d08; --grad:linear-gradient(135deg,#ffad5c,#f07a1e); --on-grad:#1d1d1f; --ok:#1f7a45; --err:#b8311a;
+  --raise:9px 9px 20px var(--sh-d),-9px -9px 20px var(--sh-l);
+  --raise-sm:5px 5px 11px var(--sh-d),-5px -5px 11px var(--sh-l);
+  --inset-sm:inset 3px 3px 6px var(--sh-d),inset -3px -3px 6px var(--sh-l);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font:400 17px/1.5 var(--font);-webkit-font-smoothing:antialiased;letter-spacing:-.011em}
+h1,h2,h3{margin:0;letter-spacing:-.025em}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+svg{display:block}
+.small{font-size:.85rem;color:var(--muted);font-weight:500}
+.top{position:sticky;top:12px;z-index:10;margin:12px auto 0;max-width:880px;padding-inline:12px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px 10px 16px;border-radius:999px;background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);box-shadow:var(--raise-sm)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.02rem;text-decoration:none;letter-spacing:-.02em;white-space:nowrap}
+.mark{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;color:var(--accent);box-shadow:var(--raise-sm)}
+.mark svg{width:18px;height:18px}
+.nav{display:flex;gap:8px;align-items:center}
+.seg{display:flex;padding:4px;border-radius:999px;box-shadow:var(--inset-sm)}
+.seg button{font:600 .78rem var(--font);padding:6px 11px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--bg);color:var(--text);box-shadow:2px 2px 5px var(--sh-d),-2px -2px 5px var(--sh-l)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 .95rem var(--font);padding:12px 20px;border-radius:999px;border:0;text-decoration:none;cursor:pointer;background:var(--bg);color:var(--text);box-shadow:var(--raise-sm)}
+.btn:active{box-shadow:var(--inset-sm)}
+.btn.primary{background:var(--grad);color:var(--on-grad)}
+.btn.sm{padding:9px 15px;font-size:.88rem}
+.btn svg{width:16px;height:16px}
+main{max-width:880px;margin:0 auto;padding:48px 20px 72px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.eyebrow{font-size:.95rem;font-weight:600;color:var(--accent)}
+h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-top:6px}
+.card{border-radius:30px;box-shadow:var(--raise);padding:26px}
+.me{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+.me img{width:56px;height:56px;border-radius:50%;flex:none;box-shadow:var(--raise-sm)}
+.me .who{flex:1;min-width:180px;display:flex;flex-direction:column}
+.me .who b{font-size:1.1rem}
+.me dl{display:flex;gap:6px 22px;flex-wrap:wrap;margin:12px 0 0;width:100%;font-size:.9rem}
+.me dl div{display:flex;gap:6px}.me dt{color:var(--muted)}.me dd{margin:0;font-weight:600}
+.link{font:600 .9rem var(--font);color:var(--accent);background:none;border:0;cursor:pointer;padding:4px}
+.login{text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;padding:40px 26px}
+.login p{color:var(--muted);max-width:42ch}
+#gbtn{min-height:44px}
+.list{display:flex;flex-direction:column;gap:22px}
+.walk{display:grid;grid-template-columns:auto 1fr auto;gap:18px 22px;align-items:center;border-radius:28px;box-shadow:var(--raise);padding:22px}
+.date{width:78px;padding:10px 0;border-radius:20px;box-shadow:var(--inset-sm);text-align:center;line-height:1.1}
+.date small{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+.date b{display:block;font-size:1.8rem;font-weight:800;letter-spacing:-.04em;margin:2px 0}
+.date span{display:block;font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase}
+.info{min-width:0;display:flex;flex-direction:column;gap:4px}
+.info h3{font-size:1.15rem}
+.info .meta{color:var(--muted);font-size:.92rem}
+.st{align-self:flex-start;font-size:.78rem;font-weight:700;padding:5px 11px;border-radius:999px;box-shadow:var(--inset-sm);color:var(--muted)}
+.st.confirmed{color:var(--ok)}.st.pending{color:var(--accent)}
+.right{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.right .price{font-size:1.25rem;font-weight:800;letter-spacing:-.03em}
+.actions{grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap;padding-top:14px;border-top:1px solid color-mix(in srgb,var(--muted) 20%,transparent)}
+.empty{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;padding:44px 26px}
+.empty p{color:var(--muted)}
+.msg{color:var(--err);font-weight:600;margin-bottom:16px}
+.skeleton{height:120px;border-radius:28px;box-shadow:var(--inset-sm);opacity:.6}
+@media (max-width:640px){
+  main{padding:32px 16px 56px}
+  .brand span.name{display:none}
+  .walk{grid-template-columns:auto 1fr;padding:18px;gap:14px 16px}
+  .right{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center}
+  .date{width:68px}
+}
+</style>
+
+<header class="top">
+  <div class="bar">
+    <a class="brand" href="/"><span class="mark" data-icon="paw"></span><span class="name">DogMan Walking Club</span></a>
+    <nav class="nav">
+      <a class="btn primary sm" href="/#book" data-t="bookNew"></a>
+      <div class="seg" role="group" aria-label="Language"><button type="button" data-lang="da">DA</button><button type="button" data-lang="en">EN</button></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="head"><div><span class="eyebrow" data-t="eyebrow"></span><h1 data-t="title"></h1></div></div>
+  <div class="msg" id="msg" role="status" hidden></div>
+
+  <div id="loading"><div class="skeleton"></div></div>
+
+  <div class="card login" id="login" hidden>
+    <span class="mark" data-icon="paw" style="width:56px;height:56px"></span>
+    <h2 data-t="loginTitle" style="font-size:1.5rem"></h2>
+    <p data-t="loginText"></p>
+    <div id="gbtn"></div>
+    <a class="small" href="/#book" data-t="guest"></a>
+  </div>
+
+  <div id="app" hidden>
+    <div class="card me">
+      <img id="pic" alt="" referrerpolicy="no-referrer" hidden>
+      <div class="who"><b id="name"></b><span class="small" id="email"></span></div>
+      <button type="button" class="link" id="logout" data-t="logout"></button>
+      <dl id="details"></dl>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+</main>
+
+<script>
+const T={
+da:{bookNew:'Book en tur',eyebrow:'Din konto',title:'Mine ture',loginTitle:'Log ind for at se dine ture',loginText:'Log ind med den Google-konto, du bookede med, så kan du se og aflyse dine kommende gåture.',guest:'Eller book uden at logge ind →',
+logout:'Log ud',phone:'Telefon',address:'Adresse',dog:'Hund',walk:'Gåtur · 30 min.',dog1:'hund',dogN:'hunde',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',
+st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys turen',sure:'Ja, aflys',calendar:'Tilføj til kalender',
+emptyTitle:'Ingen kommende ture',emptyText:'Når du booker en gåtur, kan du se den her.',today:'I dag',tomorrow:'I morgen',
+cancelled:'Turen er aflyst.',eServer:'Noget gik galt. Prøv igen om lidt.',eLogin:'Log ind mislykkedes. Prøv igen.',calTitle:'Gåtur med DogMan Walking Club'},
+en:{bookNew:'Book a walk',eyebrow:'Your account',title:'My walks',loginTitle:'Sign in to see your walks',loginText:'Sign in with the Google account you booked with to see and cancel your upcoming walks.',guest:'Or book without signing in →',
+logout:'Log out',phone:'Phone',address:'Address',dog:'Dog',walk:'Walk · 30 min.',dog1:'dog',dogN:'dogs',once:'Once',weekly:'Every week',multi:'Several times a week',
+st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel walk',sure:'Yes, cancel',calendar:'Add to calendar',
+emptyTitle:'No upcoming walks',emptyText:'When you book a walk, it will show up here.',today:'Today',tomorrow:'Tomorrow',
+cancelled:'The walk is cancelled.',eServer:'Something went wrong. Try again shortly.',eLogin:'Sign-in failed. Please try again.',calTitle:'Dog walk with DogMan Walking Club'}};
+const PAW='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="10" r="2.1"/><circle cx="9.2" cy="5.4" r="2.1"/><circle cx="14.8" cy="5.4" r="2.1"/><circle cx="18.5" cy="10" r="2.1"/><path d="M12 11.2c-3 0-6 4-6 6.4 0 1.7 1.3 2.6 3 2.6 1.3 0 2-.6 3-.6s1.7.6 3 .6c1.7 0 3-.9 3-2.6 0-2.4-3-6.4-6-6.4z"/></svg>';
+const CAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>';
+const $=(id)=>document.getElementById(id);
+let lang='da';try{lang=localStorage.getItem('lang')||((navigator.language||'da').toLowerCase().startsWith('da')?'da':'en')}catch(e){}
+const t=(k)=>T[lang][k]??k;
+const loc=()=>lang==='da'?'da-DK':'en-GB';
+const parse=(s)=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const kr=(n)=>n.toLocaleString(loc())+' kr.';
+const S={state:'loading',user:null,bookings:[],config:null,today:null,gis:false};
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+function flash(text,ok){const m=$('msg');m.hidden=!text;m.textContent=text||'';m.style.color=ok?'var(--ok)':''}
+
+async function account(body){
+  const r=await fetch('/api/account',{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  const j=await r.json();if(!r.ok)throw new Error(j.error||'server');S.user=j.user;S.bookings=j.bookings||[];S.state=S.user?'in':'out';
+}
+// Calendar file for one walk (floating local time, 30 minutes).
+function ics(b){
+  const d=b.date.replace(/-/g,''),tm=(b.time||'09:00').replace(':','')+'00',stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
+  const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//DogMan Walking Club//DA','BEGIN:VEVENT','UID:'+b.id+'@dmw.cansasmaz.com','DTSTAMP:'+stamp,'DTSTART:'+d+'T'+tm,'DURATION:PT30M','SUMMARY:'+t('calTitle'),'URL:https://dmw.cansasmaz.com/account/','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/calendar'}));a.download='dogman-'+b.date+'.ics';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function walkCard(b){
+  const dt=parse(b.date),card=el('article','walk'),date=el('div','date');
+  const rel=b.date===S.today?t('today'):'';
+  date.append(el('small',null,rel||dt.toLocaleDateString(loc(),{weekday:'short'}).replace('.','')),el('b',null,dt.getDate()),el('span',null,dt.toLocaleDateString(loc(),{month:'short'}).replace('.','')));
+  const info=el('div','info');
+  info.append(el('h3',null,(b.time?b.time+' · ':'')+dt.toLocaleDateString(loc(),{weekday:'long',day:'numeric',month:'long'})),
+    el('div','meta',[t('walk'),b.pets+' '+t(b.pets===1?'dog1':'dogN'),t(b.freq||'once')].join(' · ')));
+  const right=el('div','right');right.append(el('span','st '+b.status,t('st_'+b.status)));if(b.estimate!=null)right.append(el('span','price',kr(b.estimate)));
+  const actions=el('div','actions');
+  const cal=el('button','btn sm');cal.type='button';cal.innerHTML=CAL;cal.append(t('calendar'));cal.onclick=()=>ics(b);
+  const cancel=el('button','link',t('cancel'));cancel.type='button';
+  cancel.onclick=async()=>{if(!cancel.dataset.sure){cancel.dataset.sure=1;cancel.textContent=t('sure');return}
+    cancel.disabled=true;try{await account({action:'cancel',id:b.id});flash(t('cancelled'),true)}catch(e){flash(t('eServer'))}render()};
+  actions.append(cal,cancel);
+  card.append(date,info,right,actions);return card;
+}
+function render(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+  $('loading').hidden=S.state!=='loading';$('login').hidden=S.state!=='out';$('app').hidden=S.state!=='in';
+  if(S.state!=='in')return;
+  const u=S.user;$('name').textContent=u.name||u.email;$('email').textContent=u.email;$('pic').hidden=!u.picture;if(u.picture)$('pic').src=u.picture;
+  $('details').replaceChildren(...[['phone',u.phone],['address',u.address],['dog',[u.dog,u.breed].filter(Boolean).join(', ')]].filter(r=>r[1]).map(([k,v])=>{const d=el('div');d.append(el('dt',null,t(k)),el('dd',null,v));return d}));
+  const list=S.bookings.filter(b=>b.status!=='cancelled');
+  if(!list.length){const e=el('div','card empty');e.append(el('h2',null,t('emptyTitle')),el('p',null,t('emptyText')));const a=el('a','btn primary',t('bookNew'));a.href='/#book';e.append(a);$('list').replaceChildren(e)}
+  else $('list').replaceChildren(...list.map(walkCard));
+}
+function drawGbtn(){if(!window.google?.accounts?.id||S.state!=='out')return;$('gbtn').replaceChildren();
+  google.accounts.id.renderButton($('gbtn'),{theme:matchMedia('(prefers-color-scheme: dark)').matches?'filled_black':'outline',size:'large',shape:'pill',text:'continue_with',locale:lang,width:280})}
+function loadGis(){const cid=S.config?.googleClientId;if(!cid||S.gis)return;S.gis=true;const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;
+  sc.onload=()=>{google.accounts.id.initialize({client_id:cid,use_fedcm_for_prompt:true,callback:async(r)=>{try{await account({action:'login',credential:r.credential});flash('')}catch(e){flash(t('eLogin'))}render()}});drawGbtn()};
+  document.head.append(sc)}
+
+document.querySelectorAll('[data-icon]').forEach(e=>e.innerHTML=PAW);
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('lang',lang)}catch(e){}render();drawGbtn()});
+$('logout').onclick=async()=>{try{await account({action:'logout'})}catch(e){}S.state='out';try{google.accounts.id.disableAutoSelect()}catch(e){}render();drawGbtn()};
+(async()=>{
+  render();
+  const [pub]=await Promise.all([fetch('/api/public').then(r=>r.json()).catch(()=>null),account().catch(()=>{S.state='out'})]);
+  if(pub){S.config=pub.config;S.today=pub.today}
+  render();loadGis();
+})();
+</script>

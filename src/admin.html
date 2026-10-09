@@ -104,7 +104,7 @@ function render(){
 function card(b){
   const pills=[el('span',{className:'pill '+b.status,textContent:b.status})];if(b.paid)pills.push(el('span',{className:'pill paid',textContent:'paid'}));if(b.user)pills.push(el('span',{className:'pill',textContent:'google'}));
   const rows=[['Owner',b.name],['Phone',b.phone],['Email',b.email],['Address',b.address],['Pet',[b.dog,b.breed,b.size,b.pets>1?b.pets+' pets':''].filter(Boolean).join(' · ')],['Estimate',b.estimate!=null?b.estimate+' kr.':''],['How often',{weekly:'Every week',multi:'Several times a week'}[b.freq]||''],['Notes',b.notes],['Booked',b.created.slice(0,10)+' via '+b.source]].filter(r=>r[1]);
-  const dl=el('dl',{});rows.forEach(r=>dl.append(el('dt',{textContent:r[0]}),el('dd',{textContent:r[1]})));
+  const dl=el('dl',{});rows.forEach(r=>{const dd=el('dd',{});if(r[0]==='Address')dd.append(el('a',{href:'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(r[1]),target:'_blank',rel:'noopener',textContent:r[1]+' ↗'}));else dd.textContent=r[1];dl.append(el('dt',{textContent:r[0]}),dd)});
   const btn=(txt,body,cls)=>{const x=el('button',{type:'button',textContent:txt,className:cls||''});x.onclick=()=>act({id:b.id,...body});return x};
   const actions=el('div',{className:'row'});
   if(b.status==='pending')actions.append(btn('Confirm',{action:'status',status:'confirmed'},'p'));
