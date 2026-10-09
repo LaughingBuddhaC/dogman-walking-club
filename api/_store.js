@@ -1,7 +1,9 @@
 // Storage: Upstash Redis over REST (Vercel Marketplace). Falls back to memory for local dev.
 import crypto from 'node:crypto';
-const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+// Vercel may add a custom prefix (e.g. dogmandb_KV_REST_API_URL), so match on the suffix.
+const env = (suffix) => process.env[Object.keys(process.env).find((k) => k.endsWith(suffix))];
+const URL_ = env('KV_REST_API_URL') || env('UPSTASH_REDIS_REST_URL');
+const TOKEN = env('KV_REST_API_TOKEN') || env('UPSTASH_REDIS_REST_TOKEN');
 export const hasDb = !!(URL_ && TOKEN);
 const mem = globalThis.__dogmanMem || (globalThis.__dogmanMem = { str: {}, hash: {} });
 
