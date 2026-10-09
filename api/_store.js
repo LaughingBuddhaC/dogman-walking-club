@@ -54,7 +54,10 @@ export async function getConfig() {
     const s = (saved.services || []).find((x) => x.id === d.id);
     return s ? { ...d, price: s.price ?? null, extra: s.extra ?? null } : d;
   });
-  return { ...DEFAULT_CONFIG, ...saved, services };
+  const config = { ...DEFAULT_CONFIG, ...saved, services };
+  // Admin setting wins; otherwise fall back to the GOOGLE_CLIENT_ID env var (a public value).
+  config.googleClientId = config.googleClientId || process.env.GOOGLE_CLIENT_ID || '';
+  return config;
 }
 export function estimate(svc, units, pets) {
   if (svc.price == null) return null;
