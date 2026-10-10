@@ -85,8 +85,11 @@ export default async function handler(req, res) {
     }
     const [config, bookings, slots] = await Promise.all([s.getConfig(), s.getBookings(), s.getSlots()]);
     const members = (await s.getUsers()).filter((u) => u.membership).map(({ sub, name, email, phone, membership }) => ({ sub, name, email, phone, membership }));
-    const [reviews, dogs, withdrawals] = await Promise.all([s.getReviews(), s.getDogs(), s.getWithdrawals()]);
+    const [reviews, dogs, withdrawals, users] = await Promise.all([s.getReviews(), s.getDogs(), s.getWithdrawals(), s.getUsers()]);
+    // Profiles (dog declaration, vet, emergency contact) of customers with bookings – filled in on "Mine ture".
+    const withBookings = new Set(bookings.map((b) => b.user).filter(Boolean));
+    const profiles = Object.fromEntries(users.filter((u) => withBookings.has(u.sub)).map((u) => [u.sub, { pets: u.pets || [], vet: u.vet || '', emergency: u.emergency || '' }]));
     res.status(200).json({ config, bookings, members, today: s.today(), blocked: Object.keys(slots).filter((k) => slots[k] === 'blocked'),
-      reviews: reviews.sort((a, b) => b.at.localeCompare(a.at)), dogs, withdrawals });
+      reviews: reviews.sort((a, b) => b.at.localeCompare(a.at)), dogs, withdrawals, profiles });
   } catch (e) { res.status(500).json({ error: 'server' }); }
 }

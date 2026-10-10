@@ -54,9 +54,17 @@ export default async function handler(req, res) {
     if (b.action === 'join') {
       const plan = (await s.getConfig()).plans.find((p) => p.id === b.plan && p.active);
       if (!plan) return res.status(400).json({ error: 'plan' });
-      if (b.accept !== true) return res.status(400).json({ error: 'terms' });
+      // The terms are linked next to the plans: choosing a plan accepts them.
       s.requestMembership(user, plan);
-      user.terms = user.membership.terms = { v: s.TERMS_VERSION, at: new Date().toISOString() };
+      user.terms = user.membership.terms = { v: s.TERMS_VERSION, at: new Date().toISOString(), how: 'join' };
+      await s.saveUser(user);
+    }
+    // Optional profile on "Mine ture": pets with the dog declaration, vet and emergency contact.
+    if (b.action === 'profile') {
+      const str = (v, n) => String(v ?? '').trim().slice(0, n);
+      user.pets = (Array.isArray(b.pets) ? b.pets : []).slice(0, 10).map(s.cleanPet).filter((p) => p.name);
+      user.vet = str(b.vet, 120); user.emergency = str(b.emergency, 120);
+      if (user.pets[0]) { user.dog = user.pets[0].name; user.breed = user.pets[0].breed; user.size = user.pets[0].size; }
       await s.saveUser(user);
     }
     // A review: 1–5 stars, text, optional photo. Only customers who have had a walk; shown after the admin approves.

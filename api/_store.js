@@ -187,7 +187,7 @@ export const liveKeys = async () => Object.keys(pairs(await cmd('HGETALL', 'live
 export function mergePoints(old, add) {
   const seen = new Set(), out = [];
   for (const p of [...old, ...add].sort((a, b) => a[2] - b[2])) {
-    const id = Math.round(p[2] / 1000);
+    const id = p[2];
     if (!seen.has(id)) { seen.add(id); out.push(p); }
   }
   return out.slice(-4000);
@@ -308,6 +308,22 @@ export async function freeAll(b) {
   for (const k of slotKeys(b)) if ((await slotOwner(k)) === b.id) await freeSlot(k);
 }
 
+// A pet profile. Dogs may carry the owner's declaration (hundeerklæring) – optional, filled in on "Mine ture":
+// vaccinated, chipped, liability insurance, bite history, ok with other dogs, health notes. Only answered fields are kept.
+export function cleanPet(p) {
+  const type = p?.type === 'cat' ? 'cat' : 'dog', one = (v, ok) => (ok.includes(v) ? v : undefined), out = {
+    name: clean(p?.name, 40), type, size: ['S', 'M', 'L'].includes(p?.size) ? p.size : '', breed: clean(p?.breed, 40) };
+  if (type === 'dog') {
+    if (typeof p?.vacc === 'boolean') out.vacc = p.vacc;
+    if (typeof p?.chip === 'boolean') out.chip = p.chip;
+    if (p?.ins) out.ins = clean(p.ins, 80);
+    if (one(p?.bite, ['no', 'yes'])) out.bite = p.bite;
+    if (one(p?.social, ['yes', 'no', 'unsure'])) out.social = p.social;
+  }
+  if (p?.health) out.health = clean(p.health, 300);
+  return out;
+}
+export const declDone = (p) => p.type !== 'dog' || !!(p.vacc && p.chip && p.ins && p.bite && p.social);
 // Validates and normalises a booking. Returns { error } or { booking }.
 // Plans: "once" = one or more chosen dates, "weekly" = weekdays from a start date (REPEAT_WEEKS weeks),
 // "range" = drop-off date to pick-up date (overnight services). Older single-date input still works.
@@ -354,15 +370,7 @@ export function buildBooking(input, config, { admin = false, member = false } = 
 
   // Pets: a list of profiles (name, dog/cat, size, breed); older input only sends a count.
   const allowed = SERVICE_PETS[svc.id] || ['dog', 'cat'];
-  // Dogs also carry the owner's declaration (hundeerklæring): vaccinated, chipped, liability insurance, bite history,
-  // ok with other dogs, health notes.
-  const one = (v, ok) => (ok.includes(v) ? v : '');
-  const petList = (Array.isArray(input.petList) ? input.petList : []).slice(0, 6).map((p) => {
-    const type = p?.type === 'cat' ? 'cat' : 'dog';
-    return { name: clean(p?.name, 40), type, size: ['S', 'M', 'L'].includes(p?.size) ? p.size : '', breed: clean(p?.breed, 40),
-      ...(type === 'dog' ? { vacc: p?.vacc === true, chip: p?.chip === true, ins: clean(p?.ins, 80), bite: one(p?.bite, ['no', 'yes']), social: one(p?.social, ['yes', 'no', 'unsure']) } : {}),
-      health: clean(p?.health, 300) };
-  });
+  const petList = (Array.isArray(input.petList) ? input.petList : []).slice(0, 6).map(cleanPet);
   if (petList.some((p) => !allowed.includes(p.type))) return { error: 'pets' };
   const pets = petList.length || Math.min(6, Math.max(1, parseInt(input.pets, 10) || 1));
 
@@ -370,14 +378,6 @@ export function buildBooking(input, config, { admin = false, member = false } = 
   if (!name || phone.replace(/\D/g, '').length < 8) return { error: 'contact' };
   // Customers need an email for the booking receipt and the confirmation (admin-made bookings may skip it).
   if (!admin && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(clean(input.email, 120))) return { error: 'email' };
-  if (!admin) {
-    if (!petList.length) return { error: 'pets' };
-    for (const p of petList.filter((x) => x.type === 'dog')) {
-      if (!p.vacc || !p.chip) return { error: 'vacc' };                 // only vaccinated, chipped dogs
-      if (!p.ins || !p.bite || !p.social) return { error: 'decl' };
-    }
-    if (input.accept !== true) return { error: 'terms' };              // terms + declaration accepted
-  }
   const units = dates.length; // nights for a range, otherwise visits/walks/days
   const first = petList[0] || {};
   return { booking: {
@@ -390,7 +390,8 @@ export function buildBooking(input, config, { admin = false, member = false } = 
     dog: clean(input.dog, 60) || first.name || '', breed: clean(input.breed, 60) || first.breed || '', size: clean(input.size, 10) || first.size || '',
     notes: clean(input.notes, 600),
     vet: clean(input.vet, 120), emergency: clean(input.emergency, 120),
-    terms: admin ? null : { v: TERMS_VERSION, at: new Date().toISOString() },
+    // The terms are linked right above the send button: sending the booking accepts them (nothing to tick).
+    terms: admin ? null : { v: TERMS_VERSION, at: new Date().toISOString(), how: 'submit' },
     freq: plan === 'weekly' ? 'weekly' : ['weekly', 'multi'].includes(input.freq) ? input.freq : 'once',
     lang: input.lang === 'en' ? 'en' : 'da', status: admin ? 'confirmed' : 'pending', paid: false, source: admin ? 'admin' : 'web'
   } };

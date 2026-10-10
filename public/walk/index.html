@@ -110,6 +110,9 @@ function hav(a,b){const r=Math.PI/180,dLat=(b[0]-a[0])*r,dLon=(b[1]-a[1])*r,h=Ma
 function km(pts){let m=0,prev=null;for(const p of pts){if(p[3]>40)continue;if(prev){const d=hav(prev,p),dt=Math.max(1,(p[2]-prev[2])/1000);if(d/dt>=4)continue;if(d>2)m+=d}prev=p}return m/1000}
 async function api(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json','x-admin-password':pw},body:body?JSON.stringify(body):undefined});
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'server');return j}
+// Booking pets enriched with the owner's profile (dog declaration, vet, emergency contact from "Mine ture").
+function withProfile(b){const pr=(A.data.profiles||{})[b.user]||{},find=(n)=>(pr.pets||[]).find(x=>x.name&&n&&x.name.toLowerCase()===n.toLowerCase())||{};
+  return {pets:(b.petList||[]).map(p=>({...find(p.name),...Object.fromEntries(Object.entries(p).filter(([k,v])=>v!==''&&v!=null))})),vet:b.vet||pr.vet||'',emergency:b.emergency||pr.emergency||''}}
 const covers=(b,d)=>b.status!=='cancelled'&&(b.end?d>=b.date&&d<b.end:(b.dates&&b.dates.length?b.dates:[b.date]).includes(d));
 function renderList(){
   $('list').hidden=false;$('active').hidden=true;$('done').hidden=true;
@@ -121,9 +124,10 @@ function renderList(){
     if(b.address){const a=el('a',null,b.address+' ↗');a.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(b.address);a.target='_blank';c.append(a)}
     const pets=(b.petList||[]).map(p=>[p.name,p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · ');if(pets)c.append(el('div','small',pets));
     // From the owner's declaration: what the walker must know before leaving the door.
-    const warn=(b.petList||[]).flatMap(p=>[p.bite==='yes'&&(p.name||'Dog')+' has bitten / attacked before',p.social==='no'&&(p.name||'Dog')+': not with other dogs',p.health&&(p.name||'Dog')+': '+p.health]).filter(Boolean);
+    const pf=withProfile(b);
+    const warn=pf.pets.flatMap(p=>[p.bite==='yes'&&(p.name||'Dog')+' has bitten / attacked before',p.social==='no'&&(p.name||'Dog')+': not with other dogs',p.health&&(p.name||'Dog')+': '+p.health]).filter(Boolean);
     warn.forEach(w=>{const x=el('div','small','⚠ '+w);x.style.color='var(--err)';x.style.fontWeight='600';c.append(x)});
-    if(b.vet)c.append(el('div','small','Vet: '+b.vet));if(b.emergency)c.append(el('div','small','Emergency contact: '+b.emergency));
+    if(pf.vet)c.append(el('div','small','Vet: '+pf.vet));if(pf.emergency)c.append(el('div','small','Emergency contact: '+pf.emergency));
     if(b.notes)c.append(el('div','small','“'+b.notes+'”'));if(b.meet)c.append(el('div','small','Wants a free meet & greet first'));
     const w=b.walks&&b.walks[A.day];
     if(w)c.append(el('div','small','✓ Walked '+w.km+' km in '+w.minutes+' min'));

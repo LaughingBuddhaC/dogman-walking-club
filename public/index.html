@@ -194,15 +194,7 @@ form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .scard[aria-pressed="true"] b{color:var(--accent)}
 .svc-desc{font-size:.85rem;color:var(--muted)}
 #pet-list{display:flex;flex-direction:column;gap:10px}
-.petw{display:flex;flex-direction:column;gap:8px}
-.decl{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:18px;box-shadow:var(--raise-sm);font-size:.9rem}
-.decl-h{font-size:.92rem}
-.decl input:not([type=checkbox]){font:400 .92rem var(--font);padding:10px 12px;border:0;border-radius:12px;background:var(--bg);color:var(--text);box-shadow:var(--inset-sm);width:100%;outline:none}
-.decl input[type=checkbox]{-webkit-appearance:auto;appearance:auto;width:20px;height:20px;accent-color:#f07a1e;margin:1px 0 0;flex:none}
-.decl-q{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
-.decl-ok{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--ok);font-weight:600}
-.warnbox{font-size:.85rem;line-height:1.5;padding:14px 16px;border-radius:18px;box-shadow:var(--inset-sm)}
-.warnbox a,.checkrow a{color:var(--accent)}
+.fine a{color:var(--accent)}
 .reviews{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px;margin-top:40px}
 .rev{border-radius:30px;box-shadow:var(--raise);padding:14px 14px 22px;display:flex;flex-direction:column;gap:10px}
 .rev .ph{aspect-ratio:4/3;border-radius:20px;overflow:hidden;box-shadow:var(--inset-sm);display:grid;place-items:center;color:var(--accent)}
@@ -432,14 +424,11 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
               <div class="f full ac"><div class="ac-top"><label for="address" data-t="fAddress"></label><button type="button" class="locbtn" id="locate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span data-t="useLoc"></span></button></div><input id="address" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="addr-list" data-tp="addrPh"><ul class="ac-list" id="addr-list" role="listbox" hidden></ul><span class="ac-hint" id="addr-hint" role="status"></span></div>
               <div class="f full"><label for="email" data-t="fEmail"></label><input id="email" type="email" autocomplete="email" required></div>
               <div class="f full"><label for="notes" data-t="fMsg"></label><textarea id="notes" rows="3" data-tp="msgPh"></textarea></div>
-              <div class="f"><label for="vet" data-t="fVet"></label><input id="vet" autocomplete="off"></div>
-              <div class="f"><label for="emergency" data-t="fEmergency"></label><input id="emergency" autocomplete="off"></div>
               <label class="f full checkrow"><input type="checkbox" id="meet" checked><span data-t="meetLabel"></span></label>
               <label class="f full checkrow" id="credit-row" hidden><input type="checkbox" id="use-credits" checked><span id="credit-label"></span></label>
-              <div class="f full warnbox" data-th="insWarn"></div>
-              <label class="f full checkrow"><input type="checkbox" id="accept"><span data-th="acceptHtml"></span></label>
               <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" tabindex="-1" autocomplete="off"></div>
               <div class="f full summary" id="summary"></div>
+              <p class="f full fine" data-th="termsLine"></p>
               <div class="f full"><button class="btn primary submit" type="submit" id="submit" data-t="send"></button></div>
               <div class="f full msg" id="msg" role="status"></div>
               <p class="f full fine" data-t="privacy"></p>
@@ -527,14 +516,7 @@ capDuo:'Klar til regnvejr',capSummit:'På toppen',capSnow:'I sneen',altDuo:'Can 
 clubLabel:'Kommer senere',clubTitle:'Fælles ture for hundeejere',clubText:'Klubben starter med daglige gåture. Senere kommer der månedlige ture for hundeejere og deres hunde.',
 moreLabel:'Andre ydelser',moreTitle:'Brug for mere end en gåtur?',moreText:'Jeg tilbyder også pasning, dagpleje og hjemmebesøg – du kan booke det hele direkte i kalenderen ovenfor.',ctaPawshake:'Se Pawshake-profil',
 boarding:'Hundepasning (24 t hos mig)',daycare:'Hundedagpleje (om dagen hos mig)',housesit:'Huspasning (24 t hos dig)',visit1:'Ét hjemmebesøg om dagen (30 min.)',visit2:'To hjemmebesøg om dagen (2 × 30 min.)',
-uNight:'pr. nat',uDay:'pr. dag',xPet:'+{n} kr. pr. ekstra dyr',footer:'Hundeluftning i Skovlunde',privacyLink:'Privatlivspolitik',termsLink:'Handelsbetingelser',withdrawLink:'Fortryd køb',fVet:'Din dyrlæge (navn og telefon)',fEmergency:'Nødkontakt, hvis jeg ikke kan få fat i dig',
-declTitle:'Hundeerklæring for {n}',declDone:'✓ Hundeerklæring udfyldt for {n}',declEdit:'Ret',thisDog:'hunden',
-dVacc:'Vaccineret og ormebehandlet efter dyrlægens anbefaling *',dChip:'Chippet og registreret i Dansk Hunderegister *',dIns:'Ansvarsforsikring: selskab og policenr. *',
-dBite:'Har hunden bidt eller angrebet et menneske eller en anden hund? *',dSocial:'Kan hunden gå sammen med andre hunde? *',oNo:'Nej',oYes:'Ja',oUnsure:'Ved ikke',
-dHealth:'Helbred, medicin, allergier eller adfærd, jeg bør kende',
-insWarn:'⚠️ <b>Forsikring:</b> Din hunds ansvarsforsikring dækker skader, hunden gør på andre – ikke skader på din egen hund. Uden sygeforsikring betaler du selv dyrlægen, også ved et uheld på turen, som ikke skyldes min fejl. <a href="/vilkaar/#forsikring" target="_blank">Læs mere</a>',
-acceptHtml:'Jeg accepterer <a href="/vilkaar/" target="_blank">handelsbetingelser og ansvarsvilkår</a> og bekræfter, at hundeerklæringen er korrekt, og at min hund har lovpligtig ansvarsforsikring og ikke er af en forbudt race. Jeg ønsker, at ydelsen leveres inden fortrydelsesfristen udløber, og ved, at fortrydelsesretten bortfalder, når ydelsen er fuldt udført. *',
-eAccept:'Sæt flueben ved vilkårene for at booke.',eDecl:'Udfyld hundeerklæringen for alle hunde (forsikring og de to spørgsmål).',eVacc:'Jeg kan kun gå med hunde, der er vaccinerede og chippede.',
+uNight:'pr. nat',uDay:'pr. dag',xPet:'+{n} kr. pr. ekstra dyr',footer:'Hundeluftning i Skovlunde',privacyLink:'Privatlivspolitik',termsLink:'Handelsbetingelser',withdrawLink:'Fortryd køb',termsLine:'Når du sender bookingen, accepterer du <a href="/vilkaar/" target="_blank">handelsbetingelserne</a>. Hundeerklæring, dyrlæge og nødkontakt kan du udfylde bagefter under Mine ture – det er frivilligt.',
 revLabel:'Anmeldelser',revTitle:'Det siger hundeejerne',revAvg:'★ {a} ud af 5',revCount:'{n} anmeldelser fra kunder',revCount1:'1 anmeldelse fra en kunde',revWrite:'Skriv en anmeldelse →',
 packLabel:'Flokken',packTitle:'Hunde, jeg har gået med',packCount:'{n} hunde indtil nu – og Boris, selvfølgelig.',packCount1:'1 hund indtil nu – og Boris, selvfølgelig.'},
 en:{plan_flex10:'10-walk card',plan_weekly2:'Weekly walker',plan_daily5:'Every weekday',plan_alfa:'Premium Alfa',planSub_alfa:'22 solo walks a month · follow the walk live on GPS · priority times · 1 night boarding',premTag:'Premium',planSub_flex10:'10 walks – use them whenever you like',planSub_weekly2:'8 walks a month – 2 a week',planSub_daily5:'22 walks a month – every weekday',perPack:'valid for {m} months',perMonth:'per month',perWalkSave:'{p} per walk · save {s}%',navMember:'Membership',memLabel:'Membership',memTitle:'Join the pack',memText:'Regular walks at a lower price. No lock-in – you pay with MobilePay when the period starts.',memPerk1:'Lower price per walk',memPerk2:'Book up to 3 months ahead',memPerk3:'A GPS route report after every walk – and badges for km and walks',memPerk4:'Unused credits come back when you cancel',joinCta:'Become a member',recTag:'Recommended',useCreditsLbl:'Use my credits ({n} left) – extra dogs are still charged.',noCredits:'You have {n} credits – not enough for all chosen walks.',creditsLine:'{n} with credits',eCredits:'You do not have enough credits for all chosen walks.',eCreditsEnd:'Some walks are after your membership ends.',creditsUsed:'{n} credits used',bookTitle2:'What do you need?',step1b:'Choose a service',step4:'Your details',step2b:'Your pets',step3b:'When?',sv_walk:'Dog walk',sv_visit1:'Home visit',sv_visit2:'2 visits a day',sv_daycare:'Day care',sv_boarding:'Boarding',sv_housesit:'House sitting',onReq:'Price on request',petName:'Name',dog:'Dog',cat:'Cat',addPet:'+ Add a pet',remove:'Remove',petNote:'This service is for dogs only.',planOnce:'One or more days',planWeekly:'Every week',prevMonth:'Previous month',nextMonth:'Next month',hintOnce:'Pick one or more days in the calendar.',hintWeekly:'Choose weekdays and the first day in the calendar.',hintRange:'Pick the drop-off day and the pick-up day.',hintEnd:'Now pick the pick-up day.',pickDayFirst:'Pick a day first.',noSlotsAll:'No free time on all the chosen days.',sumPick2:'Choose a service, pets and days.',sumTime:'Choose a time.',walk1:'walk',walkN:'walks',day1:'day',dayN:'days',night1:'night',nightN:'nights',visitDay1:'visit day',visitDayN:'visit days',at:'at',every:'Every',from:'from',desc_walk:'At least 30 minutes. I pick up and drop off at your door.',desc_visit1:'One visit a day at your home (at least 30 min.): food, water, play and company.',desc_visit2:'Two visits a day at your home (2 × 30 min.).',desc_daycare:'Daytime at my home with Boris: walks, play and rest.',desc_boarding:'24 hours at my home with Boris while you are away.',desc_housesit:'24 hours at your home – I stay in and look after your pets.',extraLine:'+{n} extra pet(s)',perWeek:'Per week',est8:'8 weeks in total',weeklyNote:'Repeats every week. I reserve the next 8 weeks, and then we extend together.',meetLabel:'I would like a free meet & greet (15 min.) before the first booking.',fMsg:'Message to Can',msgPh:'Tell me about your pet, keys, routines…',eDates:'Choose at least one day.',eRange:'Choose drop-off and pick-up days.',ePets:"Cats can't be booked for this service.",eTakenOn:'The time on {d} was just taken. Choose another time.',navWalk:'The walk',navAbout:'About',navBook:'Book',heroLabel:'Walks in',capRiver:'By the river',h1a:'Dog walking',h1b:'in Skovlunde',
@@ -562,14 +544,7 @@ capDuo:'Ready for rain',capSummit:'At the summit',capSnow:'In the snow',altDuo:'
 clubLabel:'Coming later',clubTitle:'Group walks for dog owners',clubText:'The club starts with daily walks. Monthly outings for dog owners and their dogs will follow.',
 moreLabel:'Other services',moreTitle:'Need more than a walk?',moreText:'I also offer sitting, day care and home visits – you can book all of it directly in the calendar above.',ctaPawshake:'See Pawshake profile',
 boarding:'Dog boarding (24h at my home)',daycare:'Doggy day care (daytime at my home)',housesit:'House sitting (24h at your home)',visit1:'One home visit a day (30 min.)',visit2:'Two home visits a day (2 × 30 min.)',
-uNight:'per night',uDay:'per day',xPet:'+{n} kr. per extra pet',footer:'Dog walking in Skovlunde',privacyLink:'Privacy policy',termsLink:'Terms',withdrawLink:'Withdraw a purchase',fVet:'Your vet (name and phone)',fEmergency:'Emergency contact if I cannot reach you',
-declTitle:'Dog declaration for {n}',declDone:'✓ Declaration filled in for {n}',declEdit:'Edit',thisDog:'your dog',
-dVacc:'Vaccinated and dewormed as recommended by the vet *',dChip:'Microchipped and registered in Dansk Hunderegister *',dIns:'Liability insurance: company and policy no. *',
-dBite:'Has the dog bitten or attacked a person or another dog? *',dSocial:'Can the dog walk with other dogs? *',oNo:'No',oYes:'Yes',oUnsure:'Not sure',
-dHealth:'Health, medicine, allergies or behaviour I should know about',
-insWarn:'⚠️ <b>Insurance:</b> Your dog\'s liability insurance covers damage your dog does to others – not injuries to your own dog. Without health insurance you pay the vet yourself, also after an accident on a walk that is not my fault. <a href="/vilkaar/#forsikring" target="_blank">Read more</a>',
-acceptHtml:'I accept the <a href="/vilkaar/" target="_blank">terms and liability conditions</a> and confirm that the dog declaration is correct, that my dog has the mandatory liability insurance and is not a banned breed. I ask for the service to start before the withdrawal period ends and know that the right of withdrawal lapses once the service is fully delivered. *',
-eAccept:'Tick the box to accept the terms.',eDecl:'Fill in the declaration for every dog (insurance and the two questions).',eVacc:'I can only walk dogs that are vaccinated and microchipped.',
+uNight:'per night',uDay:'per day',xPet:'+{n} kr. per extra pet',footer:'Dog walking in Skovlunde',privacyLink:'Privacy policy',termsLink:'Terms',withdrawLink:'Withdraw a purchase',termsLine:'By sending the booking you accept the <a href="/vilkaar/" target="_blank">terms</a>. You can add the dog declaration, vet and emergency contact afterwards under My walks – it is optional.',
 revLabel:'Reviews',revTitle:'What dog owners say',revAvg:'★ {a} out of 5',revCount:'{n} reviews from customers',revCount1:'1 review from a customer',revWrite:'Write a review →',
 packLabel:'The pack',packTitle:'Dogs I have walked',packCount:'{n} dogs so far – and Boris, of course.',packCount1:'1 dog so far – and Boris, of course.'}};
 const SV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
@@ -631,7 +606,7 @@ function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className
 const U={user:null,bookings:[],gis:false};
 async function account(body){try{const r=await fetch('/api/account',{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
   const j=await r.json();if(r.ok){U.user=j.user;U.bookings=j.bookings||[]}return r.ok}catch(e){return false}}
-function prefill(){if(!U.user)return;['name','phone','email','address','vet','emergency'].forEach(k=>{if(U.user[k]&&!$(k).value)$(k).value=U.user[k]});
+function prefill(){if(!U.user)return;['name','phone','email','address'].forEach(k=>{if(U.user[k]&&!$(k).value)$(k).value=U.user[k]});
   // First saved pet (or the older single-dog fields) fills an empty pet row.
   const saved=(U.user.pets&&U.user.pets[0])||(U.user.dog?{name:U.user.dog,type:'dog',size:U.user.size||'',breed:U.user.breed||''}:null);
   if(saved&&S.pets.length===1&&!S.pets[0].name)S.pets=[{...saved}]}
@@ -695,16 +670,6 @@ function petRow(p,i,ok){const r=el('div','pet'+(ok.includes(p.type)?'':' bad'));
   const breed=el('input','pb');breed.value=p.breed;breed.placeholder=t('fBreed');breed.setAttribute('aria-label',t('fBreed'));breed.oninput=()=>{p.breed=breed.value};
   const rm=el('button','pet-rm pr','×');rm.type='button';rm.setAttribute('aria-label',t('remove'));rm.style.visibility=S.pets.length>1?'visible':'hidden';rm.onclick=()=>{S.pets.splice(i,1);render()};
   r.append(name,seg,size,breed,rm);return r}
-// Hundeerklæring under each dog. Saved profiles arrive filled in and fold to one line.
-const declOk=(p)=>!!(p.vacc&&p.chip&&p.ins&&p.bite&&p.social);
-function declBox(p){const d=el('div','decl'),nm=p.name||t('thisDog');
-  if(declOk(p)&&!p._edit){const r=el('div','decl-ok'),b=el('button','link',t('declEdit'));b.type='button';b.onclick=()=>{p._edit=true;render()};r.append(el('span',null,t('declDone').replace('{n}',nm)),b);d.append(r);return d}
-  const cb=(k,lab)=>{const l=el('label','checkrow'),i=el('input');i.type='checkbox';i.checked=!!p[k];i.onchange=()=>{p[k]=i.checked};l.append(i,el('span',null,t(lab)));return l};
-  const inp=(k,lab)=>{const i=el('input');i.value=p[k]||'';i.placeholder=t(lab);i.setAttribute('aria-label',t(lab));i.oninput=()=>{p[k]=i.value};return i};
-  const q=(k,lab,opts)=>{const r=el('div','decl-q'),sg=el('div','seg2');r.append(el('span',null,t(lab)));
-    opts.forEach(([v,l])=>{const b=el('button',null,t(l));b.type='button';b.setAttribute('aria-pressed',p[k]===v);b.onclick=()=>{p[k]=v;render()};sg.append(b)});r.append(sg);return r};
-  d.append(el('b','decl-h',t('declTitle').replace('{n}',nm)),cb('vacc','dVacc'),cb('chip','dChip'),inp('ins','dIns'),
-    q('bite','dBite',[['no','oNo'],['yes','oYes']]),q('social','dSocial',[['yes','oYes'],['no','oNo'],['unsure','oUnsure']]),inp('health','dHealth'));return d}
 function renderCal(){
   const base=parse(S.today);base.setDate(1);base.setMonth(base.getMonth()+S.month);
   $('cal-label').textContent=base.toLocaleDateString(loc(),{month:'long',year:'numeric'});
@@ -733,7 +698,7 @@ function renderBooking(){
   $('svc-desc').textContent=t('desc_'+S.service);
   $('pet-saved').replaceChildren(...(U.user?.pets||[]).filter(p=>p.name&&!S.pets.some(x=>x.name.toLowerCase()===p.name.toLowerCase())).map(p=>{const c=el('button','chip','+ '+p.name);c.type='button';
     c.onclick=()=>{if(S.pets.length===1&&!S.pets[0].name)S.pets=[];if(S.pets.length<6)S.pets.push({...p});render()};return c}));
-  $('pet-list').replaceChildren(...S.pets.map((p,i)=>{const w=el('div','petw');w.append(petRow(p,i,ok));if(p.type==='dog'&&ok.includes('dog'))w.append(declBox(p));return w}));
+  $('pet-list').replaceChildren(...S.pets.map((p,i)=>petRow(p,i,ok)));
   $('pet-add').hidden=S.pets.length>=6;$('pet-note').hidden=ok.includes('cat');
   $('plan-seg').hidden=mode==='nights';
   $('plan-seg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.plan===S.plan));
@@ -816,18 +781,14 @@ $('form').onsubmit=async(e)=>{e.preventDefault();const msg=$('msg');msg.classNam
   if(S.pets.some(p=>!PETS_OK[S.service].includes(p.type))){msg.textContent=t('ePets');return}
   if(!v('name')||v('phone').replace(/\D/g,'').length<8){msg.textContent=t('eContact');return}
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email'))){msg.textContent=t('eEmail');return}
-  const dogs=S.pets.filter(p=>p.type==='dog');
-  if(dogs.some(p=>!p.vacc||!p.chip)){msg.textContent=t('eVacc');return}
-  if(dogs.some(p=>!declOk(p))){msg.textContent=t('eDecl');return}
-  if(!$('accept').checked){msg.textContent=t('eAccept');return}
   const plan=isRange()?'range':S.plan;
   const body={service:S.service,plan,dates:plan==='once'?dates:undefined,weekdays:[...S.weekdays],date:plan==='once'?dates[0]:S.start,end:S.end||'',time:S.time||'',
-    petList:S.pets.map(({_edit,...p})=>p),vet:v('vet'),emergency:v('emergency'),accept:$('accept').checked,meet:$('meet').checked,useCredits:creditsOn(),name:v('name'),phone:v('phone'),email:v('email'),address:v('address'),notes:v('notes'),website:v('website'),lang};
+    petList:S.pets,meet:$('meet').checked,useCredits:creditsOn(),name:v('name'),phone:v('phone'),email:v('email'),address:v('address'),notes:v('notes'),website:v('website'),lang};
   const btn=$('submit');btn.disabled=true;btn.textContent=t('sending');msg.textContent='';
   let mp=S.config.mobilepay,ok=!S.live,err='eServer',errText='';
   if(S.live){try{const r=await fetch('/api/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
     if(r.ok){ok=true;mp=j.mobilepay||mp;if(U.user)account().then(render)}
-    else{err={taken:'eTaken',time:'eTime',contact:'eContact',email:'eEmail',terms:'eAccept',decl:'eDecl',vacc:'eVacc',closed:'eClosed',date:'eDates',pets:'ePets',credits:'eCredits',creditsEnd:'eCreditsEnd',member:'eCredits'}[j.error]||'eServer';if(j.error==='taken'&&j.date)errText=t('eTakenOn').replace('{d}',fmtShort(j.date)+' '+t('at')+' '+S.time)}}catch(x){}}
+    else{err={taken:'eTaken',time:'eTime',contact:'eContact',email:'eEmail',closed:'eClosed',date:'eDates',pets:'ePets',credits:'eCredits',creditsEnd:'eCreditsEnd',member:'eCredits'}[j.error]||'eServer';if(j.error==='taken'&&j.date)errText=t('eTakenOn').replace('{d}',fmtShort(j.date)+' '+t('at')+' '+S.time)}}catch(x){}}
   btn.disabled=false;btn.textContent=t('send');
   if(!ok){msg.textContent=errText||t(err);if(err==='eTaken'){S.time=null;load()}return}
   const q=quote(),sel={plan,date:plan==='weekly'?dates[0]:body.date,end:body.end,dates,weekdays:body.weekdays.sort(),time:S.time};

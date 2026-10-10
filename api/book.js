@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       const { name, phone, address, dog, breed, size } = booking;
       // Pet profiles are merged by name so the next booking can pick them again.
       const pets = [...(user.pets || [])];
-      for (const p of booking.petList) { const i = pets.findIndex((x) => x.name && x.name.toLowerCase() === p.name.toLowerCase()); if (p.name) i >= 0 ? (pets[i] = p) : pets.push(p); }
+      for (const p of booking.petList) { const i = pets.findIndex((x) => x.name && x.name.toLowerCase() === p.name.toLowerCase()); if (p.name) i >= 0 ? (pets[i] = { ...pets[i], ...p }) : pets.push(p); }
       const { vet, emergency, terms } = booking;
       try { await saveUser({ ...user, name, phone, address, dog, breed, size, pets: pets.slice(0, 10), vet: vet || user.vet || '', emergency: emergency || user.emergency || '', terms }); } catch (e) {}
     }
