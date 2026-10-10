@@ -133,10 +133,11 @@ function memberCard(m){const ms=m.membership,plan=D.config.plans.find(p=>p.id===
 function shrink(file,max=1000){return new Promise((ok,no)=>{const img=new Image();img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');
   c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);ok(c.toDataURL('image/jpeg',.82))};img.onerror=no;img.src=URL.createObjectURL(file)})}
 const photoUrl=(id)=>'/api/club?photo='+id;
-function renderMail(){const m=D.mail||{},last=(m.log||[])[0];
+function renderMail(){const m=D.mail||{},log=(m.log||[]).slice(0,5);
   const lines=[m.on?'✓ Resend key found. Sender: '+m.from:'✗ No RESEND_API_KEY on this deployment – add it in Vercel (Production) and redeploy.'];
-  if(last)lines.push('Last attempt '+last.at.slice(0,16).replace('T',' ')+' ('+last.subject+'): '+(last.ok?'✓ accepted by Resend':'✗ '+last.status+' '+last.error));
-  else if(m.on)lines.push('No email attempts yet.');
+  // Newest first. A new booking gives two lines: the customer's receipt and your "Ny booking" notice.
+  log.forEach(x=>lines.push(x.at.slice(0,16).replace('T',' ')+' · '+x.subject+': '+(x.ok?'✓ accepted by Resend':'✗ '+x.status+' '+x.error)));
+  if(!log.length&&m.on)lines.push('No email attempts yet.');
   $('mail-status').replaceChildren(...lines.map(x=>el('p',{textContent:x,className:x.startsWith('✗')?'warn':''})))}
 $('mail-test').onclick=()=>act({action:'mail-test'});
 function renderExtras(){renderMail();
