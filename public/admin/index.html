@@ -44,7 +44,7 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
 .msg{font-weight:600;color:var(--err);min-height:1.4em}
 </style>
 <div class="wrap">
-  <div class="row" style="justify-content:space-between"><h1>The DogMan · Admin</h1><a href="/" class="label">← Site</a></div>
+  <div class="row" style="justify-content:space-between"><h1>The DogMan · Admin</h1><span class="row"><a href="/walk/" class="label">🐾 Walk mode</a><a href="/" class="label">← Site</a></span></div>
   <form id="login" class="box" style="max-width:380px;display:flex;flex-direction:column;gap:12px" style="max-width:360px"><label class="label" for="pw">Admin password</label><input id="pw" type="password" autocomplete="current-password"><button class="p" type="submit">Log in</button><div class="msg" id="login-msg"></div></form>
   <div id="app" hidden style="display:flex;flex-direction:column;gap:26px">
     <div class="msg" id="msg" role="status"></div>
@@ -95,7 +95,7 @@ async function api(body){const r=await fetch('/api/admin',{method:body?'POST':'G
 const ERR={member:'Member not found.',plan:'That plan is not available.',taken:'That time is already taken.',auth:'Wrong password.',contact:'Name and an 8-digit phone number are required.',time:'Pick a time inside opening hours.',date:'Pick a valid date.'};
 async function act(body){$('msg').textContent='';try{await api(body);render()}catch(e){$('msg').textContent=ERR[e.message]||'Could not save: '+e.message}}
 function el(tag,props,...kids){const e=document.createElement(tag);Object.assign(e,props||{});e.append(...kids);return e}
-const PLAN_NAMES={flex10:'10-walk card',weekly2:'Weekly walker (8/month)',daily5:'Every weekday (22/month)'};
+const PLAN_NAMES={flex10:'10-walk card',weekly2:'Weekly walker (8/month)',daily5:'Every weekday (22/month)',alfa:'Premium Alfa (22 solo/month)'};
 const ACTIONS={requested:'requested',paid:'paid',used:'used',refund:'refund',adjusted:'adjusted',notRenewing:'will not renew',withdrawn:'withdrew request',cancelledByAdmin:'cancelled by you'};
 let mfilter='active';
 function memberCard(m){const ms=m.membership,plan=D.config.plans.find(p=>p.id===(ms.request||ms.plan))||{},active=ms.status==='active'&&ms.end>=D.today;
@@ -137,7 +137,7 @@ function whenOf(b){const tm=b.time?' '+b.time:'';
   const ds=b.dates&&b.dates.length?b.dates:[b.date];return ds.map(dshort).join(' · ')+tm}
 function card(b){
   const pills=[el('span',{className:'pill '+b.status,textContent:b.status})];if(b.paid)pills.push(el('span',{className:'pill paid',textContent:'paid'}));if(b.user)pills.push(el('span',{className:'pill',textContent:'google'}));
-  const rows=[['Owner',b.name],['Phone',b.phone],['Email',b.email],['Address',b.address],['Pets',(b.petList&&b.petList.length?b.petList.map(p=>[p.name||'(no name)',p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · '):[b.dog,b.breed,b.size,b.pets>1?b.pets+' pets':''].filter(Boolean).join(' · '))],['Meet & greet',b.meet?'Yes – wants a free meeting first':''],['Estimate',b.estimate!=null?b.estimate+' kr.':''],['How often',{weekly:'Every week',multi:'Several times a week'}[b.freq]||''],['Notes',b.notes],['Booked',b.created.slice(0,10)+' via '+b.source]].filter(r=>r[1]);
+  const rows=[['Owner',b.name],['Phone',b.phone],['Email',b.email],['Address',b.address],['Pets',(b.petList&&b.petList.length?b.petList.map(p=>[p.name||'(no name)',p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · '):[b.dog,b.breed,b.size,b.pets>1?b.pets+' pets':''].filter(Boolean).join(' · '))],['Meet & greet',b.meet?'Yes – wants a free meeting first':''],['GPS walks',Object.entries(b.walks||{}).map(([d,w])=>d.slice(5)+': '+w.km+' km/'+w.minutes+' min').join(' · ')],['Estimate',b.estimate!=null?b.estimate+' kr.':''],['How often',{weekly:'Every week',multi:'Several times a week'}[b.freq]||''],['Notes',b.notes],['Booked',b.created.slice(0,10)+' via '+b.source]].filter(r=>r[1]);
   const dl=el('dl',{});rows.forEach(r=>{const dd=el('dd',{});if(r[0]==='Address')dd.append(el('a',{href:'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(r[1]),target:'_blank',rel:'noopener',textContent:r[1]+' ↗'}));else dd.textContent=r[1];dl.append(el('dt',{textContent:r[0]}),dd)});
   const btn=(txt,body,cls)=>{const x=el('button',{type:'button',textContent:txt,className:cls||''});x.onclick=()=>act({id:b.id,...body});return x};
   const actions=el('div',{className:'row'});

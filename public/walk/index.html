@@ -1,0 +1,132 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Walk mode · The DogMan</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#e7ebf0">
+<link rel="icon" type="image/png" href="/img/brand/favicon-64.png">
+<link rel="apple-touch-icon" href="/img/brand/apple-touch-icon.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<style>
+:root{--bg:#e7ebf0;--text:#1d1d1f;--muted:#62636a;--sh-d:#c3cad4;--sh-l:#fff;--accent:#b44d08;--grad:linear-gradient(135deg,#ffad5c,#f07a1e);--ok:#1f7a45;--err:#b8311a;
+  --raise:8px 8px 18px var(--sh-d),-8px -8px 18px var(--sh-l);--raise-sm:4px 4px 9px var(--sh-d),-4px -4px 9px var(--sh-l);--inset-sm:inset 3px 3px 6px var(--sh-d),inset -3px -3px 6px var(--sh-l)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font:400 16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:640px;margin:0 auto;padding:20px 16px 60px;display:flex;flex-direction:column;gap:20px}
+h1{font-size:1.6rem;margin:0;letter-spacing:-.02em}h2{font-size:1.15rem;margin:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mark{width:40px;height:40px;border-radius:50%;overflow:hidden;box-shadow:var(--raise-sm)}.mark img{width:100%;height:100%;display:block}
+.card{border-radius:24px;box-shadow:var(--raise);padding:18px;display:flex;flex-direction:column;gap:8px}
+.small{font-size:.85rem;color:var(--muted)}
+input{font:inherit;padding:12px 14px;border:0;border-radius:14px;background:var(--bg);color:var(--text);box-shadow:var(--inset-sm);width:100%;outline:none}
+button,.btn{font:600 1rem inherit;font-family:inherit;padding:13px 18px;border:0;border-radius:999px;background:var(--bg);color:var(--text);box-shadow:var(--raise-sm);cursor:pointer;text-decoration:none;text-align:center}
+button.p{background:var(--grad);color:#1d1d1f}
+button.stop{background:#d9442b;color:#fff;font-size:1.1rem;padding:16px}
+button:disabled{opacity:.5}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{border-radius:18px;box-shadow:var(--inset-sm);padding:12px;text-align:center}.stat b{display:block;font-size:1.6rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+#map{height:320px;border-radius:20px;box-shadow:var(--inset-sm)}
+.pill{font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:999px;box-shadow:var(--inset-sm)}
+.msg{color:var(--err);font-weight:600;min-height:1.2em}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#d9442b;animation:blink 1.2s infinite;margin-right:6px}
+@keyframes blink{50%{opacity:.25}}
+a{color:var(--accent)}
+</style>
+<main>
+  <div class="top"><div class="row"><span class="mark"><img src="/img/brand/mark-emboss-round.png" alt=""></span><h1>Walk mode</h1></div><a href="/admin/" class="small">Admin →</a></div>
+  <form id="login" class="card" hidden><label class="small" for="pw">Admin password</label><input id="pw" type="password" autocomplete="current-password"><button class="p" type="submit">Log in</button></form>
+  <div class="msg" id="msg" role="status"></div>
+
+  <section id="active" class="card" hidden>
+    <div class="row" style="justify-content:space-between"><h2><span class="dot"></span><span id="a-title"></span></h2><span class="small" id="a-acc"></span></div>
+    <div class="small" id="a-sub"></div>
+    <div class="stats"><div class="stat"><b id="a-time">0:00</b><span class="small">min</span></div><div class="stat"><b id="a-km">0.00</b><span class="small">km</span></div><div class="stat"><b id="a-pts">0</b><span class="small">GPS points</span></div></div>
+    <div id="map"></div>
+    <p class="small">Keep this screen open during the walk – phones pause GPS for web pages in the background.</p>
+    <button class="stop" type="button" id="stop">Finish walk</button>
+  </section>
+
+  <section id="list" hidden>
+    <div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 id="list-title">Today</h2><div class="row"><button type="button" id="prev-day">‹</button><button type="button" id="next-day">›</button></div></div>
+    <div id="walks" style="display:flex;flex-direction:column;gap:14px"></div>
+  </section>
+
+  <section id="done" class="card" hidden>
+    <h2>Walk saved ✓</h2><div id="done-text"></div><button type="button" id="back">Back to the list</button>
+  </section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const $=(id)=>document.getElementById(id);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+let pw='';try{pw=sessionStorage.getItem('pw')||''}catch(e){}
+const NAMES={walk:'Dog walk',visit1:'Home visit',visit2:'2 visits a day',daycare:'Day care',boarding:'Boarding',housesit:'House sitting',visit:'Home visit'};
+const A={data:null,day:null,key:null,booking:null,watch:null,buf:[],pts:[],started:0,timer:0,flush:0,lock:null,map:null,line:null,me:null};
+const iso=(d)=>d.toISOString().slice(0,10);
+const addD=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return iso(d)};
+const save=()=>{try{localStorage.setItem('walk-active',JSON.stringify({key:A.key,booking:A.booking,started:A.started,buf:A.buf,pts:A.pts.slice(-500)}))}catch(e){}};
+function hav(a,b){const r=Math.PI/180,dLat=(b[0]-a[0])*r,dLon=(b[1]-a[1])*r,h=Math.sin(dLat/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLon/2)**2;return 2*6371000*Math.asin(Math.sqrt(h))}
+function km(pts){let m=0,prev=null;for(const p of pts){if(p[3]>40)continue;if(prev){const d=hav(prev,p),dt=Math.max(1,(p[2]-prev[2])/1000);if(d/dt>=4)continue;if(d>2)m+=d}prev=p}return m/1000}
+async function api(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json','x-admin-password':pw},body:body?JSON.stringify(body):undefined});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'server');return j}
+const covers=(b,d)=>b.status!=='cancelled'&&(b.end?d>=b.date&&d<b.end:(b.dates&&b.dates.length?b.dates:[b.date]).includes(d));
+function renderList(){
+  $('list').hidden=false;$('active').hidden=true;$('done').hidden=true;
+  const today=A.data.today;$('list-title').textContent=A.day===today?'Today':new Date(A.day+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+  const list=A.data.bookings.filter(b=>covers(b,A.day)).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
+  $('walks').replaceChildren(...(list.length?list.map(b=>{const c=el('div','card');
+    const head=el('div','row');head.style.justifyContent='space-between';head.append(el('b',null,(b.time?b.time+' · ':'')+NAMES[b.service]),el('span','pill',b.status));
+    c.append(head,el('div',null,b.name+' · '+b.phone));
+    if(b.address){const a=el('a',null,b.address+' ↗');a.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(b.address);a.target='_blank';c.append(a)}
+    const pets=(b.petList||[]).map(p=>[p.name,p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · ');if(pets)c.append(el('div','small',pets));
+    if(b.notes)c.append(el('div','small','“'+b.notes+'”'));if(b.meet)c.append(el('div','small','Wants a free meet & greet first'));
+    const w=b.walks&&b.walks[A.day];
+    if(w)c.append(el('div','small','✓ Walked '+w.km+' km in '+w.minutes+' min'));
+    else{const s=el('button','p',b.live===b.id+'|'+A.day?'Resume tracking':'Start walk');s.type='button';s.onclick=()=>start(b);c.append(s)}
+    return c}):[el('p','small','No bookings this day.')]))}
+async function load(){try{A.data=await api('/api/admin');try{sessionStorage.setItem('pw',pw)}catch(e){}$('login').hidden=true;
+    if(!A.day)A.day=A.data.today;
+    let saved=null;try{saved=JSON.parse(localStorage.getItem('walk-active')||'null')}catch(e){}
+    if(saved&&saved.key){Object.assign(A,{key:saved.key,booking:saved.booking,started:saved.started,buf:saved.buf||[],pts:saved.pts||[]});track()}else renderList()}
+  catch(e){$('login').hidden=false;$('list').hidden=true;if(pw)$('msg').textContent=e.message==='auth'?'Wrong password.':'Error: '+e.message;pw=''}}
+async function start(b){$('msg').textContent='';
+  if(!navigator.geolocation){$('msg').textContent='This phone/browser has no GPS access.';return}
+  try{const r=await api('/api/track',{action:'start',booking:b.id,date:A.day});A.key=r.key;A.booking={id:b.id,title:(b.time?b.time+' · ':'')+NAMES[b.service],sub:b.name+(b.address?' · '+b.address:'')};
+    if(!r.resumed){A.started=Date.now();A.buf=[];A.pts=[]}else if(!A.started)A.started=Date.now();save();track()}catch(e){$('msg').textContent='Could not start: '+e.message}}
+async function flush(){if(!A.buf.length||!A.key)return;const pts=A.buf.splice(0);save();
+  try{await api('/api/track',{action:'points',key:A.key,pts})}catch(e){A.buf.unshift(...pts);save()}}
+async function wake(){try{if('wakeLock' in navigator)A.lock=await navigator.wakeLock.request('screen')}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&A.key)wake()});
+function track(){
+  $('list').hidden=true;$('done').hidden=true;$('active').hidden=false;
+  $('a-title').textContent=A.booking?.title||'Walk';$('a-sub').textContent=A.booking?.sub||'';
+  if(!A.map){A.map=L.map('map',{zoomControl:false});L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(A.map);
+    A.line=L.polyline([],{color:'#f07a1e',weight:5}).addTo(A.map);A.me=L.circleMarker([55.7225,12.4015],{radius:7,color:'#fff',weight:3,fillColor:'#f07a1e',fillOpacity:1}).addTo(A.map);A.map.setView([55.7225,12.4015],15)}
+  setTimeout(()=>A.map.invalidateSize(),50);
+  A.line.setLatLngs(A.pts.filter(p=>p[3]<=40).map(p=>[p[0],p[1]]));
+  wake();
+  A.watch=navigator.geolocation.watchPosition(pos=>{const c=pos.coords,p=[c.latitude,c.longitude,pos.timestamp||Date.now(),Math.round(c.accuracy)];
+    A.pts.push(p);A.buf.push(p);$('a-acc').textContent='±'+p[3]+' m';
+    if(p[3]<=40){A.line.addLatLng([p[0],p[1]]);A.me.setLatLng([p[0],p[1]]);A.map.panTo([p[0],p[1]],{animate:true})}
+    $('a-km').textContent=km(A.pts).toFixed(2);$('a-pts').textContent=A.pts.length;if(A.buf.length%5===0)save()},
+    err=>{$('msg').textContent=err.code===1?'Allow location access for this site to track the walk.':'GPS: '+err.message},{enableHighAccuracy:true,maximumAge:0,timeout:30000});
+  clearInterval(A.timer);A.timer=setInterval(()=>{const s=Math.floor((Date.now()-A.started)/1000);$('a-time').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')},1000);
+  clearInterval(A.flush);A.flush=setInterval(flush,15000)}
+$('stop').onclick=async()=>{const b=$('stop');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to finish';setTimeout(()=>{delete b.dataset.sure;b.textContent='Finish walk'},4000);return}
+  b.disabled=true;navigator.geolocation.clearWatch(A.watch);clearInterval(A.timer);clearInterval(A.flush);
+  try{const pts=A.buf.splice(0);const r=await api('/api/track',{action:'stop',key:A.key,pts});
+    try{localStorage.removeItem('walk-active')}catch(e){}try{A.lock&&A.lock.release()}catch(e){}
+    $('active').hidden=true;$('done').hidden=false;
+    $('done-text').textContent=r.km+' km in '+r.minutes+' min'+(r.weather?.rain?' · rain 🌧':'')+(r.weather?.snow?' · snow ❄':'')+'. The owner can see the route report now.';
+    A.key=null;A.booking=null;A.pts=[];A.line&&A.line.setLatLngs([])}
+  catch(e){$('msg').textContent='Could not save – check the connection and try again.';b.disabled=false;b.textContent='Finish walk';delete b.dataset.sure}};
+$('back').onclick=()=>{A.data=null;load()};
+$('prev-day').onclick=()=>{A.day=addD(A.day,-1);renderList()};$('next-day').onclick=()=>{A.day=addD(A.day,1);renderList()};
+$('login').onsubmit=(e)=>{e.preventDefault();pw=$('pw').value;$('msg').textContent='';load()};
+if(pw)load();else $('login').hidden=false;
+</script>
+
+</body></html>

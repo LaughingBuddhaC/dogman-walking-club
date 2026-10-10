@@ -50,7 +50,9 @@ export const DEFAULT_CONFIG = {
   plans: [
     { id: 'flex10', kind: 'pack', walks: 10, price: 1080, months: 3, active: true },
     { id: 'weekly2', kind: 'monthly', walks: 8, price: 880, months: 1, active: true },
-    { id: 'daily5', kind: 'monthly', walks: 22, price: 2090, months: 1, active: true }
+    { id: 'daily5', kind: 'monthly', walks: 22, price: 2090, months: 1, active: true },
+    // Premium: solo walks, live GPS tracking, priority times and one boarding night a month (given by the admin).
+    { id: 'alfa', kind: 'monthly', walks: 22, price: 4490, months: 1, active: true, premium: true }
   ]
 };
 export async function getConfig() {
@@ -146,6 +148,60 @@ export function adjustCredits(user, delta, action = 'adjusted', extra = {}) {
   m.credits = Math.max(0, (m.credits || 0) + delta); logM(m, action, { credits: delta, ...extra });
 }
 // A cancelled booking paid with credits gives them back (if the membership still runs).
+// ---- GPS walk tracking (the walker's phone records the route; owners see a map report) ----
+export const getTrack = async (key) => { const v = await cmd('HGET', 'tracks', key); return v ? JSON.parse(v) : null; };
+export const saveTrack = (key, t) => cmd('HSET', 'tracks', key, JSON.stringify(t));
+export const isPremium = (user, config) => { const m = activeMembership(user); return !!(m && config.plans.find((p) => p.id === m.plan)?.premium); };
+const hav = (a, b) => {
+  const r = Math.PI / 180, dLat = (b[0] - a[0]) * r, dLon = (b[1] - a[1]) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6371000 * Math.asin(Math.sqrt(h));
+};
+// Distance in km, ignoring inaccurate fixes and impossible jumps (GPS jitter).
+export function routeKm(points) {
+  let m = 0, prev = null;
+  for (const p of points) {
+    if (p[3] > 40) continue;                                   // accuracy worse than 40 m
+    if (prev) { const d = hav(prev, p), dt = Math.max(1, (p[2] - prev[2]) / 1000); if (d / dt < 4 && d > 2) m += d; else if (d / dt >= 4) continue; }
+    prev = p;
+  }
+  return Math.round(m / 10) / 100;
+}
+// Rain/snow right now at the walk (Open-Meteo, free, no key; coordinates rounded to ~1 km).
+async function weatherNow(lat, lon) {
+  try {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(2)}&longitude=${lon.toFixed(2)}&current=precipitation,rain,snowfall`);
+    const c = (await r.json()).current || {};
+    return { rain: (c.rain || 0) > 0 || (c.precipitation || 0) > 0.1, snow: (c.snowfall || 0) > 0 };
+  } catch { return { rain: false, snow: false }; }
+}
+// Ends a walk: summary on the booking, stats + badges on the customer.
+export async function finishTrack(key, track, bk) {
+  track.status = 'done'; track.endedAt = Date.now();
+  track.km = routeKm(track.points);
+  track.minutes = Math.max(1, Math.round((track.endedAt - track.startedAt) / 60000));
+  const last = track.points[track.points.length - 1];
+  track.weather = last ? await weatherNow(last[0], last[1]) : { rain: false, snow: false };
+  await saveTrack(key, track);
+  const date = key.split('|')[1];
+  bk.walks = { ...(bk.walks || {}), [date]: { km: track.km, minutes: track.minutes, startedAt: track.startedAt, key } };
+  delete bk.live; await saveBooking(bk);
+  if (bk.user) {
+    const u = await getUser(bk.user);
+    if (u) {
+      const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Copenhagen', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(track.startedAt)).replace(':', '.'));
+      const st = { km: 0, walks: 0, morning: 0, night: 0, rain: 0, snow: 0, ...(u.stats || {}) };
+      st.km = Math.round((st.km + track.km) * 100) / 100; st.walks += 1;
+      if (hour < 7.3) st.morning += 1;
+      if (hour >= 21) st.night += 1;
+      if (track.weather.rain) st.rain += 1;
+      if (track.weather.snow) st.snow += 1;
+      u.stats = st; await saveUser(u); await awardBadges(u, []);
+    }
+  }
+  return track;
+}
+
 export async function refundCredits(bk) {
   if (!bk.credits || !bk.user || bk.refunded) return;
   const u = await getUser(bk.user);
@@ -158,6 +214,16 @@ export async function refundCredits(bk) {
 export const BADGE_RULES = {
   welcome: () => true,                         // every new customer
   member: (user) => !!activeMembership(user),  // has an active membership
+  // GPS badges, from the walk stats kept on the customer record (see finishTrack)
+  km10: (u) => (u.stats?.km || 0) >= 10,
+  km42: (u) => (u.stats?.km || 0) >= 42.2,
+  km100: (u) => (u.stats?.km || 0) >= 100,
+  walks10: (u) => (u.stats?.walks || 0) >= 10,
+  walks50: (u) => (u.stats?.walks || 0) >= 50,
+  morning: (u) => (u.stats?.morning || 0) >= 1,  // a walk started before 07:30
+  night: (u) => (u.stats?.night || 0) >= 1,      // a walk started at 21:00 or later
+  rain: (u) => (u.stats?.rain || 0) >= 1,        // walked while it was raining
+  snow: (u) => (u.stats?.snow || 0) >= 1,        // walked while it was snowing
 };
 export async function awardBadges(user, bookings) {
   const have = { ...(user.badges || {}) };

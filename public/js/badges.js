@@ -13,6 +13,51 @@ window.DogBadges = (() => {
       da: ['Medlem', 'Du er medlem af The DogMan-flokken.'],
       en: ['Member', 'You are a member of The DogMan pack.'],
     },
+    km10: {
+      colors: ['#a5e8ff', '#2aa7d8', '#1679a8', '#0f5b80'],
+      da: ['10 km', 'Jeres første 10 km med The DogMan (GPS).'],
+      en: ['10 km', 'Your first 10 km with The DogMan (GPS).'],
+    },
+    km42: {
+      colors: ['#d9b8ff', '#8a4fd8', '#6a32b0', '#4d2385'],
+      da: ['Maraton', '42,2 km gået – en hel maraton!'],
+      en: ['Marathon', '42.2 km walked – a full marathon!'],
+    },
+    km100: {
+      colors: ['#ff9a8a', '#e0442b', '#b02a16', '#7d1c0e'],
+      da: ['100 km-klubben', '100 km gået med The DogMan.'],
+      en: ['100 km club', '100 km walked with The DogMan.'],
+    },
+    walks10: {
+      colors: ['#b6f0b0', '#3fae4a', '#2b8435', '#1d5c25'],
+      da: ['10 ture', '10 gåture med GPS-rapport.'],
+      en: ['10 walks', '10 walks with a GPS report.'],
+    },
+    walks50: {
+      colors: ['#9ff0e0', '#1fb39a', '#13836f', '#0b5b4d'],
+      da: ['50 ture', '50 gåture – en ægte flokhund.'],
+      en: ['50 walks', '50 walks – a true pack dog.'],
+    },
+    morning: {
+      colors: ['#ffe3a8', '#ffb347', '#e07b1a', '#a8560a'],
+      da: ['Morgenfugl', 'En tur, der startede før kl. 7.30.'],
+      en: ['Early bird', 'A walk that started before 7:30.'],
+    },
+    night: {
+      colors: ['#b8c4ff', '#4d5fd8', '#3341a8', '#222c75'],
+      da: ['Natteravn', 'En tur, der startede efter kl. 21.'],
+      en: ['Night owl', 'A walk that started after 21:00.'],
+    },
+    rain: {
+      colors: ['#bcd7ff', '#4a8fe0', '#2e6cb8', '#1e4c85'],
+      da: ['Regnvejrshelt', 'Gik tur i regnvejr.'],
+      en: ['Rain hero', 'Walked in the rain.'],
+    },
+    snow: {
+      colors: ['#ffffff', '#bcd3e6', '#8aa9c4', '#5f7f9c'],
+      da: ['Snehund', 'Gik tur i sne.'],
+      en: ['Snow dog', 'Walked in the snow.'],
+    },
   };
   const UI = {
     da: { got: 'Du har fået et nyt mærke!', hello: 'Velkommen til The DogMan', see: 'Se mine mærker', close: 'Luk', earned: 'Optjent' },
