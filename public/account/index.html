@@ -74,6 +74,14 @@ h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-to
 .empty p{color:var(--muted)}
 .msg{color:var(--err);font-weight:600;margin-bottom:16px}
 .skeleton{height:120px;border-radius:28px;box-shadow:var(--inset-sm);opacity:.6}
+.memb{margin-bottom:44px;scroll-margin-top:100px}.memb h2{font-size:1.5rem;margin-bottom:16px}
+.mcard{border-radius:28px;box-shadow:var(--raise);padding:24px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.credits{display:flex;align-items:baseline;gap:10px}.credits b{font-size:3.2rem;font-weight:800;letter-spacing:-.04em;line-height:1}
+.plan-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px;margin-top:6px}
+.pcard{border-radius:24px;box-shadow:var(--raise);padding:20px;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.pcard.sel{box-shadow:var(--inset-sm)}.pcard .pp{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;margin-top:6px}.pcard .btn{margin-top:10px}
+.hist{font-size:.85rem;color:var(--muted);display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--muted) 20%,transparent);align-self:stretch}
+.mp-box{padding:12px 16px;border-radius:16px;box-shadow:var(--inset-sm);font-weight:500;font-size:.95rem}
 .badges{margin-top:48px;scroll-margin-top:100px}
 .badges h2{font-size:1.5rem;margin-bottom:20px}
 .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:24px}
@@ -123,6 +131,7 @@ h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-to
       <button type="button" class="link" id="logout" data-t="logout"></button>
       <dl id="details"></dl>
     </div>
+    <section class="memb" id="membership"><h2 data-t="memTitle"></h2><div id="mem-box"></div></section>
     <div class="list" id="list"></div>
     <section class="badges" id="badges"><h2 data-t="badgesTitle"></h2><div class="badge-grid" id="badge-grid"></div></section>
   </div>
@@ -131,12 +140,12 @@ h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-to
 <script src="/js/badges.js"></script>
 <script>
 const T={
-da:{bookNew:'Book en tur',eyebrow:'Din konto',title:'Mine ture',loginTitle:'Log ind for at se dine ture',loginText:'Log ind med Google og få dit velkomstmærke. Så kan du også se og aflyse dine kommende gåture.',badgesTitle:'Mine mærker',moreBadges:'Flere mærker på vej',moreBadgesP:'Gå tur, saml mærker. Nye kommer snart.',guest:'Eller book uden at logge ind →',
+da:{plan_flex10:'Klippekort 10',plan_weekly2:'Ugetur',plan_daily5:'Hverdag',planSub_flex10:'10 ture – brug dem, når du vil',planSub_weekly2:'8 ture om måneden – 2 om ugen',planSub_daily5:'22 ture om måneden – hver hverdag',perPack:'gyldigt i {m} måneder',perMonth:'pr. måned',perWalkSave:'{p} pr. tur · spar {s} %',memTitle:'Medlemskab',choose:'Vælg',creditsLeft:'ture tilbage',validTo:'Gyldigt til {d}',endsOn:'Opsagt – slutter {d}',switchPending:'Skift til {p} afventer betaling.',useCredits:'Book med klip',stopRenew:'Opsig',sureStop:'Ja, opsig',switchPlan:'Skift plan:',pendingTitle:'Afventer betaling',withdraw:'Fortryd',memIntro:'Bliv medlem og få lavere pris pr. tur, book op til 3 måneder frem og få dit medlemsmærke. Ingen binding – du betaler med MobilePay, når perioden starter.',payMp:'Betal {p} med MobilePay til {n}. Jeg aktiverer dit medlemskab, så snart betalingen er modtaget.',payLater:'Pris: {p} – jeg sender dig betalingsoplysninger og aktiverer dit medlemskab, når betalingen er modtaget.',h_requested:'Anmodet',h_paid:'Betalt',h_used:'Brugt på tur',h_refund:'Refunderet',h_adjusted:'Justeret',h_notRenewing:'Opsagt',h_withdrawn:'Fortrudt',h_cancelledByAdmin:'Afsluttet',bookNew:'Book en tur',eyebrow:'Din konto',title:'Mine ture',loginTitle:'Log ind for at se dine ture',loginText:'Log ind med Google og få dit velkomstmærke. Så kan du også se og aflyse dine kommende gåture.',badgesTitle:'Mine mærker',moreBadges:'Flere mærker på vej',moreBadgesP:'Gå tur, saml mærker. Nye kommer snart.',guest:'Eller book uden at logge ind →',
 logout:'Log ud',phone:'Telefon',address:'Adresse',dog:'Hund',walk:'Gåtur · 30 min.',dog1:'hund',dogN:'hunde',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',
 st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys turen',sure:'Ja, aflys',calendar:'Tilføj til kalender',
 emptyTitle:'Ingen kommende ture',emptyText:'Når du booker en gåtur, kan du se den her.',today:'I dag',tomorrow:'I morgen',
 cancelled:'Turen er aflyst.',eServer:'Noget gik galt. Prøv igen om lidt.',eLogin:'Log ind mislykkedes. Prøv igen.',calTitle:'Gåtur med The DogMan',sv_walk:'Gåtur',sv_visit1:'Hjemmebesøg',sv_visit2:'2 besøg om dagen',sv_daycare:'Dagpleje',sv_boarding:'Pasning hos mig',sv_housesit:'Huspasning',at:'kl.',every:'Hver'},
-en:{bookNew:'Book a walk',eyebrow:'Your account',title:'My walks',loginTitle:'Sign in to see your walks',loginText:'Sign in with Google and get your welcome badge. You can also see and cancel your upcoming walks.',badgesTitle:'My badges',moreBadges:'More badges on the way',moreBadgesP:'Walk and collect badges. New ones are coming soon.',guest:'Or book without signing in →',
+en:{plan_flex10:'10-walk card',plan_weekly2:'Weekly walker',plan_daily5:'Every weekday',planSub_flex10:'10 walks – use them whenever you like',planSub_weekly2:'8 walks a month – 2 a week',planSub_daily5:'22 walks a month – every weekday',perPack:'valid for {m} months',perMonth:'per month',perWalkSave:'{p} per walk · save {s}%',memTitle:'Membership',choose:'Choose',creditsLeft:'walks left',validTo:'Valid until {d}',endsOn:'Not renewing – ends {d}',switchPending:'Switch to {p} is waiting for payment.',useCredits:'Book with credits',stopRenew:'Stop renewing',sureStop:'Yes, stop',switchPlan:'Switch plan:',pendingTitle:'Waiting for payment',withdraw:'Withdraw',memIntro:'Become a member for a lower price per walk, book up to 3 months ahead and get your member badge. No lock-in – you pay with MobilePay when the period starts.',payMp:'Pay {p} with MobilePay to {n}. I activate your membership as soon as the payment arrives.',payLater:'Price: {p} – I will send you payment details and activate your membership when the payment arrives.',h_requested:'Requested',h_paid:'Paid',h_used:'Used on a walk',h_refund:'Refunded',h_adjusted:'Adjusted',h_notRenewing:'Stopped renewing',h_withdrawn:'Withdrawn',h_cancelledByAdmin:'Ended',bookNew:'Book a walk',eyebrow:'Your account',title:'My walks',loginTitle:'Sign in to see your walks',loginText:'Sign in with Google and get your welcome badge. You can also see and cancel your upcoming walks.',badgesTitle:'My badges',moreBadges:'More badges on the way',moreBadgesP:'Walk and collect badges. New ones are coming soon.',guest:'Or book without signing in →',
 logout:'Log out',phone:'Phone',address:'Address',dog:'Dog',walk:'Walk · 30 min.',dog1:'dog',dogN:'dogs',once:'Once',weekly:'Every week',multi:'Several times a week',
 st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel walk',sure:'Yes, cancel',calendar:'Add to calendar',
 emptyTitle:'No upcoming walks',emptyText:'When you book a walk, it will show up here.',today:'Today',tomorrow:'Tomorrow',
@@ -191,6 +200,34 @@ function walkCard(b){
   actions.append(cal,cancel);
   card.append(date,info,right,actions);return card;
 }
+const fdate=(d)=>parse(d).toLocaleDateString(loc(),{day:'numeric',month:'long',year:'numeric'});
+const wanted=new URLSearchParams(location.search).get('plan');
+const walkPrice=()=>((S.config?.services||[]).find(x=>x.id==='walk')||{}).price||120;
+function payText(id){const p=(S.config?.plans||[]).find(x=>x.id===id)||{},mp=S.config?.mobilepay;
+  return (mp?t('payMp').replace('{n}',mp):t('payLater')).replace('{p}',kr(p.price||0))}
+function planCard(p,cta){const c=el('div','pcard'+(p.id===wanted?' sel':'')),per=Math.round(p.price/p.walks);
+  c.append(el('b',null,t('plan_'+p.id)),el('span','small',t('planSub_'+p.id)),el('span','pp',kr(p.price)),el('span','small',p.kind==='pack'?t('perPack').replace('{m}',p.months):t('perMonth')),
+    el('span','small',t('perWalkSave').replace('{p}',kr(per)).replace('{s}',Math.max(0,Math.round((1-per/walkPrice())*100)))));
+  if(cta){const b=el('button','btn primary sm',cta);b.type='button';b.onclick=async()=>{b.disabled=true;try{await account({action:'join',plan:p.id})}catch(e){flash(t('eServer'))}render()};c.append(b)}
+  return c}
+// Membership panel: choose a plan → waiting for payment → active (credits, period, history, switch or stop renewing).
+function renderMembership(){
+  const m=S.user.membership,plans=(S.config?.plans||[]).filter(p=>p.active),active=m&&m.status==='active'&&m.end>=S.today,kids=[];
+  if(active){const card=el('div','mcard'),cr=el('div','credits');cr.append(el('b',null,m.credits||0),el('span',null,t('creditsLeft')));
+    card.append(el('span','eyebrow',t('plan_'+m.plan)),cr,el('div','small',(m.autoRenew===false?t('endsOn'):t('validTo')).replace('{d}',fdate(m.end))));
+    if(m.request)card.append(el('div','mp-box',t('switchPending').replace('{p}',t('plan_'+m.request))+' '+payText(m.request)));
+    const acts=el('div','row');const go=el('a','btn primary sm',t('useCredits'));go.href='/#book';acts.append(go);
+    if(m.autoRenew!==false){const l=el('button','link',t('stopRenew'));l.type='button';l.onclick=async()=>{if(!l.dataset.sure){l.dataset.sure=1;l.textContent=t('sureStop');return}await account({action:'leave'});render()};acts.append(l)}
+    card.append(acts);
+    const hist=(m.history||[]).slice(-6).reverse();
+    if(hist.length){const h=el('div','hist');hist.forEach(x=>h.append(el('span',null,fdate(x.at.slice(0,10))+' · '+t('h_'+x.action)+(x.credits?' ('+(x.credits>0?'+':'')+x.credits+')':''))));card.append(h)}
+    kids.push(card);
+    if(!m.request&&plans.length>1){kids.push(el('p','small',t('switchPlan')));const g=el('div','plan-pick');plans.filter(p=>p.id!==m.plan).forEach(p=>g.append(planCard(p,t('choose'))));kids.push(g)}
+  }else if(m&&m.status==='pending'){const card=el('div','mcard');
+    card.append(el('span','eyebrow',t('pendingTitle')),el('h3',null,t('plan_'+(m.request||m.plan))),el('div','mp-box',payText(m.request||m.plan)));
+    const l=el('button','link',t('withdraw'));l.type='button';l.onclick=async()=>{await account({action:'leave'});render()};card.append(l);kids.push(card)}
+  else{kids.push(el('p','muted',t('memIntro')));const g=el('div','plan-pick');plans.forEach(p=>g.append(planCard(p,t('choose'))));kids.push(g)}
+  $('mem-box').replaceChildren(...kids)}
 function render(){
   document.documentElement.lang=lang;
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
@@ -199,6 +236,7 @@ function render(){
   if(S.state!=='in')return;
   const u=S.user;$('name').textContent=u.name||u.email;$('email').textContent=u.email;$('pic').hidden=!u.picture;if(u.picture)$('pic').src=u.picture;
   $('details').replaceChildren(...[['phone',u.phone],['address',u.address],['dog',[u.dog,u.breed].filter(Boolean).join(', ')]].filter(r=>r[1]).map(([k,v])=>{const d=el('div');d.append(el('dt',null,t(k)),el('dd',null,v));return d}));
+  renderMembership();
   const earned=u.badges||{},bu=DogBadges.ui(lang);
   $('badge-grid').replaceChildren(...DogBadges.ids.filter(id=>earned[id]).map(id=>{const c=el('div','bcard'),r=el('div','rosette');r.innerHTML=DogBadges.svg(id);
     const [name,desc]=DogBadges.texts(id,lang);c.append(r,el('b',null,name),el('p',null,desc),el('small',null,bu.earned+' '+parse(earned[id].slice(0,10)).toLocaleDateString(loc(),{day:'numeric',month:'short',year:'numeric'})));return c}),

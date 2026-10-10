@@ -51,6 +51,7 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
     <div><h2>Bookings</h2>
       <div class="row" style="margin-block:10px" id="filters"></div>
       <div class="list" id="bookings"></div></div>
+    <div class="box"><h2>Members</h2><div class="row" style="margin-bottom:12px" id="m-filters"></div><div class="list" id="members"></div></div>
     <div class="box"><h2>Add a booking</h2>
       <form id="add" class="grid" style="margin-top:10px">
         <div class="f"><label class="label" for="a-service">Service</label><select id="a-service"></select></div>
@@ -70,6 +71,7 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
       <div class="slots" id="b-slots"></div><p class="label" style="margin-top:8px">Tap a free time to block it. Tap again to open it.</p></div>
     <div class="box"><h2>Settings</h2>
       <form id="cfg" class="grid" style="margin-top:10px">
+        <div class="f" style="grid-column:1/-1"><span class="label">Membership plans</span><div class="prices" id="c-plans" style="grid-template-columns:1.6fr 1fr 1fr auto"></div></div>
         <div class="f" style="grid-column:1/-1"><div class="prices" id="c-prices"></div><p class="label" style="margin-top:6px">Prices in kr. Leave empty for "price on request" / no extra-pet charge.</p></div>
         <div class="f"><label class="label" for="c-start">First time (hour)</label><input id="c-start" type="number" min="0" max="23"></div>
         <div class="f"><label class="label" for="c-end">Closing hour</label><input id="c-end" type="number" min="1" max="24"></div>
@@ -90,11 +92,32 @@ let pw='';try{pw=sessionStorage.getItem('pw')||''}catch(e){}
 let D=null,filter='upcoming',openDays=[];
 async function api(body){const r=await fetch('/api/admin',{method:body?'POST':'GET',headers:{'Content-Type':'application/json','x-admin-password':pw},body:body?JSON.stringify(body):undefined});
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'server');D=j;return j}
-const ERR={taken:'That time is already taken.',auth:'Wrong password.',contact:'Name and an 8-digit phone number are required.',time:'Pick a time inside opening hours.',date:'Pick a valid date.'};
+const ERR={member:'Member not found.',plan:'That plan is not available.',taken:'That time is already taken.',auth:'Wrong password.',contact:'Name and an 8-digit phone number are required.',time:'Pick a time inside opening hours.',date:'Pick a valid date.'};
 async function act(body){$('msg').textContent='';try{await api(body);render()}catch(e){$('msg').textContent=ERR[e.message]||'Could not save: '+e.message}}
 function el(tag,props,...kids){const e=document.createElement(tag);Object.assign(e,props||{});e.append(...kids);return e}
+const PLAN_NAMES={flex10:'10-walk card',weekly2:'Weekly walker (8/month)',daily5:'Every weekday (22/month)'};
+const ACTIONS={requested:'requested',paid:'paid',used:'used',refund:'refund',adjusted:'adjusted',notRenewing:'will not renew',withdrawn:'withdrew request',cancelledByAdmin:'cancelled by you'};
+let mfilter='active';
+function memberCard(m){const ms=m.membership,plan=D.config.plans.find(p=>p.id===(ms.request||ms.plan))||{},active=ms.status==='active'&&ms.end>=D.today;
+  const status=active?'active':ms.status==='pending'?'pending':'ended';
+  const pills=[el('span',{className:'pill '+(status==='active'?'confirmed':status==='pending'?'pending':'cancelled'),textContent:status})];
+  if(active&&ms.autoRenew===false)pills.push(el('span',{className:'pill',textContent:'not renewing'}));
+  if(ms.request&&active)pills.push(el('span',{className:'pill pending',textContent:'wants '+(PLAN_NAMES[ms.request]||ms.request)}));
+  const rows=[['Plan',PLAN_NAMES[ms.plan]||ms.plan],['Credits',active?String(ms.credits||0):''],['Period',ms.start&&ms.end?ms.start+' → '+ms.end:''],['Phone',m.phone],['Email',m.email],
+    ['History',(ms.history||[]).slice(-5).reverse().map(h=>h.at.slice(0,10)+' '+(ACTIONS[h.action]||h.action)+(h.credits?' ('+(h.credits>0?'+':'')+h.credits+')':'')+(h.price?' '+h.price+' kr.':'')).join(' · ')]].filter(r=>r[1]);
+  const dl=el('dl',{});rows.forEach(r=>dl.append(el('dt',{textContent:r[0]}),el('dd',{textContent:r[1]})));
+  const b=(txt,body,cls)=>{const x=el('button',{type:'button',textContent:txt,className:cls||''});x.onclick=()=>act({sub:m.sub,...body});return x};
+  const actions=el('div',{className:'row'});
+  if(plan.id)actions.append(b((active&&!ms.request?'Renew – paid ':'Mark paid ')+plan.price+' kr.',{action:'member-pay'},'p'));
+  if(active)actions.append(b('+1 credit',{action:'member-credits',delta:1}),b('−1 credit',{action:'member-credits',delta:-1}));
+  if(status!=='ended')actions.append(b('Cancel membership',{action:'member-cancel'}));
+  return el('div',{className:'card'},el('div',{className:'row',style:'justify-content:space-between'},el('span',{className:'when',textContent:(m.name||m.email)}),el('span',{className:'row'},...pills)),dl,actions)}
 function render(){
   $('login').hidden=true;$('app').hidden=false;
+  const mem=D.members||[],mstate=(x)=>x.membership.status==='active'&&x.membership.end>=D.today?'active':x.membership.status==='pending'?'pending':'ended';
+  $('m-filters').replaceChildren(...['active','pending','ended'].map(f=>{const n=mem.filter(x=>mstate(x)===f).length;const b=el('button',{type:'button',textContent:f[0].toUpperCase()+f.slice(1)+' ('+n+')'});b.setAttribute('aria-pressed',f===mfilter);b.onclick=()=>{mfilter=f;render()};return b}));
+  const ml=mem.filter(x=>mstate(x)===mfilter);
+  $('members').replaceChildren(...(ml.length?ml.map(memberCard):[el('p',{className:'label',textContent:'No members here yet.'})]));
   $('filters').replaceChildren(...['upcoming','pending','all'].map(f=>{const b=el('button',{type:'button',textContent:f[0].toUpperCase()+f.slice(1)+(f==='pending'?' ('+D.bookings.filter(x=>x.status==='pending').length+')':'')});b.setAttribute('aria-pressed',f===filter);b.onclick=()=>{filter=f;render()};return b}));
   const list=D.bookings.filter(b=>filter==='all'||(filter==='pending'?b.status==='pending':b.date>=D.today&&b.status!=='cancelled'));
   $('bookings').replaceChildren(...(list.length?list.map(card):[el('p',{className:'label',textContent:'No bookings here yet.'})]));
@@ -124,10 +147,12 @@ function card(b){
   return el('div',{className:'card '+b.status},el('div',{className:'row',style:'justify-content:space-between'},el('span',{className:'when',textContent:NAMES[b.service]+' · '+whenOf(b)}),el('span',{className:'row'},...pills)),dl,actions);
 }
 function fillCfg(){const c=D.config;
+  $('c-plans').replaceChildren(el('span',{className:'label',textContent:'Plan'}),el('span',{className:'label',textContent:'Walks per period'}),el('span',{className:'label',textContent:'Price (kr.)'}),el('span',{className:'label',textContent:'On sale'}),
+    ...c.plans.flatMap(p=>[el('span',{textContent:(PLAN_NAMES[p.id]||p.id)+' · '+(p.kind==='pack'?p.months+' months':'per month')}),el('input',{id:'p-'+p.id+'-w',type:'number',min:1,value:p.walks}),el('input',{id:'p-'+p.id+'-p',type:'number',min:0,value:p.price}),el('input',{id:'p-'+p.id+'-a',type:'checkbox',checked:!!p.active,style:'width:22px;height:22px;box-shadow:none'})]));
   $('a-service').replaceChildren(...c.services.map(s=>el('option',{value:s.id,textContent:NAMES[s.id]||s.id})));$('a-service').value='walk';
   $('c-prices').replaceChildren(el('span',{className:'label',textContent:'Service'}),el('span',{className:'label',textContent:'Price'}),el('span',{className:'label',textContent:'+ per extra pet'}),...c.services.flatMap(s=>[el('span',{textContent:NAMES[s.id]+' (per '+UNIT[s.mode]+')'}),el('input',{id:'c-'+s.id,type:'number',min:0,value:s.price??'',ariaLabel:NAMES[s.id]+' price'}),el('input',{id:'c-'+s.id+'-x',type:'number',min:0,value:s.extra??'',ariaLabel:NAMES[s.id]+' extra pet'})]));$('c-start').value=c.hours.start;$('c-end').value=c.hours.end;$('c-mp').value=c.mobilepay;$('c-phone').value=c.phone;$('c-paw').value=c.pawshake;$('c-gid').value=c.googleClientId||'';openDays=[...c.openDays];days()}
 function days(){$('c-days').replaceChildren(...['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((n,i)=>{const b=el('button',{type:'button',textContent:n});b.setAttribute('aria-pressed',openDays.includes(i));b.onclick=()=>{openDays=openDays.includes(i)?openDays.filter(x=>x!==i):[...openDays,i];days()};return b}))}
-function cfgBody(closedDates){const c=D.config;return{action:'config',config:{services:c.services.map(s=>({id:s.id,price:$('c-'+s.id).value,extra:$('c-'+s.id+'-x').value})),hours:{start:$('c-start').value,end:$('c-end').value},openDays,closedDates:closedDates||c.closedDates,mobilepay:$('c-mp').value.trim(),phone:$('c-phone').value.trim(),pawshake:$('c-paw').value.trim(),googleClientId:$('c-gid').value.trim()}}}
+function cfgBody(closedDates){const c=D.config;return{action:'config',config:{services:c.services.map(s=>({id:s.id,price:$('c-'+s.id).value,extra:$('c-'+s.id+'-x').value})),plans:c.plans.map(p=>({id:p.id,walks:$('p-'+p.id+'-w').value,price:$('p-'+p.id+'-p').value,active:$('p-'+p.id+'-a').checked})),hours:{start:$('c-start').value,end:$('c-end').value},openDays,closedDates:closedDates||c.closedDates,mobilepay:$('c-mp').value.trim(),phone:$('c-phone').value.trim(),pawshake:$('c-paw').value.trim(),googleClientId:$('c-gid').value.trim()}}}
 $('cfg').onsubmit=async(e)=>{e.preventDefault();await act(cfgBody());fillCfg();if(!$('msg').textContent){$('msg').style.color='var(--ok)';$('msg').textContent='Settings saved.';setTimeout(()=>{$('msg').textContent='';$('msg').style.color=''},2500)}};
 $('b-date').onchange=render;
 $('b-day').onclick=()=>{const d=$('b-date').value,c=D.config.closedDates;act(cfgBody(c.includes(d)?c.filter(x=>x!==d):[...c,d]))};

@@ -44,7 +44,14 @@ export const DEFAULT_CONFIG = {
   mobilepay: '',
   phone: '',
   pawshake: 'https://en.pawshake.dk/sitter/can',
-  googleClientId: ''                // OAuth web client ID for "Sign in with Google" (public, set in admin)
+  googleClientId: '',               // OAuth web client ID for "Sign in with Google" (public, set in admin)
+  // Membership plans. walks = walk credits per period, months = period length. "pack" credits add up and last
+  // the whole period (punch card); "monthly" gives a fresh allowance each paid month. Edited in admin.
+  plans: [
+    { id: 'flex10', kind: 'pack', walks: 10, price: 1080, months: 3, active: true },
+    { id: 'weekly2', kind: 'monthly', walks: 8, price: 880, months: 1, active: true },
+    { id: 'daily5', kind: 'monthly', walks: 22, price: 2090, months: 1, active: true }
+  ]
 };
 export async function getConfig() {
   const raw = await cmd('GET', 'config');
@@ -54,7 +61,8 @@ export async function getConfig() {
     const s = (saved.services || []).find((x) => x.id === d.id);
     return s ? { ...d, price: s.price ?? null, extra: s.extra ?? null } : d;
   });
-  const config = { ...DEFAULT_CONFIG, ...saved, services };
+  const plans = DEFAULT_CONFIG.plans.map((d) => ({ ...d, ...((saved.plans || []).find((x) => x.id === d.id) || {}), id: d.id, kind: d.kind, months: d.months }));
+  const config = { ...DEFAULT_CONFIG, ...saved, services, plans };
   // Admin setting wins; otherwise fall back to the GOOGLE_CLIENT_ID env var (a public value).
   config.googleClientId = config.googleClientId || process.env.GOOGLE_CLIENT_ID || '';
   return config;
@@ -93,11 +101,63 @@ export function readSession(req) {
 export const sessionCookie = (value, maxAge) => `dm_s=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
 export const getUser = async (sub) => { const s = await cmd('HGET', 'users', sub); return s ? JSON.parse(s) : null; };
 export const saveUser = (u) => cmd('HSET', 'users', u.sub, JSON.stringify(u));
+export const getUsers = async () => Object.values(pairs(await cmd('HGETALL', 'users'))).map((s) => JSON.parse(s));
+
+// Memberships live on the customer record: { plan, kind, status: pending|active|cancelled, start, end, credits,
+// request (plan asked for), autoRenew, history[] }. Payment is MobilePay; the admin marks it paid.
+export const MEMBER_HORIZON_DAYS = 90; // members can book further ahead
+export const addMonths = (d, n) => {
+  const [y, m, day] = d.split('-').map(Number), last = new Date(Date.UTC(y, m - 1 + n + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, m - 1 + n, Math.min(day, last))).toISOString().slice(0, 10);
+};
+export const activeMembership = (user) => {
+  const m = user?.membership;
+  return m && m.status === 'active' && m.end >= today() ? m : null;
+};
+const logM = (m, action, extra = {}) => { m.history = [...(m.history || []), { at: new Date().toISOString(), action, ...extra }].slice(-60); };
+
+// Customer asks for a plan (or to switch plan); the current membership keeps running until the admin marks payment.
+export function requestMembership(user, plan) {
+  const m = user.membership || { credits: 0 };
+  m.request = plan.id; m.autoRenew = true; m.requested = today();
+  if (!activeMembership(user)) { m.status = 'pending'; m.plan = plan.id; m.kind = plan.kind; }
+  logM(m, 'requested', { plan: plan.id });
+  user.membership = m;
+}
+// Customer says they don't want to renew: an active membership runs to its end date, a pending one is withdrawn.
+export function leaveMembership(user) {
+  const m = user.membership; if (!m) return;
+  if (activeMembership(user)) { m.autoRenew = false; delete m.request; logM(m, 'notRenewing'); }
+  else { m.status = 'cancelled'; delete m.request; logM(m, 'withdrawn'); }
+}
+// Admin received the MobilePay payment: start or extend the period and load the credits.
+export function payMembership(user, plan) {
+  const t = today(), m = user.membership || {}, running = activeMembership(user);
+  const samePlan = running && m.plan === plan.id;
+  const start = samePlan ? addDays(m.end, 1) : t;
+  m.credits = plan.kind === 'pack' && samePlan ? (m.credits || 0) + plan.walks : plan.walks;
+  m.plan = plan.id; m.kind = plan.kind; m.status = 'active'; m.start = samePlan ? m.start : t;
+  m.end = addDays(addMonths(start, plan.months), -1); m.price = plan.price; m.autoRenew = true; delete m.request;
+  logM(m, 'paid', { plan: plan.id, price: plan.price, credits: plan.walks, end: m.end });
+  user.membership = m;
+}
+export function adjustCredits(user, delta, action = 'adjusted', extra = {}) {
+  const m = user.membership; if (!m) return;
+  m.credits = Math.max(0, (m.credits || 0) + delta); logM(m, action, { credits: delta, ...extra });
+}
+// A cancelled booking paid with credits gives them back (if the membership still runs).
+export async function refundCredits(bk) {
+  if (!bk.credits || !bk.user || bk.refunded) return;
+  const u = await getUser(bk.user);
+  if (u && activeMembership(u)) { adjustCredits(u, bk.credits, 'refund', { booking: bk.id }); await saveUser(u); }
+  bk.refunded = true;
+}
 
 // Badges ("rozetter"). Each rule gets the customer and all their bookings; when it first returns true the
 // badge is stored with the date. Artwork and names live in public/js/badges.js.
 export const BADGE_RULES = {
-  welcome: () => true, // every new customer
+  welcome: () => true,                         // every new customer
+  member: (user) => !!activeMembership(user),  // has an active membership
 };
 export async function awardBadges(user, bookings) {
   const have = { ...(user.badges || {}) };
@@ -144,10 +204,10 @@ export async function freeAll(b) {
 // Validates and normalises a booking. Returns { error } or { booking }.
 // Plans: "once" = one or more chosen dates, "weekly" = weekdays from a start date (REPEAT_WEEKS weeks),
 // "range" = drop-off date to pick-up date (overnight services). Older single-date input still works.
-export function buildBooking(input, config, { admin = false } = {}) {
+export function buildBooking(input, config, { admin = false, member = false } = {}) {
   const svc = config.services.find((s) => s.id === input.service);
   if (!svc) return { error: 'service' };
-  const t = today(), last = addDays(t, HORIZON_DAYS);
+  const t = today(), last = addDays(t, member ? MEMBER_HORIZON_DAYS : HORIZON_DAYS);
   const plan = svc.mode === 'nights' ? 'range' : input.plan === 'weekly' ? 'weekly' : 'once';
   let dates = [], end = '', weekdays = [];
 

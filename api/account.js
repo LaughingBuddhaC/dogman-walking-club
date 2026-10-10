@@ -42,8 +42,15 @@ export default async function handler(req, res) {
       const bk = await s.getBooking(b.id);
       if (!bk || bk.user !== user.sub || bk.status === 'cancelled' || s.lastDate(bk) < s.today()) return res.status(400).json({ error: 'cancel' });
       await s.freeAll(bk);
-      bk.status = 'cancelled'; bk.cancelledBy = 'customer'; await s.saveBooking(bk);
+      bk.status = 'cancelled'; bk.cancelledBy = 'customer'; await s.refundCredits(bk); await s.saveBooking(bk);
+      return res.status(200).json(await me(await s.getUser(user.sub)));
     }
+    if (b.action === 'join') {
+      const plan = (await s.getConfig()).plans.find((p) => p.id === b.plan && p.active);
+      if (!plan) return res.status(400).json({ error: 'plan' });
+      s.requestMembership(user, plan); await s.saveUser(user);
+    }
+    if (b.action === 'leave') { s.leaveMembership(user); await s.saveUser(user); }
     res.status(200).json(await me(user));
   } catch (e) { res.status(500).json({ error: 'server' }); }
 }

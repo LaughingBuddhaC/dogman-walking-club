@@ -8,6 +8,11 @@ window.DogBadges = (() => {
       da: ['Velkommen', 'Dit første mærke som ny kunde hos The DogMan.'],
       en: ['Welcome', 'Your first badge as a new customer of The DogMan.'],
     },
+    member: {
+      colors: ['#ffe08a', '#d9a21b', '#a8740a', '#7a5a10'],
+      da: ['Medlem', 'Du er medlem af The DogMan-flokken.'],
+      en: ['Member', 'You are a member of The DogMan pack.'],
+    },
   };
   const UI = {
     da: { got: 'Du har fået et nyt mærke!', hello: 'Velkommen til The DogMan', see: 'Se mine mærker', close: 'Luk', earned: 'Optjent' },
