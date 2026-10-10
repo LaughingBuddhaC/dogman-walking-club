@@ -1,4 +1,4 @@
-<title>Mine ture · The DogMan</title>
+<title>Mine ture · DogMan Walking Club</title>
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://dmw.cansasmaz.com/account/">
 <link rel="icon" type="image/png" href="/img/brand/favicon-64.png">
@@ -125,7 +125,7 @@ h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-to
 
 <header class="top">
   <div class="bar">
-    <a class="brand" href="/"><span class="mark logo-mark"><img src="/img/brand/mark-emboss-round.png" alt=""></span><span class="name">The DogMan</span></a>
+    <a class="brand" href="/"><span class="mark logo-mark"><img src="/img/brand/mark-emboss-round.png" alt=""></span><span class="name">DogMan Walking Club</span></a>
     <nav class="nav">
       <a class="btn primary sm" href="/#book" data-t="bookNew"></a>
       <div class="seg" role="group" aria-label="Language"><button type="button" data-lang="da">DA</button><button type="button" data-lang="en">EN</button></div>
@@ -171,7 +171,7 @@ da:{plan_flex10:'Klippekort 10',plan_weekly2:'Ugetur',plan_daily5:'Hverdag',plan
 logout:'Log ud',phone:'Telefon',address:'Adresse',dog:'Hund',walk:'Gåtur · 30 min.',dog1:'hund',dogN:'hunde',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',
 st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys turen',sure:'Ja, aflys',calendar:'Tilføj til kalender',
 emptyTitle:'Ingen kommende ture',emptyText:'Når du booker en gåtur, kan du se den her.',today:'I dag',tomorrow:'I morgen',
-cancelled:'Turen er aflyst.',eServer:'Noget gik galt. Prøv igen om lidt.',eLogin:'Log ind mislykkedes. Prøv igen.',calTitle:'Gåtur med The DogMan',sv_walk:'Gåtur',sv_visit1:'Hjemmebesøg',sv_visit2:'2 besøg om dagen',sv_daycare:'Dagpleje',sv_boarding:'Pasning hos mig',sv_housesit:'Huspasning',at:'kl.',every:'Hver',termsLink:'Handelsbetingelser',privacyLink:'Privatlivspolitik',withdrawLink:'Fortryd køb',cancelRule:'Gratis afbestilling indtil 24 timer før (pasning: 7 dage). Vil du fortryde et køb inden for 14 dage, så brug "Fortryd køb" nederst.',
+cancelled:'Turen er aflyst.',eServer:'Noget gik galt. Prøv igen om lidt.',eLogin:'Log ind mislykkedes. Prøv igen.',calTitle:'Gåtur med DogMan Walking Club',sv_walk:'Gåtur',sv_visit1:'Hjemmebesøg',sv_visit2:'2 besøg om dagen',sv_daycare:'Dagpleje',sv_boarding:'Pasning hos mig',sv_housesit:'Huspasning',at:'kl.',every:'Hver',termsLink:'Handelsbetingelser',privacyLink:'Privatlivspolitik',withdrawLink:'Fortryd køb',cancelRule:'Gratis afbestilling indtil 24 timer før (pasning: 7 dage). Vil du fortryde et køb inden for 14 dage, så brug "Fortryd køb" nederst.',
 memAccept:'Når du vælger en plan, accepterer du <a href="/vilkaar/" target="_blank">handelsbetingelserne</a> for medlemskab.',
 profTitle:'Mine hunde og oplysninger',profIntro:'Frivilligt – men det gør turen tryggere. Det, du skriver her, ser jeg, før jeg henter din hund.',profAdd:'+ Tilføj hund eller kat',profSave:'Gem',profSaved:'Gemt ✓',
 pName:'Navn',pBreed:'Race',pDog:'Hund',pCat:'Kat',pRemove:'Fjern',declH:'Hundeerklæring',declOkLine:'✓ Hundeerklæring udfyldt',
@@ -186,7 +186,7 @@ en:{plan_flex10:'10-walk card',plan_weekly2:'Weekly walker',plan_daily5:'Every w
 logout:'Log out',phone:'Phone',address:'Address',dog:'Dog',walk:'Walk · 30 min.',dog1:'dog',dogN:'dogs',once:'Once',weekly:'Every week',multi:'Several times a week',
 st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel walk',sure:'Yes, cancel',calendar:'Add to calendar',
 emptyTitle:'No upcoming walks',emptyText:'When you book a walk, it will show up here.',today:'Today',tomorrow:'Tomorrow',
-cancelled:'The walk is cancelled.',eServer:'Something went wrong. Try again shortly.',eLogin:'Sign-in failed. Please try again.',calTitle:'Dog walk with The DogMan',sv_walk:'Dog walk',sv_visit1:'Home visit',sv_visit2:'2 visits a day',sv_daycare:'Day care',sv_boarding:'Boarding',sv_housesit:'House sitting',at:'at',every:'Every',termsLink:'Terms',privacyLink:'Privacy policy',withdrawLink:'Withdraw a purchase',cancelRule:'Free cancellation until 24 hours before (boarding: 7 days). To withdraw from a purchase within 14 days, use "Withdraw a purchase" at the bottom.',
+cancelled:'The walk is cancelled.',eServer:'Something went wrong. Try again shortly.',eLogin:'Sign-in failed. Please try again.',calTitle:'Dog walk with DogMan Walking Club',sv_walk:'Dog walk',sv_visit1:'Home visit',sv_visit2:'2 visits a day',sv_daycare:'Day care',sv_boarding:'Boarding',sv_housesit:'House sitting',at:'at',every:'Every',termsLink:'Terms',privacyLink:'Privacy policy',withdrawLink:'Withdraw a purchase',cancelRule:'Free cancellation until 24 hours before (boarding: 7 days). To withdraw from a purchase within 14 days, use "Withdraw a purchase" at the bottom.',
 memAccept:'By choosing a plan you accept the <a href="/vilkaar/" target="_blank">terms</a> for membership.',
 profTitle:'My dogs and details',profIntro:'Optional – but it makes the walk safer. I read this before I pick up your dog.',profAdd:'+ Add a dog or cat',profSave:'Save',profSaved:'Saved ✓',
 pName:'Name',pBreed:'Breed',pDog:'Dog',pCat:'Cat',pRemove:'Remove',declH:'Dog declaration',declOkLine:'✓ Declaration filled in',
@@ -216,13 +216,13 @@ async function account(body){
 // Calendar file for one walk (floating local time, 30 minutes).
 // Calendar file: one event per walk/visit/day; an overnight stay is one all-day event from drop-off to pick-up.
 function ics(b){
-  const stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z',ymd=(d)=>d.replace(/-/g,''),title=t('sv_'+b.service)+' · The DogMan';
+  const stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z',ymd=(d)=>d.replace(/-/g,''),title=t('sv_'+b.service)+' · DogMan Walking Club';
   const ev=(uid,start,extra)=>['BEGIN:VEVENT','UID:'+uid+'@dmw.cansasmaz.com','DTSTAMP:'+stamp,...start,...extra,'SUMMARY:'+title,'URL:https://dmw.cansasmaz.com/account/','END:VEVENT'];
   let events=[];
   if(b.end)events=ev(b.id,['DTSTART;VALUE=DATE:'+ymd(b.date),'DTEND;VALUE=DATE:'+ymd(b.end)],[]);
   else{const ds=b.dates&&b.dates.length?b.dates:[b.date];
     events=ds.flatMap((d,i)=>b.time?ev(b.id+'-'+i,['DTSTART:'+ymd(d)+'T'+b.time.replace(':','')+'00'],['DURATION:PT30M']):ev(b.id+'-'+i,['DTSTART;VALUE=DATE:'+ymd(d)],[]))}
-  const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//The DogMan//DA',...events,'END:VCALENDAR'].join(String.fromCharCode(13,10));
+  const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//DogMan Walking Club//DA',...events,'END:VCALENDAR'].join(String.fromCharCode(13,10));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/calendar'}));a.download='dogman-'+b.date+'.ics';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 }
 const fshort=(d)=>parse(d).toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});

@@ -45,7 +45,7 @@ export default async function handler(req, res) {
         if (d) { await s.deletePhoto(d.photo); await s.deleteDog(d.id); }
       } else if (b.action === 'mail-test') {
         const to = process.env.ADMIN_EMAIL || 'm.cansasmaz@gmail.com';
-        await sendMail({ to, subject: 'Test fra The DogMan', text: 'Det virker – mails fra siden bliver sendt.', html: '<p>Det virker – mails fra siden bliver sendt. 🐾</p>' });
+        await sendMail({ to, subject: 'Test fra DogMan Walking Club', text: 'Det virker – mails fra siden bliver sendt.', html: '<p>Det virker – mails fra siden bliver sendt. 🐾</p>' });
       } else if (b.action === 'withdrawal-done') {
         const w = await s.getWithdrawal(String(b.wid || ''));
         if (w) { w.handled = new Date().toISOString(); await s.saveWithdrawal(w); }

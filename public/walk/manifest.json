@@ -1,8 +1,8 @@
 {
   "id": "/walk/",
-  "name": "The DogMan Walk",
+  "name": "DogMan Walking Club – Walk",
   "short_name": "DogMan Walk",
-  "description": "GPS walk tracking for The DogMan walkers",
+  "description": "GPS walk tracking for DogMan Walking Club walkers",
   "start_url": "/walk/",
   "scope": "/walk/",
   "display": "standalone",

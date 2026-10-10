@@ -3,7 +3,7 @@
 // with "Add to Google Calendar" buttons and a calendar file (.ics) with reminders 1 day and 1 hour before.
 import { setMailLog } from './_store.js';
 const SITE = process.env.SITE_URL || 'https://dmw.cansasmaz.com';
-const FROM = process.env.MAIL_FROM || 'The DogMan Walking Club <booking@dmw.cansasmaz.com>';
+const FROM = process.env.MAIL_FROM || 'DogMan Walking Club <booking@dmw.cansasmaz.com>';
 const ADMIN = process.env.ADMIN_EMAIL || 'm.cansasmaz@gmail.com';
 // The key may be saved with a prefix or stray spaces – match on the name's ending and trim.
 const apiKey = () => String(process.env[Object.keys(process.env).find((k) => k.endsWith('RESEND_API_KEY'))] || '').trim();
@@ -37,8 +37,8 @@ const L = {
     reqSubject: 'Tak for din booking – {s}', reqHead: 'Tak for din booking!', reqText: 'Jeg har modtaget din booking og vender tilbage hurtigst muligt. Du får en ny mail, når den er bekræftet – med knapper til din kalender.',
     okSubject: 'Bekræftet: {s} {w}', okHead: 'Din booking er bekræftet ✓', okText: 'Vi ses ved døren! Tilføj turene til din kalender, så får du en påmindelse.',
     gcal: 'Tilføj til Google Kalender', gcalAll: 'Tilføj alle til Google Kalender (gentages hver uge)', icsNote: 'iPhone/Outlook: åbn den vedhæftede kalenderfil (påmindelse dagen før og 1 time før).',
-    mine: 'Se og aflys dine ture', terms: 'Handelsbetingelser', title: '{s} med The DogMan', calDetails: 'The DogMan · {s}. Se, ret eller aflys: {u}',
-    cancelRule: 'Gratis afbestilling indtil 24 timer før (pasning: 7 dage).', sign: 'Kærlig hilsen\nCan & Boris · The DogMan' },
+    mine: 'Se og aflys dine ture', terms: 'Handelsbetingelser', title: '{s} med DogMan Walking Club', calDetails: 'DogMan Walking Club · {s}. Se, ret eller aflys: {u}',
+    cancelRule: 'Gratis afbestilling indtil 24 timer før (pasning: 7 dage).', sign: 'Kærlig hilsen\nCan & Boris · DogMan Walking Club' },
   en: { walk: 'Dog walk', visit1: 'Home visit', visit2: '2 visits a day', daycare: 'Day care', boarding: 'Boarding', housesit: 'House sitting',
     service: 'Service', when: 'When', pets: 'Pets', address: 'Address', price: 'Price (estimate)', pay: 'Payment', notes: 'Message', meet: 'Meet first',
     meetYes: 'Yes – free meet & greet (15 min.) before the first walk', ref: 'Booking no.', at: 'at', to: 'to', credits: '{n} credits used', due: 'extra dogs: {p}',
@@ -47,8 +47,8 @@ const L = {
     reqSubject: 'Thanks for your booking – {s}', reqHead: 'Thanks for your booking!', reqText: 'I have received your booking and will get back to you as soon as possible. You will get another email when it is confirmed – with buttons for your calendar.',
     okSubject: 'Confirmed: {s} {w}', okHead: 'Your booking is confirmed ✓', okText: 'See you at the door! Add the walks to your calendar to get a reminder.',
     gcal: 'Add to Google Calendar', gcalAll: 'Add all to Google Calendar (repeats weekly)', icsNote: 'iPhone/Outlook: open the attached calendar file (reminder the day before and 1 hour before).',
-    mine: 'See or cancel your walks', terms: 'Terms', title: '{s} with The DogMan', calDetails: 'The DogMan · {s}. See, change or cancel: {u}',
-    cancelRule: 'Free cancellation until 24 hours before (boarding: 7 days).', sign: 'Best wishes\nCan & Boris · The DogMan' },
+    mine: 'See or cancel your walks', terms: 'Terms', title: '{s} with DogMan Walking Club', calDetails: 'DogMan Walking Club · {s}. See, change or cancel: {u}',
+    cancelRule: 'Free cancellation until 24 hours before (boarding: 7 days).', sign: 'Best wishes\nCan & Boris · DogMan Walking Club' },
 };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const kr = (n) => `${Number(n).toLocaleString('da-DK')} kr.`;
@@ -87,7 +87,7 @@ const fold = (line) => { const out = []; let s = line; while (s.length > 73) { o
 export function icsFile(b, lang) {
   const t = L[lang], stamp = utc(new Date()), title = t.title.replace('{s}', t[b.service] + (b.dog ? ' – ' + b.dog : ''));
   const alarm = (trigger) => ['BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(title), 'TRIGGER:' + trigger, 'END:VALARM'];
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//The DogMan//Booking//DA', 'METHOD:PUBLISH',
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//DogMan Walking Club//Booking//DA', 'METHOD:PUBLISH',
     ...events(b).flatMap((e, i) => ['BEGIN:VEVENT', `UID:${b.id}-${i}@dmw.cansasmaz.com`, 'DTSTAMP:' + stamp,
       e.allDay ? 'DTSTART;VALUE=DATE:' + e.start : 'DTSTART:' + e.start, e.allDay ? 'DTEND;VALUE=DATE:' + e.end : 'DTEND:' + e.end,
       'SUMMARY:' + icsText(title), 'DESCRIPTION:' + icsText(t.calDetails.replace('{s}', b.id).replace('{u}', SITE + '/account/')),

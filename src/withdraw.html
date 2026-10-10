@@ -1,5 +1,5 @@
-<title>Fortryd køb · The DogMan</title>
-<meta name="description" content="Fortryd en booking eller et medlemskab hos The DogMan – online, med kvittering med det samme.">
+<title>Fortryd køb · DogMan Walking Club</title>
+<meta name="description" content="Fortryd en booking eller et medlemskab hos DogMan Walking Club – online, med kvittering med det samme.">
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" href="/img/brand/favicon-64.png">
 <link rel="apple-touch-icon" href="/img/brand/apple-touch-icon.png">
@@ -30,7 +30,7 @@ dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0}dt{color:va
 @media (max-width:640px){.card{padding:22px;border-radius:24px}}
 </style>
 <main>
-  <div class="top"><a class="back" href="/">← The DogMan</a><div class="seg"><button type="button" data-lang="da">DA</button><button type="button" data-lang="en">EN</button></div></div>
+  <div class="top"><a class="back" href="/">← DogMan Walking Club</a><div class="seg"><button type="button" data-lang="da">DA</button><button type="button" data-lang="en">EN</button></div></div>
   <form class="card" id="form" novalidate>
     <h1 data-t="title"></h1>
     <p class="muted" data-t="intro"></p>
@@ -81,7 +81,7 @@ $('form').onsubmit=async(e)=>{e.preventDefault();const v=(id)=>$(id).value.trim(
     receipt={...j,name:v('name'),email:v('email'),whatText:what==='membership'?t('membership'):t('bk')+(v('ref')?' '+v('ref'):'')};
     $('form').hidden=true;$('done').hidden=false;showReceipt();window.scrollTo(0,0)}
   catch(x){$('msg').textContent=t(x.message==='contact'?'eContact':'eServer');$('send').disabled=false}};
-$('save').onclick=()=>{const txt='The DogMan – '+t('doneTitle')+'\n\n'+rows().map(([k,v])=>k+': '+v).join('\n')+'\n';
+$('save').onclick=()=>{const txt='DogMan Walking Club – '+t('doneTitle')+'\n\n'+rows().map(([k,v])=>k+': '+v).join('\n')+'\n';
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));a.download='dogman-fortrydelse-'+receipt.id+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
 // Signed in: fill in name/email and offer the upcoming bookings.
 const ref=new URLSearchParams(location.search).get('ref');if(ref)$('ref').value=ref;

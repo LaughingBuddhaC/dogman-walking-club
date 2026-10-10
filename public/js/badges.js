@@ -5,18 +5,18 @@ window.DogBadges = (() => {
   const BADGES = {
     welcome: {
       colors: ['#ffb867', '#e8711a', '#c4560c', '#a8740a'],
-      da: ['Velkommen', 'Dit første mærke som ny kunde hos The DogMan.'],
-      en: ['Welcome', 'Your first badge as a new customer of The DogMan.'],
+      da: ['Velkommen', 'Dit første mærke som ny kunde hos DogMan Walking Club.'],
+      en: ['Welcome', 'Your first badge as a new customer of DogMan Walking Club.'],
     },
     member: {
       colors: ['#ffe08a', '#d9a21b', '#a8740a', '#7a5a10'],
-      da: ['Medlem', 'Du er medlem af The DogMan-flokken.'],
-      en: ['Member', 'You are a member of The DogMan pack.'],
+      da: ['Medlem', 'Du er medlem af flokken i DogMan Walking Club.'],
+      en: ['Member', 'You are a member of the DogMan Walking Club pack.'],
     },
     km10: {
       colors: ['#a5e8ff', '#2aa7d8', '#1679a8', '#0f5b80'],
-      da: ['10 km', 'Jeres første 10 km med The DogMan (GPS).'],
-      en: ['10 km', 'Your first 10 km with The DogMan (GPS).'],
+      da: ['10 km', 'Jeres første 10 km med DogMan Walking Club (GPS).'],
+      en: ['10 km', 'Your first 10 km with DogMan Walking Club (GPS).'],
     },
     km42: {
       colors: ['#d9b8ff', '#8a4fd8', '#6a32b0', '#4d2385'],
@@ -25,8 +25,8 @@ window.DogBadges = (() => {
     },
     km100: {
       colors: ['#ff9a8a', '#e0442b', '#b02a16', '#7d1c0e'],
-      da: ['100 km-klubben', '100 km gået med The DogMan.'],
-      en: ['100 km club', '100 km walked with The DogMan.'],
+      da: ['100 km-klubben', '100 km gået med DogMan Walking Club.'],
+      en: ['100 km club', '100 km walked with DogMan Walking Club.'],
     },
     walks10: {
       colors: ['#b6f0b0', '#3fae4a', '#2b8435', '#1d5c25'],
@@ -60,8 +60,8 @@ window.DogBadges = (() => {
     },
   };
   const UI = {
-    da: { got: 'Du har fået et nyt mærke!', hello: 'Velkommen til The DogMan', see: 'Se mine mærker', close: 'Luk', earned: 'Optjent' },
-    en: { got: 'You got a new badge!', hello: 'Welcome to The DogMan', see: 'See my badges', close: 'Close', earned: 'Earned' },
+    da: { got: 'Du har fået et nyt mærke!', hello: 'Velkommen til DogMan Walking Club', see: 'Se mine mærker', close: 'Luk', earned: 'Optjent' },
+    en: { got: 'You got a new badge!', hello: 'Welcome to DogMan Walking Club', see: 'See my badges', close: 'Close', earned: 'Earned' },
   };
   const MARK = '/img/brand/mark-emboss.png'; // embossed logo medallion
 
