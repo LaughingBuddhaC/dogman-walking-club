@@ -1,22 +1,31 @@
 // Booking emails via Resend (https://resend.com, plain HTTP API). Without RESEND_API_KEY nothing is sent.
 // New booking → receipt to the customer + notice to the admin. Admin confirms → confirmation to the customer
 // with "Add to Google Calendar" buttons and a calendar file (.ics) with reminders 1 day and 1 hour before.
+import { setMailLog } from './_store.js';
 const SITE = process.env.SITE_URL || 'https://dmw.cansasmaz.com';
 const FROM = process.env.MAIL_FROM || 'The DogMan <booking@dmw.cansasmaz.com>';
 const ADMIN = process.env.ADMIN_EMAIL || 'm.cansasmaz@gmail.com';
-export const mailOn = () => !!process.env.RESEND_API_KEY;
+// The key may be saved with a prefix or stray spaces – match on the name's ending and trim.
+const apiKey = () => String(process.env[Object.keys(process.env).find((k) => k.endsWith('RESEND_API_KEY'))] || '').trim();
+export const mailOn = () => !!apiKey();
+export const mailFrom = () => FROM;
 
+// Every attempt's result (not the content or address) is kept so the admin page can show what Resend answered.
 export async function sendMail({ to, subject, html, text, replyTo, attachments }) {
   if (!mailOn() || !to) return false;
+  let log;
   try {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST', signal: AbortSignal.timeout(8000),
-      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${apiKey()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: FROM, to: [to], subject, html, text, reply_to: replyTo || undefined, attachments }),
     });
-    if (!r.ok) console.error('mail', r.status, await r.text().catch(() => ''));
-    return r.ok;
-  } catch (e) { console.error('mail', e.message); return false; }
+    const body = await r.text().catch(() => '');
+    log = { ok: r.ok, status: r.status, error: r.ok ? '' : body.slice(0, 300) };
+    if (!r.ok) console.error('mail', r.status, body);
+  } catch (e) { log = { ok: false, status: 0, error: e.message }; console.error('mail', e.message); }
+  try { await setMailLog({ ...log, at: new Date().toISOString(), subject: String(subject).slice(0, 80) }); } catch (e) {}
+  return log.ok;
 }
 
 const L = {

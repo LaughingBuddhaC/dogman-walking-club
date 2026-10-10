@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import * as s from './_store.js';
-import { mailConfirmed } from './_mail.js';
+import { mailConfirmed, mailOn, mailFrom, sendMail } from './_mail.js';
 const PASS = process.env.ADMIN_PASSWORD || (s.hasDb || process.env.VERCEL ? '' : 'dev'); // never fall back to 'dev' on Vercel
 function authed(req) {
   const given = String(req.headers['x-admin-password'] || '');
@@ -43,6 +43,9 @@ export default async function handler(req, res) {
       } else if (b.action === 'dog-delete') {
         const d = (await s.getDogs()).find((x) => x.id === b.did);
         if (d) { await s.deletePhoto(d.photo); await s.deleteDog(d.id); }
+      } else if (b.action === 'mail-test') {
+        const to = process.env.ADMIN_EMAIL || 'm.cansasmaz@gmail.com';
+        await sendMail({ to, subject: 'Test fra The DogMan', text: 'Det virker – mails fra siden bliver sendt.', html: '<p>Det virker – mails fra siden bliver sendt. 🐾</p>' });
       } else if (b.action === 'withdrawal-done') {
         const w = await s.getWithdrawal(String(b.wid || ''));
         if (w) { w.handled = new Date().toISOString(); await s.saveWithdrawal(w); }
@@ -85,11 +88,12 @@ export default async function handler(req, res) {
     }
     const [config, bookings, slots] = await Promise.all([s.getConfig(), s.getBookings(), s.getSlots()]);
     const members = (await s.getUsers()).filter((u) => u.membership).map(({ sub, name, email, phone, membership }) => ({ sub, name, email, phone, membership }));
-    const [reviews, dogs, withdrawals, users] = await Promise.all([s.getReviews(), s.getDogs(), s.getWithdrawals(), s.getUsers()]);
+    const [reviews, dogs, withdrawals, users, mailLog] = await Promise.all([s.getReviews(), s.getDogs(), s.getWithdrawals(), s.getUsers(), s.getMailLog()]);
     // Profiles (dog declaration, vet, emergency contact) of customers with bookings – filled in on "Mine ture".
     const withBookings = new Set(bookings.map((b) => b.user).filter(Boolean));
     const profiles = Object.fromEntries(users.filter((u) => withBookings.has(u.sub)).map((u) => [u.sub, { pets: u.pets || [], vet: u.vet || '', emergency: u.emergency || '' }]));
     res.status(200).json({ config, bookings, members, today: s.today(), blocked: Object.keys(slots).filter((k) => slots[k] === 'blocked'),
-      reviews: reviews.sort((a, b) => b.at.localeCompare(a.at)), dogs, withdrawals, profiles });
+      reviews: reviews.sort((a, b) => b.at.localeCompare(a.at)), dogs, withdrawals, profiles,
+      mail: { on: mailOn(), from: mailFrom(), log: mailLog } });
   } catch (e) { res.status(500).json({ error: 'server' }); }
 }

@@ -85,6 +85,7 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
     <div class="box"><h2>Block times</h2>
       <div class="row" style="margin-block:10px"><input id="b-date" type="date" style="max-width:190px" aria-label="Date"><button type="button" id="b-day"></button></div>
       <div class="slots" id="b-slots"></div><p class="label" style="margin-top:8px">Tap a free time to block it. Tap again to open it.</p></div>
+    <div class="box"><h2>Email</h2><div id="mail-status" style="margin:10px 0"></div><button type="button" id="mail-test">Send a test email to me</button></div>
     <div class="box"><h2>Settings</h2>
       <form id="cfg" class="grid" style="margin-top:10px">
         <div class="f" style="grid-column:1/-1"><span class="label">Membership plans</span><div class="prices" id="c-plans" style="grid-template-columns:1.6fr 1fr 1fr auto"></div></div>
@@ -132,7 +133,13 @@ function memberCard(m){const ms=m.membership,plan=D.config.plans.find(p=>p.id===
 function shrink(file,max=1000){return new Promise((ok,no)=>{const img=new Image();img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');
   c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);ok(c.toDataURL('image/jpeg',.82))};img.onerror=no;img.src=URL.createObjectURL(file)})}
 const photoUrl=(id)=>'/api/club?photo='+id;
-function renderExtras(){
+function renderMail(){const m=D.mail||{},last=(m.log||[])[0];
+  const lines=[m.on?'✓ Resend key found. Sender: '+m.from:'✗ No RESEND_API_KEY on this deployment – add it in Vercel (Production) and redeploy.'];
+  if(last)lines.push('Last attempt '+last.at.slice(0,16).replace('T',' ')+' ('+last.subject+'): '+(last.ok?'✓ accepted by Resend':'✗ '+last.status+' '+last.error));
+  else if(m.on)lines.push('No email attempts yet.');
+  $('mail-status').replaceChildren(...lines.map(x=>el('p',{textContent:x,className:x.startsWith('✗')?'warn':''})))}
+$('mail-test').onclick=()=>act({action:'mail-test'});
+function renderExtras(){renderMail();
   const wd=D.withdrawals||[];$('wd-box').hidden=!wd.length;
   $('withdrawals').replaceChildren(...wd.map(w=>{const dl=el('dl',{});
     [['Received',w.at.slice(0,16).replace('T',' ')],['From',w.name+' · '+w.email+(w.phone?' · '+w.phone:'')],['What',(w.what==='membership'?'Membership':'Booking ')+(w.ref||'')],['Message',w.message],['Auto',w.cancelled?(w.what==='membership'?'membership stopped from renewing':'booking cancelled'):'nothing changed – check and cancel yourself'],['Handled',w.handled?w.handled.slice(0,10):'']]

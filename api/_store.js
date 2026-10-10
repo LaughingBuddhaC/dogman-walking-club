@@ -167,6 +167,12 @@ export async function savePhoto(dataUrl) {
 }
 export const getPhoto = async (id) => { const v = await cmd('HGET', 'photos', id); return v ? JSON.parse(v) : null; };
 export const deletePhoto = (id) => (id ? cmd('HDEL', 'photos', id) : 0);
+// Result of the last email attempts (for the admin page).
+export async function setMailLog(entry) {
+  const raw = await cmd('GET', 'maillog'); const list = raw ? JSON.parse(raw) : [];
+  await cmd('SET', 'maillog', JSON.stringify([entry, ...list].slice(0, 10)));
+}
+export const getMailLog = async () => { const raw = await cmd('GET', 'maillog'); return raw ? JSON.parse(raw) : []; };
 // Withdrawals (fortrydelser) sent with the online form on /fortryd/.
 export const getWithdrawals = async () => Object.values(pairs(await cmd('HGETALL', 'withdrawals'))).map((v) => JSON.parse(v)).sort((a, b) => b.at.localeCompare(a.at)).slice(0, 100);
 export const getWithdrawal = async (id) => { const v = await cmd('HGET', 'withdrawals', id); return v ? JSON.parse(v) : null; };
