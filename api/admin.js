@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import * as s from './_store.js';
+import { mailConfirmed } from './_mail.js';
 const PASS = process.env.ADMIN_PASSWORD || (s.hasDb || process.env.VERCEL ? '' : 'dev'); // never fall back to 'dev' on Vercel
 function authed(req) {
   const given = String(req.headers['x-admin-password'] || '');
@@ -18,7 +19,11 @@ export default async function handler(req, res) {
       if (b.action === 'status' && bk && ['pending', 'confirmed', 'cancelled'].includes(b.status)) {
         if (b.status === 'cancelled') { await s.freeAll(bk); await s.refundCredits(bk); }
         if (b.status !== 'cancelled' && bk.status === 'cancelled' && (await s.claimAll(bk))) return res.status(409).json({ error: 'taken' });
-        bk.status = b.status; await s.saveBooking(bk);
+        const confirming = b.status === 'confirmed' && bk.status !== 'confirmed';
+        bk.status = b.status;
+        // First confirmation → email with the details and calendar buttons.
+        if (confirming && !bk.mails?.confirmed && (await mailConfirmed(bk, await s.getConfig()))) bk.mails = { ...(bk.mails || {}), confirmed: new Date().toISOString() };
+        await s.saveBooking(bk);
       } else if (b.action === 'paid' && bk) { bk.paid = !!b.paid; await s.saveBooking(bk); }
       else if (b.action === 'delete' && bk) { await s.freeAll(bk); if (bk.status !== 'cancelled') await s.refundCredits(bk); await s.deleteBooking(bk.id); }
       else if (/^member-/.test(b.action || '')) {

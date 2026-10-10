@@ -1,3 +1,4 @@
+import { mailNewBooking } from './_mail.js';
 import { getConfig, buildBooking, claimAll, freeAll, saveBooking, readSession, getUser, saveUser, activeMembership, adjustCredits, lastDate } from './_store.js';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
@@ -22,6 +23,8 @@ export default async function handler(req, res) {
     const taken = await claimAll(booking);
     if (taken) return res.status(409).json({ error: 'taken', date: taken.slice(0, 10) });
     try { await saveBooking(booking); } catch (e) { await freeAll(booking); throw e; }
+    // Receipt to the customer + notice to the admin (failures never block the booking).
+    if (await mailNewBooking(booking, config)) { booking.mails = { request: new Date().toISOString() }; await saveBooking(booking); }
     // Remember the customer's details so the next booking is pre-filled.
     if (user) {
       if (booking.credits) adjustCredits(user, -booking.credits, 'used', { booking: booking.id });

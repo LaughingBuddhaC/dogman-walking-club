@@ -333,6 +333,8 @@ export function buildBooking(input, config, { admin = false, member = false } = 
 
   const name = clean(input.name, 80), phone = clean(input.phone, 30);
   if (!name || phone.replace(/\D/g, '').length < 8) return { error: 'contact' };
+  // Customers need an email for the booking receipt and the confirmation (admin-made bookings may skip it).
+  if (!admin && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(clean(input.email, 120))) return { error: 'email' };
   const units = dates.length; // nights for a range, otherwise visits/walks/days
   const first = petList[0] || {};
   return { booking: {
