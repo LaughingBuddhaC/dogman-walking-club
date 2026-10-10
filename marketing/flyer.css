@@ -11,9 +11,9 @@ body{font-family:"Inter",-apple-system,"Segoe UI",sans-serif;color:#1d1d1f;lette
 .mark{width:calc(var(--u)*9);height:calc(var(--u)*9);border-radius:50%;display:grid;place-items:center;color:var(--accent);background:var(--bg)}
 .mark{background:#f5f1e7!important;overflow:hidden}
 .mark img{height:76%;width:auto}
-.brand .wm{height:calc(var(--u)*8);width:auto;display:block}
-.sticker{position:absolute;left:calc(var(--u)*-1.5);top:calc(var(--u)*-2.5);width:calc(var(--u)*24);height:calc(var(--u)*24);border-radius:50%;background:#f5f1e7;display:grid;place-items:center;transform:rotate(-8deg);z-index:2}
-.sticker img{position:static!important;inset:auto!important;width:auto!important;height:calc(var(--u)*18)!important;border-radius:0!important;object-fit:contain!important}
+.brand .wm{height:calc(var(--u)*11);width:auto;display:block;border-radius:calc(var(--u)*3)}
+.sticker{position:absolute;left:calc(var(--u)*-1.5);top:calc(var(--u)*-2.5);width:calc(var(--u)*26);height:calc(var(--u)*26);border-radius:50%;display:block;transform:rotate(-8deg);z-index:2}
+.sticker img{position:static!important;inset:auto!important;width:auto!important;height:100%!important;width:100%!important;border-radius:50%!important;object-fit:cover!important}
 .area{font-size:calc(var(--u)*3.2);font-weight:600;color:var(--muted);padding:calc(var(--u)*1.8) calc(var(--u)*3.4);border-radius:999px;display:flex;align-items:center;gap:calc(var(--u)*1.6)}
 .area i{width:calc(var(--u)*2);height:calc(var(--u)*2);border-radius:50%;background:#1f7a45;display:block}
 h1{font-size:calc(var(--u)*12.6);line-height:1.02;font-weight:800;letter-spacing:-.035em}

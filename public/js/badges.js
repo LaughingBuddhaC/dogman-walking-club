@@ -13,7 +13,7 @@ window.DogBadges = (() => {
     da: { got: 'Du har fået et nyt mærke!', hello: 'Velkommen til The DogMan', see: 'Se mine mærker', close: 'Luk', earned: 'Optjent' },
     en: { got: 'You got a new badge!', hello: 'Welcome to The DogMan', see: 'See my badges', close: 'Close', earned: 'Earned' },
   };
-  const HIKER = '/img/brand/hiker-stamp-green.png';
+  const MARK = '/img/brand/mark-emboss.png'; // embossed logo medallion
 
   // Rosette: scalloped medal, stitched inner ring, the hiker logo, two ribbon tails.
   function svg(id) {
@@ -26,8 +26,8 @@ window.DogBadges = (() => {
     return `<svg viewBox="0 0 200 250" aria-hidden="true"><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>
 <path d="M66 150 46 240 72 226 90 246 100 162Z" fill="${r1}"/><path d="M134 150 154 240 128 226 110 246 100 162Z" fill="${r2}"/>
 <g fill="url(#${g})">${bumps}<circle cx="100" cy="96" r="82"/></g>
-<circle cx="100" cy="96" r="66" fill="#f5f1e7"/><circle cx="100" cy="96" r="59" fill="none" stroke="${r1}" stroke-width="2" stroke-dasharray="5 5" opacity=".7"/>
-<image href="${HIKER}" x="70" y="48" width="60" height="96" preserveAspectRatio="xMidYMid meet"/></svg>`;
+<clipPath id="${g}-c"><circle cx="100" cy="96" r="66"/></clipPath><image href="${MARK}" x="34" y="30" width="132" height="132" clip-path="url(#${g}-c)"/>
+<circle cx="100" cy="96" r="60" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="5 5" opacity=".55"/></svg>`;
   }
 
   const texts = (id, lang) => (BADGES[id] || BADGES.welcome)[lang === 'en' ? 'en' : 'da'];

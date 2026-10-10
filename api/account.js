@@ -5,8 +5,8 @@ async function me(user) {
   const t = s.today();
   const all = (await s.getBookings()).filter((b) => b.user === user.sub);
   await s.awardBadges(user, all);
-  const bookings = all.filter((b) => b.date >= t)
-    .map(({ id, service, date, time, pets, freq, status, estimate }) => ({ id, service, date, time, pets, freq, status, estimate }));
+  const bookings = all.filter((b) => s.lastDate(b) >= t)
+    .map(({ id, service, plan, date, end, dates, weekdays, time, pets, petList, freq, status, estimate, meet }) => ({ id, service, plan, date, end, dates, weekdays, time, pets, petList, freq, status, estimate, meet }));
   const { sub, ...profile } = user;
   return { user: profile, bookings };
 }
@@ -40,9 +40,8 @@ export default async function handler(req, res) {
     if (!user) return res.status(200).json({ user: null });
     if (b.action === 'cancel') {
       const bk = await s.getBooking(b.id);
-      if (!bk || bk.user !== user.sub || bk.status === 'cancelled' || bk.date < s.today()) return res.status(400).json({ error: 'cancel' });
-      const key = bk.time ? `${bk.date}|${bk.time}` : null;
-      if (key && (await s.slotOwner(key)) === bk.id) await s.freeSlot(key);
+      if (!bk || bk.user !== user.sub || bk.status === 'cancelled' || s.lastDate(bk) < s.today()) return res.status(400).json({ error: 'cancel' });
+      await s.freeAll(bk);
       bk.status = 'cancelled'; bk.cancelledBy = 'customer'; await s.saveBooking(bk);
     }
     res.status(200).json(await me(user));

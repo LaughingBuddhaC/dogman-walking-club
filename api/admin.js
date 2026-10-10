@@ -15,17 +15,16 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
       const bk = b.id ? await s.getBooking(b.id) : null;
-      const key = bk && bk.time ? `${bk.date}|${bk.time}` : null;
       if (b.action === 'status' && bk && ['pending', 'confirmed', 'cancelled'].includes(b.status)) {
-        if (b.status === 'cancelled' && key && (await s.slotOwner(key)) === bk.id) await s.freeSlot(key);
-        if (b.status !== 'cancelled' && bk.status === 'cancelled' && key && !(await s.claimSlot(key, bk.id))) return res.status(409).json({ error: 'taken' });
+        if (b.status === 'cancelled') await s.freeAll(bk);
+        if (b.status !== 'cancelled' && bk.status === 'cancelled' && (await s.claimAll(bk))) return res.status(409).json({ error: 'taken' });
         bk.status = b.status; await s.saveBooking(bk);
       } else if (b.action === 'paid' && bk) { bk.paid = !!b.paid; await s.saveBooking(bk); }
-      else if (b.action === 'delete' && bk) { if (key && (await s.slotOwner(key)) === bk.id) await s.freeSlot(key); await s.deleteBooking(bk.id); }
+      else if (b.action === 'delete' && bk) { await s.freeAll(bk); await s.deleteBooking(bk.id); }
       else if (b.action === 'add') {
         const { error, booking } = s.buildBooking(b.booking || {}, await s.getConfig(), { admin: true });
         if (error) return res.status(400).json({ error });
-        if (booking.time && !(await s.claimSlot(`${booking.date}|${booking.time}`, booking.id))) return res.status(409).json({ error: 'taken' });
+        if (await s.claimAll(booking)) return res.status(409).json({ error: 'taken' });
         await s.saveBooking(booking);
       } else if (b.action === 'block' && /^\d{4}-\d{2}-\d{2}\|\d{2}:00$/.test(b.key || '')) {
         if (!(await s.claimSlot(b.key, 'blocked'))) return res.status(409).json({ error: 'taken' });

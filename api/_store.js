@@ -116,36 +116,97 @@ export const weekday = (d) => new Date(d + 'T12:00:00Z').getUTCDay();
 export const newId = () => crypto.randomBytes(6).toString('hex');
 const clean = (v, n) => String(v ?? '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
 
+// Which pets each service takes, and how far ahead customers can book.
+export const SERVICE_PETS = { walk: ['dog'], daycare: ['dog'], boarding: ['dog', 'cat'], housesit: ['dog', 'cat'], visit1: ['dog', 'cat'], visit2: ['dog', 'cat'] };
+export const HORIZON_DAYS = 60;
+export const REPEAT_WEEKS = 8; // a weekly booking reserves this many weeks; the customer re-books after that
+const isDate = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !isNaN(Date.parse(d));
+const isOpen = (config, d) => !config.closedDates.includes(d) && config.openDays.includes(weekday(d));
+
+// Hour slots a booking holds (walks only): one "date|HH:00" key per walk date.
+// Last day a booking covers (pick-up day for a range, last walk/visit otherwise).
+export const lastDate = (b) => b.end || (b.dates?.length ? b.dates[b.dates.length - 1] : b.date);
+export const slotKeys = (b) => (b.time ? (b.dates?.length ? b.dates : [b.date]).map((d) => `${d}|${b.time}`) : []);
+
+// Claims all slots of a booking or none. Returns the first taken key, or null when everything was claimed.
+export async function claimAll(b) {
+  const done = [];
+  for (const k of slotKeys(b)) {
+    if (!(await claimSlot(k, b.id))) { for (const d of done) await freeSlot(d); return k; }
+    done.push(k);
+  }
+  return null;
+}
+export async function freeAll(b) {
+  for (const k of slotKeys(b)) if ((await slotOwner(k)) === b.id) await freeSlot(k);
+}
+
 // Validates and normalises a booking. Returns { error } or { booking }.
+// Plans: "once" = one or more chosen dates, "weekly" = weekdays from a start date (REPEAT_WEEKS weeks),
+// "range" = drop-off date to pick-up date (overnight services). Older single-date input still works.
 export function buildBooking(input, config, { admin = false } = {}) {
   const svc = config.services.find((s) => s.id === input.service);
   if (!svc) return { error: 'service' };
-  const date = clean(input.date, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date))) return { error: 'date' };
-  const t = today();
-  if (!admin) {
-    if (date < t || date > addDays(t, 60)) return { error: 'date' };
-    if (config.closedDates.includes(date) || !config.openDays.includes(weekday(date))) return { error: 'closed' };
+  const t = today(), last = addDays(t, HORIZON_DAYS);
+  const plan = svc.mode === 'nights' ? 'range' : input.plan === 'weekly' ? 'weekly' : 'once';
+  let dates = [], end = '', weekdays = [];
+
+  if (plan === 'range') {
+    const start = clean(input.date, 10);
+    end = clean(input.end, 10) || (isDate(start) ? addDays(start, Math.min(30, Math.max(1, parseInt(input.nights, 10) || 1))) : '');
+    if (!isDate(start) || !isDate(end) || end <= start) return { error: 'date' };
+    const n = Math.round((Date.parse(end) - Date.parse(start)) / 864e5);
+    if (n > 30) return { error: 'date' };
+    for (let i = 0; i < n; i++) dates.push(addDays(start, i));
+    if (!admin && (start < t || start > last)) return { error: 'date' };
+    if (!admin && dates.some((d) => config.closedDates.includes(d))) return { error: 'closed' };
+  } else if (plan === 'weekly') {
+    weekdays = [...new Set((input.weekdays || []).map(Number).filter((n) => n >= 0 && n <= 6))].sort();
+    const start = clean(input.date, 10);
+    if (!weekdays.length || !isDate(start)) return { error: 'date' };
+    for (let i = 0; i < REPEAT_WEEKS * 7; i++) {
+      const d = addDays(start, i);
+      if (weekdays.includes(weekday(d)) && (admin || (d >= t && d <= last && isOpen(config, d)))) dates.push(d);
+    }
+  } else {
+    const list = Array.isArray(input.dates) && input.dates.length ? input.dates : [input.date];
+    dates = [...new Set(list.map((d) => clean(d, 10)))].sort();
+    if (!dates.length || dates.length > 40 || !dates.every(isDate)) return { error: 'date' };
+    if (!admin && dates.some((d) => d < t || d > last)) return { error: 'date' };
+    if (!admin && dates.some((d) => !isOpen(config, d))) return { error: 'closed' };
   }
+  if (!dates.length) return { error: 'date' };
+
   let time = '';
   if (svc.mode === 'slot') {
     time = clean(input.time, 5);
     const h = Number(time.slice(0, 2));
     if (!/^\d{2}:00$/.test(time) || h < config.hours.start || h >= config.hours.end) return { error: 'time' };
-    if (!admin && date === t && h <= nowHour()) return { error: 'time' };
+    if (!admin && dates[0] === t && h <= nowHour()) return { error: 'time' };
   }
-  const count = (v) => Math.min(30, Math.max(1, parseInt(v, 10) || 1));
-  const nights = svc.mode === 'nights' ? count(input.nights) : 0;
-  const days = svc.mode === 'days' ? count(input.days) : 0;
-  const pets = Math.min(6, Math.max(1, parseInt(input.pets, 10) || 1));
+
+  // Pets: a list of profiles (name, dog/cat, size, breed); older input only sends a count.
+  const allowed = SERVICE_PETS[svc.id] || ['dog', 'cat'];
+  const petList = (Array.isArray(input.petList) ? input.petList : []).slice(0, 6).map((p) => ({
+    name: clean(p?.name, 40), type: p?.type === 'cat' ? 'cat' : 'dog', size: ['S', 'M', 'L'].includes(p?.size) ? p.size : '', breed: clean(p?.breed, 40),
+  }));
+  if (petList.some((p) => !allowed.includes(p.type))) return { error: 'pets' };
+  const pets = petList.length || Math.min(6, Math.max(1, parseInt(input.pets, 10) || 1));
+
   const name = clean(input.name, 80), phone = clean(input.phone, 30);
   if (!name || phone.replace(/\D/g, '').length < 8) return { error: 'contact' };
+  const units = dates.length; // nights for a range, otherwise visits/walks/days
+  const first = petList[0] || {};
   return { booking: {
-    id: newId(), created: new Date().toISOString(), service: svc.id, date, time, nights, days, pets,
-    estimate: estimate(svc, nights || days || 1, pets), name, phone,
-    email: clean(input.email, 120), address: clean(input.address, 160), dog: clean(input.dog, 60),
-    breed: clean(input.breed, 60), size: clean(input.size, 10), notes: clean(input.notes, 600),
-    freq: ['once', 'weekly', 'multi'].includes(input.freq) ? input.freq : 'once',
+    id: newId(), created: new Date().toISOString(), service: svc.id, plan,
+    date: dates[0], end: plan === 'range' ? end : '', dates: plan === 'range' ? [] : dates, weekdays, time,
+    nights: plan === 'range' ? dates.length : 0, days: svc.mode === 'days' ? dates.length : 0, count: units,
+    pets, petList, meet: !!input.meet,
+    estimate: estimate(svc, units, pets), name, phone,
+    email: clean(input.email, 120), address: clean(input.address, 160),
+    dog: clean(input.dog, 60) || first.name || '', breed: clean(input.breed, 60) || first.breed || '', size: clean(input.size, 10) || first.size || '',
+    notes: clean(input.notes, 600),
+    freq: plan === 'weekly' ? 'weekly' : ['weekly', 'multi'].includes(input.freq) ? input.freq : 'once',
     lang: input.lang === 'en' ? 'en' : 'da', status: admin ? 'confirmed' : 'pending', paid: false, source: admin ? 'admin' : 'web'
   } };
 }
