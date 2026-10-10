@@ -105,16 +105,23 @@ function render(){
   $('b-slots').replaceChildren(...hrs.map(h=>{const k=d+'|'+h,bk=D.bookings.find(b=>b.status!=='cancelled'&&b.date===d&&b.time===h),bl=D.blocked.includes(k);
     const b=el('button',{type:'button',textContent:h,title:bk?bk.name:''});if(bk){b.className='booked';b.disabled=true}else{b.setAttribute('aria-pressed',bl);b.onclick=()=>act({action:bl?'unblock':'block',key:k})}return b}));
 }
+// "Mon 12 Oct 09:00 · Tue 13 Oct …", "Every Mon, Thu 07:00 from 12 Oct (16×)", "20 Oct → 23 Oct (3 nights)"
+const WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dshort=(d)=>new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+function whenOf(b){const tm=b.time?' '+b.time:'';
+  if(b.end)return dshort(b.date)+' → '+dshort(b.end)+' ('+b.nights+' nights)';
+  if(b.plan==='weekly')return 'Every '+(b.weekdays||[]).map(n=>WDN[n]).join(', ')+tm+' from '+dshort(b.date)+' ('+(b.dates||[]).length+'×)';
+  const ds=b.dates&&b.dates.length?b.dates:[b.date];return ds.map(dshort).join(' · ')+tm}
 function card(b){
   const pills=[el('span',{className:'pill '+b.status,textContent:b.status})];if(b.paid)pills.push(el('span',{className:'pill paid',textContent:'paid'}));if(b.user)pills.push(el('span',{className:'pill',textContent:'google'}));
-  const rows=[['Owner',b.name],['Phone',b.phone],['Email',b.email],['Address',b.address],['Pet',[b.dog,b.breed,b.size,b.pets>1?b.pets+' pets':''].filter(Boolean).join(' · ')],['Estimate',b.estimate!=null?b.estimate+' kr.':''],['How often',{weekly:'Every week',multi:'Several times a week'}[b.freq]||''],['Notes',b.notes],['Booked',b.created.slice(0,10)+' via '+b.source]].filter(r=>r[1]);
+  const rows=[['Owner',b.name],['Phone',b.phone],['Email',b.email],['Address',b.address],['Pets',(b.petList&&b.petList.length?b.petList.map(p=>[p.name||'(no name)',p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · '):[b.dog,b.breed,b.size,b.pets>1?b.pets+' pets':''].filter(Boolean).join(' · '))],['Meet & greet',b.meet?'Yes – wants a free meeting first':''],['Estimate',b.estimate!=null?b.estimate+' kr.':''],['How often',{weekly:'Every week',multi:'Several times a week'}[b.freq]||''],['Notes',b.notes],['Booked',b.created.slice(0,10)+' via '+b.source]].filter(r=>r[1]);
   const dl=el('dl',{});rows.forEach(r=>{const dd=el('dd',{});if(r[0]==='Address')dd.append(el('a',{href:'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(r[1]),target:'_blank',rel:'noopener',textContent:r[1]+' ↗'}));else dd.textContent=r[1];dl.append(el('dt',{textContent:r[0]}),dd)});
   const btn=(txt,body,cls)=>{const x=el('button',{type:'button',textContent:txt,className:cls||''});x.onclick=()=>act({id:b.id,...body});return x};
   const actions=el('div',{className:'row'});
   if(b.status==='pending')actions.append(btn('Confirm',{action:'status',status:'confirmed'},'p'));
   if(b.status!=='cancelled')actions.append(btn(b.paid?'Mark unpaid':'Mark paid',{action:'paid',paid:!b.paid}),btn('Cancel',{action:'status',status:'cancelled'}));
   else{const del=el('button',{type:'button',textContent:'Delete'});del.onclick=()=>{if(del.dataset.sure)act({action:'delete',id:b.id});else{del.dataset.sure=1;del.textContent='Delete for good?'}};actions.append(btn('Restore',{action:'status',status:'confirmed'}),del)}
-  return el('div',{className:'card '+b.status},el('div',{className:'row',style:'justify-content:space-between'},el('span',{className:'when',textContent:b.date+(b.time?' '+b.time:'')+' · '+NAMES[b.service]+(b.nights?' · '+b.nights+' nights':'')+(b.days?' · '+b.days+' days':'')}),el('span',{className:'row'},...pills)),dl,actions);
+  return el('div',{className:'card '+b.status},el('div',{className:'row',style:'justify-content:space-between'},el('span',{className:'when',textContent:NAMES[b.service]+' · '+whenOf(b)}),el('span',{className:'row'},...pills)),dl,actions);
 }
 function fillCfg(){const c=D.config;
   $('a-service').replaceChildren(...c.services.map(s=>el('option',{value:s.id,textContent:NAMES[s.id]||s.id})));$('a-service').value='walk';

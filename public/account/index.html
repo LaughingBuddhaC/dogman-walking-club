@@ -135,12 +135,12 @@ da:{bookNew:'Book en tur',eyebrow:'Din konto',title:'Mine ture',loginTitle:'Log 
 logout:'Log ud',phone:'Telefon',address:'Adresse',dog:'Hund',walk:'Gåtur · 30 min.',dog1:'hund',dogN:'hunde',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',
 st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys turen',sure:'Ja, aflys',calendar:'Tilføj til kalender',
 emptyTitle:'Ingen kommende ture',emptyText:'Når du booker en gåtur, kan du se den her.',today:'I dag',tomorrow:'I morgen',
-cancelled:'Turen er aflyst.',eServer:'Noget gik galt. Prøv igen om lidt.',eLogin:'Log ind mislykkedes. Prøv igen.',calTitle:'Gåtur med The DogMan'},
+cancelled:'Turen er aflyst.',eServer:'Noget gik galt. Prøv igen om lidt.',eLogin:'Log ind mislykkedes. Prøv igen.',calTitle:'Gåtur med The DogMan',sv_walk:'Gåtur',sv_visit1:'Hjemmebesøg',sv_visit2:'2 besøg om dagen',sv_daycare:'Dagpleje',sv_boarding:'Pasning hos mig',sv_housesit:'Huspasning',at:'kl.',every:'Hver'},
 en:{bookNew:'Book a walk',eyebrow:'Your account',title:'My walks',loginTitle:'Sign in to see your walks',loginText:'Sign in with Google and get your welcome badge. You can also see and cancel your upcoming walks.',badgesTitle:'My badges',moreBadges:'More badges on the way',moreBadgesP:'Walk and collect badges. New ones are coming soon.',guest:'Or book without signing in →',
 logout:'Log out',phone:'Phone',address:'Address',dog:'Dog',walk:'Walk · 30 min.',dog1:'dog',dogN:'dogs',once:'Once',weekly:'Every week',multi:'Several times a week',
 st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel walk',sure:'Yes, cancel',calendar:'Add to calendar',
 emptyTitle:'No upcoming walks',emptyText:'When you book a walk, it will show up here.',today:'Today',tomorrow:'Tomorrow',
-cancelled:'The walk is cancelled.',eServer:'Something went wrong. Try again shortly.',eLogin:'Sign-in failed. Please try again.',calTitle:'Dog walk with The DogMan'}};
+cancelled:'The walk is cancelled.',eServer:'Something went wrong. Try again shortly.',eLogin:'Sign-in failed. Please try again.',calTitle:'Dog walk with The DogMan',sv_walk:'Dog walk',sv_visit1:'Home visit',sv_visit2:'2 visits a day',sv_daycare:'Day care',sv_boarding:'Boarding',sv_housesit:'House sitting',at:'at',every:'Every'}};
 const PAW='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="10" r="2.1"/><circle cx="9.2" cy="5.4" r="2.1"/><circle cx="14.8" cy="5.4" r="2.1"/><circle cx="18.5" cy="10" r="2.1"/><path d="M12 11.2c-3 0-6 4-6 6.4 0 1.7 1.3 2.6 3 2.6 1.3 0 2-.6 3-.6s1.7.6 3 .6c1.7 0 3-.9 3-2.6 0-2.4-3-6.4-6-6.4z"/></svg>';
 const CAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>';
 const $=(id)=>document.getElementById(id);
@@ -158,18 +158,30 @@ async function account(body){
   const j=await r.json();if(!r.ok)throw new Error(j.error||'server');S.user=j.user;S.bookings=j.bookings||[];S.state=S.user?'in':'out';
 }
 // Calendar file for one walk (floating local time, 30 minutes).
+// Calendar file: one event per walk/visit/day; an overnight stay is one all-day event from drop-off to pick-up.
 function ics(b){
-  const d=b.date.replace(/-/g,''),tm=(b.time||'09:00').replace(':','')+'00',stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
-  const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//DogMan Walking Club//DA','BEGIN:VEVENT','UID:'+b.id+'@dmw.cansasmaz.com','DTSTAMP:'+stamp,'DTSTART:'+d+'T'+tm,'DURATION:PT30M','SUMMARY:'+t('calTitle'),'URL:https://dmw.cansasmaz.com/account/','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  const stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z',ymd=(d)=>d.replace(/-/g,''),title=t('sv_'+b.service)+' · The DogMan';
+  const ev=(uid,start,extra)=>['BEGIN:VEVENT','UID:'+uid+'@dmw.cansasmaz.com','DTSTAMP:'+stamp,...start,...extra,'SUMMARY:'+title,'URL:https://dmw.cansasmaz.com/account/','END:VEVENT'];
+  let events=[];
+  if(b.end)events=ev(b.id,['DTSTART;VALUE=DATE:'+ymd(b.date),'DTEND;VALUE=DATE:'+ymd(b.end)],[]);
+  else{const ds=b.dates&&b.dates.length?b.dates:[b.date];
+    events=ds.flatMap((d,i)=>b.time?ev(b.id+'-'+i,['DTSTART:'+ymd(d)+'T'+b.time.replace(':','')+'00'],['DURATION:PT30M']):ev(b.id+'-'+i,['DTSTART;VALUE=DATE:'+ymd(d)],[]))}
+  const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//The DogMan//DA',...events,'END:VCALENDAR'].join(String.fromCharCode(13,10));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/calendar'}));a.download='dogman-'+b.date+'.ics';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 }
+const fshort=(d)=>parse(d).toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});
+const WDL=(n)=>new Date(2024,0,7+n).toLocaleDateString(loc(),{weekday:'long'});
+function whenOf(b){const tm=b.time?' '+t('at')+' '+b.time:'';
+  if(b.end)return fshort(b.date)+' → '+fshort(b.end);
+  if(b.plan==='weekly')return t('every')+' '+(b.weekdays||[]).map(WDL).join(', ')+tm;
+  const ds=b.dates&&b.dates.length?b.dates:[b.date];return (ds.length>3?ds.slice(0,3).map(fshort).join(', ')+' +'+(ds.length-3):ds.map(fshort).join(', '))+tm}
 function walkCard(b){
   const dt=parse(b.date),card=el('article','walk'),date=el('div','date');
   const rel=b.date===S.today?t('today'):'';
   date.append(el('small',null,rel||dt.toLocaleDateString(loc(),{weekday:'short'}).replace('.','')),el('b',null,dt.getDate()),el('span',null,dt.toLocaleDateString(loc(),{month:'short'}).replace('.','')));
   const info=el('div','info');
-  info.append(el('h3',null,(b.time?b.time+' · ':'')+dt.toLocaleDateString(loc(),{weekday:'long',day:'numeric',month:'long'})),
-    el('div','meta',[t('walk'),b.pets+' '+t(b.pets===1?'dog1':'dogN'),t(b.freq||'once')].join(' · ')));
+  const petNames=(b.petList||[]).map(p=>p.name).filter(Boolean).join(', ')||b.pets+' '+t(b.pets===1?'dog1':'dogN');
+  info.append(el('h3',null,t('sv_'+b.service)),el('div','meta',whenOf(b)),el('div','meta',petNames));
   const right=el('div','right');right.append(el('span','st '+b.status,t('st_'+b.status)));if(b.estimate!=null)right.append(el('span','price',kr(b.estimate)));
   const actions=el('div','actions');
   const cal=el('button','btn sm');cal.type='button';cal.innerHTML=CAL;cal.append(t('calendar'));cal.onclick=()=>ics(b);

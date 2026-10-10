@@ -39,7 +39,7 @@ def on_square(art, size, fill):
     k = fill * size / max(art.size)
     a = art.resize((round(art.width * k), round(art.height * k)), Image.LANCZOS)
     mask = Image.new('L', a.size, 0)
-    f = max(2, round(min(a.size) * 0.06))
+    f = max(1, round(min(a.size) * 0.01))
     ImageDraw.Draw(mask).rectangle((f, f, a.width - f, a.height - f), fill=255)
     canvas.paste(a, ((size - a.width) // 2, (size - a.height) // 2), mask.filter(ImageFilter.GaussianBlur(f / 2)))
     return canvas
@@ -60,7 +60,33 @@ hiker_box = (hiker_box[0], max(hiker_box[1], SPLIT + 2), hiker_box[2], hiker_box
 word_box = padded(bbox((0, round(H * .15), W, SPLIT - 4)), 0.06)
 word_box = (word_box[0], word_box[1], word_box[2], min(word_box[3], SPLIT - 4))
 full_box = padded((word_box[0], word_box[1], word_box[2], hiker_box[3]), 0.06)
-hiker = src.crop(hiker_box)
+# The wordmark's soft shadow reaches down to the dog's head, so a hard crop either clips the head or keeps a
+# shadow band. Instead: crop from just under the letters and flatten low-frequency shading (soft shadows and the
+# background gradient) back to BG, keeping the sharp emboss of the drawing. Edges then match BG with no seam.
+def flatten(img, radius=40):
+    blur = img.filter(ImageFilter.GaussianBlur(radius))
+    hp = ImageChops.subtract(img, blur, 1, 128)  # img - blur + 128
+    return ImageChops.add(hp, Image.new('RGB', img.size, BG), 1, -128)
+HEAD_TOP = 518  # first row below the letters' crisp edges (measured); the head's highlight starts ~528
+M = 60          # margin for the blur; above HEAD_TOP it is a mirror of the crop, so the letters never leak in
+hiker_box = (hiker_box[0], HEAD_TOP, hiker_box[2], hiker_box[3])
+body = src.crop((hiker_box[0] - M, HEAD_TOP, hiker_box[2] + M, hiker_box[3] + M))
+work = Image.new('RGB', (body.width, body.height + M))
+work.paste(body.crop((0, 0, body.width, M)).transpose(Image.FLIP_TOP_BOTTOM), (0, 0))
+work.paste(body, (0, M))
+hiker = flatten(work).crop((M, M, M + hiker_box[2] - hiker_box[0], M + hiker_box[3] - HEAD_TOP))
+# Fade only the top 10 px (above the head) into BG so the crop's top edge leaves no line.
+ramp = Image.new('L', hiker.size, 255)
+for y in range(10):
+    ramp.paste(round(255 * y / 10), (0, y, hiker.width, y + 1))
+hiker = Image.composite(hiker, Image.new('RGB', hiker.size, BG), ramp)
+# In the first 30 rows, pixels only slightly off BG are the letters' leftover shadow; the head's highlights and
+# engraved lines are far from BG, so they stay.
+px = hiker.load()
+for y in range(30):
+    for x in range(hiker.width):
+        if max(abs(c - b) for c, b in zip(px[x, y], BG)) < 26:
+            px[x, y] = BG
 
 # Medallion (square + round) for header mark, photo sticker, badges.
 square = on_square(hiker, 512, 0.74)
