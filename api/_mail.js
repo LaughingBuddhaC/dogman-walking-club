@@ -3,7 +3,7 @@
 // with "Add to Google Calendar" buttons and a calendar file (.ics) with reminders 1 day and 1 hour before.
 import { setMailLog } from './_store.js';
 const SITE = process.env.SITE_URL || 'https://dmw.cansasmaz.com';
-const FROM = process.env.MAIL_FROM || 'The DogMan <booking@dmw.cansasmaz.com>';
+const FROM = process.env.MAIL_FROM || 'The DogMan Walking Club <booking@dmw.cansasmaz.com>';
 const ADMIN = process.env.ADMIN_EMAIL || 'm.cansasmaz@gmail.com';
 // The key may be saved with a prefix or stray spaces – match on the name's ending and trim.
 const apiKey = () => String(process.env[Object.keys(process.env).find((k) => k.endsWith('RESEND_API_KEY'))] || '').trim();
