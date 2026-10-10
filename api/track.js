@@ -1,5 +1,6 @@
 // GPS walk tracking.
 // Walker (admin password): POST {action:'start', booking, date} → POST {action:'points', key, pts:[[lat,lon,ms,acc],…]} → POST {action:'stop', key}
+// Points can also arrive from the OwnTracks phone app (api/owntracks.js), which keeps tracking with the screen off.
 // Owner (signed in) or admin: GET ?key=bookingId|YYYY-MM-DD → route + summary. A walk in progress is only
 // visible live to premium members (and the admin); everyone else gets the report when it ends.
 import crypto from 'node:crypto';
@@ -36,6 +37,7 @@ export default async function handler(req, res) {
       const km = track.status === 'live' ? s.routeKm(track.points) : track.km;
       return res.status(200).json({ status: track.status, startedAt: track.startedAt, endedAt: track.endedAt || null, km,
         minutes: track.minutes || Math.round((Date.now() - track.startedAt) / 60000), weather: track.weather || null,
+        last: track.points.length ? track.points[track.points.length - 1][2] : null,
         points: track.points.filter((p) => p[3] <= 40).map((p) => [p[0], p[1]]) });
     }
     if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
@@ -49,6 +51,7 @@ export default async function handler(req, res) {
       const existing = await s.getTrack(key);
       if (existing && existing.status === 'live') return res.status(200).json({ key, resumed: true });
       await s.saveTrack(key, { status: 'live', startedAt: Date.now(), points: [] });
+      await s.setLive(key, true);
       bk.live = key; await s.saveBooking(bk);
       return res.status(200).json({ key });
     }
@@ -58,13 +61,13 @@ export default async function handler(req, res) {
     if (!track) return res.status(404).json({ error: 'none' });
     if (b.action === 'points') {
       if (track.status !== 'live') return res.status(409).json({ error: 'ended' });
-      track.points = [...track.points, ...cleanPts(b.pts)].slice(-4000);
+      track.points = s.mergePoints(track.points, cleanPts(b.pts));
       await s.saveTrack(key, track);
       return res.status(200).json({ n: track.points.length, km: s.routeKm(track.points) });
     }
     if (b.action === 'stop') {
       if (track.status !== 'live') return res.status(200).json(track);
-      track.points = [...track.points, ...cleanPts(b.pts)].slice(-4000);
+      track.points = s.mergePoints(track.points, cleanPts(b.pts));
       const bk = await s.getBooking(key.split('|')[0]);
       const done = await s.finishTrack(key, track, bk);
       return res.status(200).json({ km: done.km, minutes: done.minutes, weather: done.weather });

@@ -151,6 +151,18 @@ export function adjustCredits(user, delta, action = 'adjusted', extra = {}) {
 // ---- GPS walk tracking (the walker's phone records the route; owners see a map report) ----
 export const getTrack = async (key) => { const v = await cmd('HGET', 'tracks', key); return v ? JSON.parse(v) : null; };
 export const saveTrack = (key, t) => cmd('HSET', 'tracks', key, JSON.stringify(t));
+// Walks in progress (hash 'live': key → startedAt), so points from a background tracker app (OwnTracks) find them.
+export const setLive = (key, on) => (on ? cmd('HSET', 'live', key, String(Date.now())) : cmd('HDEL', 'live', key));
+export const liveKeys = async () => Object.keys(pairs(await cmd('HGETALL', 'live')));
+// Adds points [lat, lon, ms, acc] in time order without duplicates – two sources (page + app) or late, queued uploads.
+export function mergePoints(old, add) {
+  const seen = new Set(), out = [];
+  for (const p of [...old, ...add].sort((a, b) => a[2] - b[2])) {
+    const id = Math.round(p[2] / 1000);
+    if (!seen.has(id)) { seen.add(id); out.push(p); }
+  }
+  return out.slice(-4000);
+}
 export const isPremium = (user, config) => { const m = activeMembership(user); return !!(m && config.plans.find((p) => p.id === m.plan)?.premium); };
 const hav = (a, b) => {
   const r = Math.PI / 180, dLat = (b[0] - a[0]) * r, dLon = (b[1] - a[1]) * r;
@@ -182,7 +194,7 @@ export async function finishTrack(key, track, bk) {
   track.minutes = Math.max(1, Math.round((track.endedAt - track.startedAt) / 60000));
   const last = track.points[track.points.length - 1];
   track.weather = last ? await weatherNow(last[0], last[1]) : { rain: false, snow: false };
-  await saveTrack(key, track);
+  await saveTrack(key, track); await setLive(key, false);
   const date = key.split('|')[1];
   bk.walks = { ...(bk.walks || {}), [date]: { km: track.km, minutes: track.minutes, startedAt: track.startedAt, key } };
   delete bk.live; await saveBooking(bk);

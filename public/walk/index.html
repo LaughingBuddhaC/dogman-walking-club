@@ -1,7 +1,13 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Walk mode · The DogMan</title>
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#e7ebf0">
+<meta name="theme-color" content="#e7ebf0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#23262c" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="/walk/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DogMan Walk">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" type="image/png" href="/img/brand/favicon-64.png">
 <link rel="apple-touch-icon" href="/img/brand/apple-touch-icon.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -34,6 +40,12 @@ button:disabled{opacity:.5}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#d9442b;animation:blink 1.2s infinite;margin-right:6px}
 @keyframes blink{50%{opacity:.25}}
 a{color:var(--accent)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg button{border-radius:18px;padding:12px;line-height:1.25}.seg button span{display:block;font-weight:500;font-size:.8rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{box-shadow:var(--inset-sm);color:var(--accent)}
+ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+details summary{cursor:pointer;font-weight:600}
+.btn.sm{display:inline-block;margin-top:8px;font-size:.9rem;padding:9px 14px}
 </style>
 <main>
   <div class="top"><div class="row"><span class="mark"><img src="/img/brand/mark-emboss-round.png" alt=""></span><h1>Walk mode</h1></div><a href="/admin/" class="small">Admin →</a></div>
@@ -45,17 +57,35 @@ a{color:var(--accent)}
     <div class="small" id="a-sub"></div>
     <div class="stats"><div class="stat"><b id="a-time">0:00</b><span class="small">min</span></div><div class="stat"><b id="a-km">0.00</b><span class="small">km</span></div><div class="stat"><b id="a-pts">0</b><span class="small">GPS points</span></div></div>
     <div id="map"></div>
-    <p class="small">Keep this screen open during the walk – phones pause GPS for web pages in the background.</p>
+    <p class="small" id="a-note"></p>
+    <a class="btn" id="ot-move" hidden>Set OwnTracks to Move ↗</a>
     <button class="stop" type="button" id="stop">Finish walk</button>
   </section>
 
   <section id="list" hidden>
     <div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 id="list-title">Today</h2><div class="row"><button type="button" id="prev-day">‹</button><button type="button" id="next-day">›</button></div></div>
     <div id="walks" style="display:flex;flex-direction:column;gap:14px"></div>
+    <div class="card" style="margin-top:20px">
+      <h2>GPS source</h2>
+      <div class="seg"><button type="button" data-src="phone">This page<span>screen must stay on</span></button><button type="button" data-src="ot">OwnTracks app<span>phone can be locked</span></button></div>
+      <details id="ot-setup"><summary>Set up OwnTracks (once)</summary>
+        <ol class="small">
+          <li>Install the free OwnTracks app: <a href="https://apps.apple.com/app/id692424691" target="_blank" rel="noopener">iPhone</a> · <a href="https://play.google.com/store/apps/details?id=org.owntracks.android" target="_blank" rel="noopener">Android</a></li>
+          <li>On this phone, tap the button and accept the import in OwnTracks:<br><a class="btn sm" id="ot-connect">Connect OwnTracks ↗</a></li>
+          <li>Location access: iPhone → <b>Always</b>. Android → <b>Allow all the time</b> and turn off battery optimisation for OwnTracks.</li>
+          <li>At the start of each walk tap <b>Set OwnTracks to Move</b>; afterwards <b>Quiet</b> saves battery. Points sent outside a walk are thrown away.</li>
+        </ol>
+      </details>
+    </div>
   </section>
 
   <section id="done" class="card" hidden>
-    <h2>Walk saved ✓</h2><div id="done-text"></div><button type="button" id="back">Back to the list</button>
+    <h2>Walk saved ✓</h2><div id="done-text"></div><a class="btn" id="ot-quiet" hidden>Set OwnTracks to Quiet ↗ (saves battery)</a><button type="button" id="back">Back to the list</button>
+  </section>
+  <section id="install" class="card" hidden>
+    <b>📲 Put Walk mode on your home screen</b>
+    <div class="small" id="install-how"></div>
+    <button class="p" type="button" id="install-btn" hidden>Install the app</button>
   </section>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -64,10 +94,18 @@ const $=(id)=>document.getElementById(id);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 let pw='';try{pw=sessionStorage.getItem('pw')||''}catch(e){}
 const NAMES={walk:'Dog walk',visit1:'Home visit',visit2:'2 visits a day',daycare:'Day care',boarding:'Boarding',housesit:'House sitting',visit:'Home visit'};
-const A={data:null,day:null,key:null,booking:null,watch:null,buf:[],pts:[],started:0,timer:0,flush:0,lock:null,map:null,line:null,me:null};
+const A={data:null,day:null,key:null,booking:null,watch:null,buf:[],pts:[],started:0,timer:0,flush:0,lock:null,map:null,line:null,me:null,src:'phone',ot:null};
+try{A.src=localStorage.getItem('walk-src')||'phone'}catch(e){}
 const iso=(d)=>d.toISOString().slice(0,10);
 const addD=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return iso(d)};
-const save=()=>{try{localStorage.setItem('walk-active',JSON.stringify({key:A.key,booking:A.booking,started:A.started,buf:A.buf,pts:A.pts.slice(-500)}))}catch(e){}};
+const save=()=>{try{localStorage.setItem('walk-active',JSON.stringify({key:A.key,booking:A.booking,started:A.started,src:A.src,buf:A.buf,pts:A.pts.slice(-500)}))}catch(e){}};
+// OwnTracks reads its settings from an owntracks:///config link; monitoring 2 = Move (walk), -1 = Quiet (sleep).
+const otLink=(mon)=>A.ot?'owntracks:///config?inline='+encodeURIComponent(btoa(JSON.stringify({...A.ot,monitoring:mon}))):'#';
+function renderSrc(){document.querySelectorAll('[data-src]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.src===A.src)));
+  $('ot-connect').href=otLink(-1);$('ot-move').href=otLink(2);$('ot-quiet').href=otLink(-1);if(A.src==='ot'&&!A.ot)$('ot-setup').open=true}
+async function loadOt(){if(A.ot)return;try{A.ot=await api('/api/owntracks')}catch(e){}renderSrc()}
+document.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{A.src=b.dataset.src;try{localStorage.setItem('walk-src',A.src)}catch(e){}renderSrc();if(A.src==='ot')loadOt()});
+const ago=(ms)=>{const s=Math.max(0,Math.round((Date.now()-ms)/1000));return s<90?s+' s ago':Math.round(s/60)+' min ago'};
 function hav(a,b){const r=Math.PI/180,dLat=(b[0]-a[0])*r,dLon=(b[1]-a[1])*r,h=Math.sin(dLat/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLon/2)**2;return 2*6371000*Math.asin(Math.sqrt(h))}
 function km(pts){let m=0,prev=null;for(const p of pts){if(p[3]>40)continue;if(prev){const d=hav(prev,p),dt=Math.max(1,(p[2]-prev[2])/1000);if(d/dt>=4)continue;if(d>2)m+=d}prev=p}return m/1000}
 async function api(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json','x-admin-password':pw},body:body?JSON.stringify(body):undefined});
@@ -90,16 +128,23 @@ function renderList(){
 async function load(){try{A.data=await api('/api/admin');try{sessionStorage.setItem('pw',pw)}catch(e){}$('login').hidden=true;
     if(!A.day)A.day=A.data.today;
     let saved=null;try{saved=JSON.parse(localStorage.getItem('walk-active')||'null')}catch(e){}
-    if(saved&&saved.key){Object.assign(A,{key:saved.key,booking:saved.booking,started:saved.started,buf:saved.buf||[],pts:saved.pts||[]});track()}else renderList()}
+    renderSrc();loadOt();
+    if(saved&&saved.key){Object.assign(A,{key:saved.key,booking:saved.booking,started:saved.started,src:saved.src||A.src,buf:saved.buf||[],pts:saved.pts||[]});track()}else renderList()}
   catch(e){$('login').hidden=false;$('list').hidden=true;if(pw)$('msg').textContent=e.message==='auth'?'Wrong password.':'Error: '+e.message;pw=''}}
 async function start(b){$('msg').textContent='';
-  if(!navigator.geolocation){$('msg').textContent='This phone/browser has no GPS access.';return}
+  if(A.src==='phone'&&!navigator.geolocation){$('msg').textContent='This phone/browser has no GPS access.';return}
   try{const r=await api('/api/track',{action:'start',booking:b.id,date:A.day});A.key=r.key;A.booking={id:b.id,title:(b.time?b.time+' · ':'')+NAMES[b.service],sub:b.name+(b.address?' · '+b.address:'')};
     if(!r.resumed){A.started=Date.now();A.buf=[];A.pts=[]}else if(!A.started)A.started=Date.now();save();track()}catch(e){$('msg').textContent='Could not start: '+e.message}}
 async function flush(){if(!A.buf.length||!A.key)return;const pts=A.buf.splice(0);save();
   try{await api('/api/track',{action:'points',key:A.key,pts})}catch(e){A.buf.unshift(...pts);save()}}
 async function wake(){try{if('wakeLock' in navigator)A.lock=await navigator.wakeLock.request('screen')}catch(e){}}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&A.key)wake()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&A.key){if(A.src==='ot')poll();else wake()}});
+addEventListener('online',()=>{if(A.key&&A.src==='phone')flush()});
+// OwnTracks mode: the app uploads the points itself, so this page only shows what the server has received.
+async function poll(){if(!A.key)return;try{const r=await api('/api/track?key='+encodeURIComponent(A.key));const pts=r.points||[];
+  A.line.setLatLngs(pts);if(pts.length){const l=pts[pts.length-1];A.me.setLatLng(l);A.map.panTo(l,{animate:true})}
+  $('a-km').textContent=(r.km||0).toFixed(2);$('a-pts').textContent=pts.length;
+  $('a-acc').textContent=r.last?'last fix '+ago(r.last):'waiting for OwnTracks…'}catch(e){$('a-acc').textContent='offline'}}
 function track(){
   $('list').hidden=true;$('done').hidden=true;$('active').hidden=false;
   $('a-title').textContent=A.booking?.title||'Walk';$('a-sub').textContent=A.booking?.sub||'';
@@ -107,19 +152,23 @@ function track(){
     A.line=L.polyline([],{color:'#f07a1e',weight:5}).addTo(A.map);A.me=L.circleMarker([55.7225,12.4015],{radius:7,color:'#fff',weight:3,fillColor:'#f07a1e',fillOpacity:1}).addTo(A.map);A.map.setView([55.7225,12.4015],15)}
   setTimeout(()=>A.map.invalidateSize(),50);
   A.line.setLatLngs(A.pts.filter(p=>p[3]<=40).map(p=>[p[0],p[1]]));
+  clearInterval(A.timer);A.timer=setInterval(()=>{const s=Math.floor((Date.now()-A.started)/1000);$('a-time').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')},1000);
+  $('ot-move').hidden=A.src!=='ot';renderSrc();
+  if(A.src==='ot'){$('a-note').textContent='OwnTracks sends the route – you can lock the phone and put it in your pocket. Open this page again to finish.';
+    loadOt();poll();clearInterval(A.flush);A.flush=setInterval(poll,10000);return}
+  $('a-note').textContent='Keep this screen open during the walk – phones pause GPS for web pages in the background. To walk with the phone locked, use the OwnTracks app (GPS source, below the list).';
   wake();
   A.watch=navigator.geolocation.watchPosition(pos=>{const c=pos.coords,p=[c.latitude,c.longitude,pos.timestamp||Date.now(),Math.round(c.accuracy)];
     A.pts.push(p);A.buf.push(p);$('a-acc').textContent='±'+p[3]+' m';
     if(p[3]<=40){A.line.addLatLng([p[0],p[1]]);A.me.setLatLng([p[0],p[1]]);A.map.panTo([p[0],p[1]],{animate:true})}
     $('a-km').textContent=km(A.pts).toFixed(2);$('a-pts').textContent=A.pts.length;if(A.buf.length%5===0)save()},
     err=>{$('msg').textContent=err.code===1?'Allow location access for this site to track the walk.':'GPS: '+err.message},{enableHighAccuracy:true,maximumAge:0,timeout:30000});
-  clearInterval(A.timer);A.timer=setInterval(()=>{const s=Math.floor((Date.now()-A.started)/1000);$('a-time').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')},1000);
   clearInterval(A.flush);A.flush=setInterval(flush,15000)}
 $('stop').onclick=async()=>{const b=$('stop');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to finish';setTimeout(()=>{delete b.dataset.sure;b.textContent='Finish walk'},4000);return}
-  b.disabled=true;navigator.geolocation.clearWatch(A.watch);clearInterval(A.timer);clearInterval(A.flush);
+  b.disabled=true;if(A.watch!=null)navigator.geolocation.clearWatch(A.watch);A.watch=null;clearInterval(A.timer);clearInterval(A.flush);
   try{const pts=A.buf.splice(0);const r=await api('/api/track',{action:'stop',key:A.key,pts});
     try{localStorage.removeItem('walk-active')}catch(e){}try{A.lock&&A.lock.release()}catch(e){}
-    $('active').hidden=true;$('done').hidden=false;
+    $('active').hidden=true;$('done').hidden=false;$('ot-quiet').hidden=A.src!=='ot';
     $('done-text').textContent=r.km+' km in '+r.minutes+' min'+(r.weather?.rain?' · rain 🌧':'')+(r.weather?.snow?' · snow ❄':'')+'. The owner can see the route report now.';
     A.key=null;A.booking=null;A.pts=[];A.line&&A.line.setLatLngs([])}
   catch(e){$('msg').textContent='Could not save – check the connection and try again.';b.disabled=false;b.textContent='Finish walk';delete b.dataset.sure}};
@@ -127,6 +176,15 @@ $('back').onclick=()=>{A.data=null;load()};
 $('prev-day').onclick=()=>{A.day=addD(A.day,-1);renderList()};$('next-day').onclick=()=>{A.day=addD(A.day,1);renderList()};
 $('login').onsubmit=(e)=>{e.preventDefault();pw=$('pw').value;$('msg').textContent='';load()};
 if(pw)load();else $('login').hidden=false;
+// Installable app (PWA): Android/Chrome offers an install button, iPhone uses Safari's "Add to Home Screen".
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/walk/sw.js',{scope:'/walk/'}).catch(()=>{});
+let installEvt=null;const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+if(!standalone&&(ios||/android/i.test(navigator.userAgent))){$('install').hidden=false;
+  $('install-how').textContent=ios?'In Safari tap Share ↑ → “Add to Home Screen”. It then opens full screen like an app.':'Chrome menu ⋮ → “Install app” (or “Add to Home screen”).'}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(standalone)return;$('install').hidden=false;$('install-btn').hidden=false;$('install-how').textContent='Opens full screen like an app, with its own icon.'});
+$('install-btn').onclick=async()=>{if(!installEvt)return;installEvt.prompt();await installEvt.userChoice.catch(()=>{});installEvt=null;$('install').hidden=true};
+addEventListener('appinstalled',()=>{$('install').hidden=true});
 </script>
 
 </body></html>

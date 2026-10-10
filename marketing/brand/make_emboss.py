@@ -100,8 +100,10 @@ full.thumbnail((1400, 1400), Image.LANCZOS)
 full.save(OUT / 'logo-emboss.jpg', quality=90)
 
 # Icons: favicons and app icons (square, the browser/OS rounds them).
-for size, name in ((64, 'favicon-64.png'), (180, 'apple-touch-icon.png'), (512, 'icon-512.png')):
+for size, name in ((64, 'favicon-64.png'), (180, 'apple-touch-icon.png'), (192, 'icon-192.png'), (512, 'icon-512.png')):
     on_square(hiker, size, 0.80).save(OUT / name, optimize=True)
+# Android "maskable" app icon: the OS crops it to a circle/squircle, so keep the hiker inside the middle 80%.
+on_square(hiker, 512, 0.62).save(OUT / 'icon-maskable-512.png', optimize=True)
 on_square(hiker, 720, 0.70).save(HERE.parent / 'google-logo.png', optimize=True)
 
 print('bg', BG, 'hiker', hiker_box, 'word', word_box)
