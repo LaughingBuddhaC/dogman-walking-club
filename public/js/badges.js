@@ -10,8 +10,8 @@ window.DogBadges = (() => {
     },
     member: {
       colors: ['#ffe08a', '#d9a21b', '#a8740a', '#7a5a10'],
-      da: ['Medlem', 'Du er medlem af flokken i DogMan Walking Club.'],
-      en: ['Member', 'You are a member of the DogMan Walking Club pack.'],
+      da: ['DogMan Pack', 'Du er en del af DogMan Pack.'],
+      en: ['DogMan Pack', 'You are part of the DogMan Pack.'],
     },
     km10: {
       colors: ['#a5e8ff', '#2aa7d8', '#1679a8', '#0f5b80'],
