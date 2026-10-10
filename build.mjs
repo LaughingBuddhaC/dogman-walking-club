@@ -13,4 +13,6 @@ fs.mkdirSync('public/account', { recursive: true });
 fs.writeFileSync('public/account/index.html', wrap('src/account.html', 'da'));
 fs.mkdirSync('public/walk', { recursive: true });
 fs.writeFileSync('public/walk/index.html', wrap('src/walk.html', 'en'));
+fs.mkdirSync('public/vilkaar', { recursive: true });
+fs.writeFileSync('public/vilkaar/index.html', wrap('src/terms.html', 'da'));
 console.log('built');
