@@ -15,4 +15,6 @@ fs.mkdirSync('public/walk', { recursive: true });
 fs.writeFileSync('public/walk/index.html', wrap('src/walk.html', 'en'));
 fs.mkdirSync('public/vilkaar', { recursive: true });
 fs.writeFileSync('public/vilkaar/index.html', wrap('src/terms.html', 'da'));
+fs.mkdirSync('public/fortryd', { recursive: true });
+fs.writeFileSync('public/fortryd/index.html', wrap('src/withdraw.html', 'da'));
 console.log('built');

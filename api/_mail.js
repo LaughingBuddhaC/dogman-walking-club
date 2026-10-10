@@ -149,3 +149,20 @@ export async function mailConfirmed(b, config) {
     text: text + `\n\n${t.gcal}: ${googleLink(b, evs[0], lang, b.plan === 'weekly' && evs.length > 1)}`, replyTo: ADMIN,
     attachments: [{ filename: 'dogman.ics', content: Buffer.from(icsFile(b, lang)).toString('base64') }] });
 }
+
+// Withdrawal receipt (the law asks for one on a durable medium, e.g. email) + notice to the admin.
+export async function mailWithdrawal(w) {
+  const en = w.lang === 'en', when = new Date(w.at).toLocaleString(en ? 'en-GB' : 'da-DK', { timeZone: 'Europe/Copenhagen', dateStyle: 'long', timeStyle: 'short' });
+  const what = w.what === 'membership' ? (en ? 'Membership' : 'Medlemskab') : (en ? 'Booking' : 'Booking') + (w.ref ? ' ' + w.ref : '');
+  const table = [[en ? 'Received' : 'Modtaget', when], [en ? 'Withdrawal from' : 'Fortrydelse af', what], [en ? 'Name' : 'Navn', w.name],
+    ['E-mail', w.email], [en ? 'Message' : 'Besked', w.message], [en ? 'Receipt no.' : 'Kvitteringsnr.', w.id]].filter((r) => r[1]);
+  const head = en ? 'We have received your withdrawal' : 'Vi har modtaget din fortrydelse';
+  const intro = en ? 'Any payment for the part not delivered is refunded within 14 days, with the same method you paid with.'
+    : 'Betaling for den del, der ikke er leveret, tilbagebetales senest 14 dage efter, med samme betalingsmiddel som du brugte.';
+  const lang = en ? 'en' : 'da', a = layout(head, intro, table, '', lang), d = layout('Fortrydelse modtaget', `${w.name} · ${w.email}${w.phone ? ' · ' + w.phone : ''}`, table, '', 'da');
+  const res = await Promise.all([
+    sendMail({ to: w.email, subject: `${head} (${w.id})`, html: a.html, text: a.text, replyTo: ADMIN }),
+    sendMail({ to: ADMIN, subject: `Fortrydelse: ${what} – ${w.name}`, html: d.html, text: d.text, replyTo: w.email }),
+  ]);
+  return res.some(Boolean);
+}

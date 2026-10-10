@@ -1,0 +1,95 @@
+<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fortryd køb · The DogMan</title>
+<meta name="description" content="Fortryd en booking eller et medlemskab hos The DogMan – online, med kvittering med det samme.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="/img/brand/favicon-64.png">
+<link rel="apple-touch-icon" href="/img/brand/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<style>
+:root{--bg:#e7ebf0;--text:#1d1d1f;--muted:#62636a;--sh-d:#c3cad4;--sh-l:#fff;--accent:#b44d08;--ok:#1f7a45;--err:#b8311a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font:400 16px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:640px;margin:0 auto;padding:32px 16px 64px}
+a{color:var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.back{display:inline-block;font-weight:600;text-decoration:none;padding:9px 16px;border-radius:999px;box-shadow:5px 5px 11px var(--sh-d),-5px -5px 11px var(--sh-l);color:var(--text)}
+.seg{display:flex;padding:4px;border-radius:999px;box-shadow:inset 3px 3px 6px var(--sh-d),inset -3px -3px 6px var(--sh-l)}
+.seg button{font:600 .78rem inherit;font-family:inherit;padding:6px 11px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{color:var(--accent);background:var(--bg);box-shadow:2px 2px 5px var(--sh-d),-2px -2px 5px var(--sh-l)}
+.card{margin-top:28px;padding:30px;border-radius:30px;box-shadow:9px 9px 20px var(--sh-d),-9px -9px 20px var(--sh-l);display:flex;flex-direction:column;gap:14px}
+h1{font-size:clamp(1.8rem,5vw,2.3rem);letter-spacing:-.025em;line-height:1.1;margin:0}
+label{font-size:.9rem;font-weight:600;display:flex;flex-direction:column;gap:6px}
+input,textarea{font:inherit;padding:12px 14px;border:0;border-radius:14px;background:var(--bg);color:var(--text);box-shadow:inset 3px 3px 6px var(--sh-d),inset -3px -3px 6px var(--sh-l);width:100%;outline:none}
+.radios{display:flex;gap:18px;flex-wrap:wrap;font-weight:500}.radios label{flex-direction:row;align-items:center;font-weight:500}.radios input{width:18px;height:18px;accent-color:#f07a1e;box-shadow:none}
+button.p{font:600 1rem inherit;font-family:inherit;padding:15px 20px;border:0;border-radius:999px;background:linear-gradient(135deg,#ffad5c,#f07a1e);color:#1d1d1f;cursor:pointer}
+button.s{font:600 .95rem inherit;font-family:inherit;padding:11px 18px;border:0;border-radius:999px;background:var(--bg);color:var(--text);box-shadow:4px 4px 9px var(--sh-d),-4px -4px 9px var(--sh-l);cursor:pointer;align-self:flex-start}
+.muted{color:var(--muted);font-size:.9rem}.msg{color:var(--err);font-weight:600;min-height:1.2em}.hp{position:absolute;left:-9999px}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0}dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
+.ok{color:var(--ok)}
+@media (max-width:640px){.card{padding:22px;border-radius:24px}}
+</style>
+<main>
+  <div class="top"><a class="back" href="/">← The DogMan</a><div class="seg"><button type="button" data-lang="da">DA</button><button type="button" data-lang="en">EN</button></div></div>
+  <form class="card" id="form" novalidate>
+    <h1 data-t="title"></h1>
+    <p class="muted" data-t="intro"></p>
+    <div class="radios" role="radiogroup"><label><input type="radio" name="what" value="booking" checked><span data-t="booking"></span></label><label><input type="radio" name="what" value="membership"><span data-t="membership"></span></label></div>
+    <label id="ref-row"><span data-t="ref"></span><input id="ref" list="refs" autocomplete="off"><datalist id="refs"></datalist></label>
+    <label><span data-t="name"></span><input id="name" autocomplete="name" required></label>
+    <label><span data-t="email"></span><input id="email" type="email" autocomplete="email" required></label>
+    <label><span data-t="phone"></span><input id="phone" type="tel" autocomplete="tel"></label>
+    <label><span data-t="message"></span><textarea id="message" rows="3"></textarea></label>
+    <div class="hp" aria-hidden="true"><input id="website" tabindex="-1" autocomplete="off"></div>
+    <div class="msg" id="msg" role="status"></div>
+    <button class="p" type="submit" id="send" data-t="send"></button>
+    <p class="muted" data-th="note"></p>
+  </form>
+  <section class="card" id="done" hidden>
+    <h1 class="ok" data-t="doneTitle"></h1>
+    <p data-t="doneText"></p>
+    <dl id="receipt"></dl>
+    <button class="s" type="button" id="save" data-t="save"></button>
+  </section>
+</main>
+<script>
+const T={
+da:{title:'Fortryd køb',intro:'Du kan fortryde en booking eller et medlemskab inden for 14 dage, efter at aftalen er indgået. Udfyld formularen – du får en kvittering med det samme.',booking:'En booking',membership:'Mit medlemskab',ref:'Bookingnummer (står i din mail eller under Mine ture)',name:'Navn *',email:'E-mail *',phone:'Telefon',message:'Besked (valgfrit)',send:'Bekræft fortrydelse',
+  note:'Er du logget ind, aflyses din booking med det samme. Betaling for den del, der ikke er leveret, tilbagebetales senest 14 dage efter. Har du bedt om, at ydelsen leveres inden fristen, betaler du for det, der allerede er leveret. Se <a href="/vilkaar/">handelsbetingelserne</a>, pkt. 11.',
+  eContact:'Skriv dit navn og en gyldig e-mail.',eServer:'Noget gik galt. Prøv igen, eller skriv til m.cansasmaz@gmail.com.',doneTitle:'Fortrydelse modtaget ✓',doneText:'Vi har modtaget din fortrydelse. Gem kvitteringen – en kopi sendes også til din e-mail.',
+  rNo:'Kvitteringsnr.',rAt:'Modtaget',rWhat:'Fortrydelse af',rName:'Navn',rStatus:'Status',cancelled:'Aflyst med det samme',later:'Jeg behandler den og vender tilbage',save:'Gem kvittering',bk:'Booking'},
+en:{title:'Withdraw a purchase',intro:'You can withdraw from a booking or a membership within 14 days of the agreement. Fill in the form – you get a receipt straight away.',booking:'A booking',membership:'My membership',ref:'Booking number (in your email or under My walks)',name:'Name *',email:'Email *',phone:'Phone',message:'Message (optional)',send:'Confirm withdrawal',
+  note:'If you are signed in, your booking is cancelled at once. Payment for the part not delivered is refunded within 14 days. If you asked for the service to start before the deadline, you pay for what has already been delivered. See the <a href="/vilkaar/">terms</a>, section 11.',
+  eContact:'Enter your name and a valid email.',eServer:'Something went wrong. Try again, or write to m.cansasmaz@gmail.com.',doneTitle:'Withdrawal received ✓',doneText:'We have received your withdrawal. Save the receipt – a copy is also sent to your email.',
+  rNo:'Receipt no.',rAt:'Received',rWhat:'Withdrawal from',rName:'Name',rStatus:'Status',cancelled:'Cancelled at once',later:'I will handle it and get back to you',save:'Save receipt',bk:'Booking'}};
+const $=(id)=>document.getElementById(id);
+let lang='da';try{lang=localStorage.getItem('lang')||((navigator.language||'da').toLowerCase().startsWith('da')?'da':'en')}catch(e){}
+const t=(k)=>T[lang][k]??k;let receipt=null;
+function render(){document.documentElement.lang=lang;
+  document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));document.querySelectorAll('[data-th]').forEach(e=>e.innerHTML=t(e.dataset.th));
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+  $('ref-row').hidden=document.querySelector('[name=what]:checked').value!=='booking';if(receipt)showReceipt()}
+function rows(){return [[t('rNo'),receipt.id],[t('rAt'),new Date(receipt.at).toLocaleString(lang==='da'?'da-DK':'en-GB',{dateStyle:'long',timeStyle:'short'})],[t('rWhat'),receipt.whatText],[t('rName'),receipt.name+' · '+receipt.email],[t('rStatus'),t(receipt.cancelled?'cancelled':'later')]]}
+function showReceipt(){$('receipt').replaceChildren(...rows().flatMap(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;return [dt,dd]}))}
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem('lang',lang)}catch(e){}render()});
+document.querySelectorAll('[name=what]').forEach(r=>r.onchange=render);
+$('form').onsubmit=async(e)=>{e.preventDefault();const v=(id)=>$(id).value.trim(),what=document.querySelector('[name=what]:checked').value;
+  if(!v('name')||!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email'))){$('msg').textContent=t('eContact');return}
+  $('send').disabled=true;$('msg').textContent='';
+  try{const r=await fetch('/api/withdraw',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({what,ref:what==='booking'?v('ref'):'',name:v('name'),email:v('email'),phone:v('phone'),message:v('message'),website:v('website'),lang})});
+    const j=await r.json();if(!r.ok)throw new Error(j.error);
+    receipt={...j,name:v('name'),email:v('email'),whatText:what==='membership'?t('membership'):t('bk')+(v('ref')?' '+v('ref'):'')};
+    $('form').hidden=true;$('done').hidden=false;showReceipt();window.scrollTo(0,0)}
+  catch(x){$('msg').textContent=t(x.message==='contact'?'eContact':'eServer');$('send').disabled=false}};
+$('save').onclick=()=>{const txt='The DogMan – '+t('doneTitle')+'\n\n'+rows().map(([k,v])=>k+': '+v).join('\n')+'\n';
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));a.download='dogman-fortrydelse-'+receipt.id+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+// Signed in: fill in name/email and offer the upcoming bookings.
+const ref=new URLSearchParams(location.search).get('ref');if(ref)$('ref').value=ref;
+fetch('/api/account').then(r=>r.json()).then(j=>{if(!j.user)return;if(!$('name').value)$('name').value=j.user.name||'';if(!$('email').value)$('email').value=j.user.email||'';if(!$('phone').value)$('phone').value=j.user.phone||'';
+  $('refs').replaceChildren(...(j.bookings||[]).filter(b=>b.status!=='cancelled').map(b=>{const o=document.createElement('option');o.value=b.id;o.label=b.service+' '+b.date+(b.time?' '+b.time:'');return o}))}).catch(()=>{});
+render();
+</script>
+
+</body></html>

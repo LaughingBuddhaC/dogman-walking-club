@@ -120,6 +120,10 @@ function renderList(){
     c.append(head,el('div',null,b.name+' · '+b.phone));
     if(b.address){const a=el('a',null,b.address+' ↗');a.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(b.address);a.target='_blank';c.append(a)}
     const pets=(b.petList||[]).map(p=>[p.name,p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · ');if(pets)c.append(el('div','small',pets));
+    // From the owner's declaration: what the walker must know before leaving the door.
+    const warn=(b.petList||[]).flatMap(p=>[p.bite==='yes'&&(p.name||'Dog')+' has bitten / attacked before',p.social==='no'&&(p.name||'Dog')+': not with other dogs',p.health&&(p.name||'Dog')+': '+p.health]).filter(Boolean);
+    warn.forEach(w=>{const x=el('div','small','⚠ '+w);x.style.color='var(--err)';x.style.fontWeight='600';c.append(x)});
+    if(b.vet)c.append(el('div','small','Vet: '+b.vet));if(b.emergency)c.append(el('div','small','Emergency contact: '+b.emergency));
     if(b.notes)c.append(el('div','small','“'+b.notes+'”'));if(b.meet)c.append(el('div','small','Wants a free meet & greet first'));
     const w=b.walks&&b.walks[A.day];
     if(w)c.append(el('div','small','✓ Walked '+w.km+' km in '+w.minutes+' min'));

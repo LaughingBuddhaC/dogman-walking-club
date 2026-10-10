@@ -26,6 +26,27 @@ export default async function handler(req, res) {
         await s.saveBooking(bk);
       } else if (b.action === 'paid' && bk) { bk.paid = !!b.paid; await s.saveBooking(bk); }
       else if (b.action === 'delete' && bk) { await s.freeAll(bk); if (bk.status !== 'cancelled') await s.refundCredits(bk); await s.deleteBooking(bk.id); }
+      else if (b.action === 'review-status' && ['approved', 'hidden'].includes(b.status)) {
+        const r = await s.getReview(String(b.sub || ''));
+        if (!r) return res.status(404).json({ error: 'review' });
+        r.status = b.status; await s.saveReview(r);
+      } else if (b.action === 'review-delete') {
+        const r = await s.getReview(String(b.sub || ''));
+        if (r) { await s.deletePhoto(r.photo); await s.deleteReview(r.sub); }
+      } else if (b.action === 'dog-add') {
+        // Gallery of dogs walked so far (name, breed, photo, short note).
+        const name = String(b.name || '').trim().slice(0, 40);
+        if (!name) return res.status(400).json({ error: 'dogName' });
+        const photo = b.photo ? await s.savePhoto(b.photo) : '';
+        if (b.photo && !photo) return res.status(400).json({ error: 'photo' });
+        await s.saveDog({ id: s.newId(), name, breed: String(b.breed || '').trim().slice(0, 40), note: String(b.note || '').trim().slice(0, 120), photo, at: new Date().toISOString() });
+      } else if (b.action === 'dog-delete') {
+        const d = (await s.getDogs()).find((x) => x.id === b.did);
+        if (d) { await s.deletePhoto(d.photo); await s.deleteDog(d.id); }
+      } else if (b.action === 'withdrawal-done') {
+        const w = await s.getWithdrawal(String(b.wid || ''));
+        if (w) { w.handled = new Date().toISOString(); await s.saveWithdrawal(w); }
+      }
       else if (/^member-/.test(b.action || '')) {
         const u = await s.getUser(String(b.sub || ''));
         if (!u?.membership) return res.status(404).json({ error: 'member' });
@@ -64,6 +85,8 @@ export default async function handler(req, res) {
     }
     const [config, bookings, slots] = await Promise.all([s.getConfig(), s.getBookings(), s.getSlots()]);
     const members = (await s.getUsers()).filter((u) => u.membership).map(({ sub, name, email, phone, membership }) => ({ sub, name, email, phone, membership }));
-    res.status(200).json({ config, bookings, members, today: s.today(), blocked: Object.keys(slots).filter((k) => slots[k] === 'blocked') });
+    const [reviews, dogs, withdrawals] = await Promise.all([s.getReviews(), s.getDogs(), s.getWithdrawals()]);
+    res.status(200).json({ config, bookings, members, today: s.today(), blocked: Object.keys(slots).filter((k) => slots[k] === 'blocked'),
+      reviews: reviews.sort((a, b) => b.at.localeCompare(a.at)), dogs, withdrawals });
   } catch (e) { res.status(500).json({ error: 'server' }); }
 }

@@ -28,6 +28,8 @@ function memCmd([c, k, f, v]) {
 }
 const pairs = (a) => { const o = {}; for (let i = 0; i < (a || []).length; i += 2) o[a[i]] = a[i + 1]; return o; };
 
+// Version of the terms (/vilkaar/) customers accept when they book or join; stored with the booking/membership.
+export const TERMS_VERSION = '2026-10-10';
 export const DEFAULT_CONFIG = {
   // price = DKK per unit (night / day / walk), extra = DKK per extra pet per unit (null = not set)
   services: [
@@ -147,6 +149,33 @@ export function adjustCredits(user, delta, action = 'adjusted', extra = {}) {
   const m = user.membership; if (!m) return;
   m.credits = Math.max(0, (m.credits || 0) + delta); logM(m, action, { credits: delta, ...extra });
 }
+// ---- Reviews (real customers only, approved by the admin), the gallery of dogs walked, and photos ----
+export const getReviews = async () => Object.values(pairs(await cmd('HGETALL', 'reviews'))).map((v) => JSON.parse(v));
+export const getReview = async (sub) => { const v = await cmd('HGET', 'reviews', sub); return v ? JSON.parse(v) : null; };
+export const saveReview = (r) => cmd('HSET', 'reviews', r.sub, JSON.stringify(r));
+export const deleteReview = (sub) => cmd('HDEL', 'reviews', sub);
+export const getDogs = async () => Object.values(pairs(await cmd('HGETALL', 'dogs'))).map((v) => JSON.parse(v)).sort((a, b) => b.at.localeCompare(a.at));
+export const saveDog = (d) => cmd('HSET', 'dogs', d.id, JSON.stringify(d));
+export const deleteDog = (id) => cmd('HDEL', 'dogs', id);
+// Photos are resized in the browser (≤ 1000 px JPEG) and kept as base64 – a few dozen KB each.
+export async function savePhoto(dataUrl) {
+  const m = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ''));
+  if (!m || m[2].length > 450_000) return null;
+  const id = newId() + newId();
+  await cmd('HSET', 'photos', id, JSON.stringify({ type: 'image/' + m[1], b64: m[2] }));
+  return id;
+}
+export const getPhoto = async (id) => { const v = await cmd('HGET', 'photos', id); return v ? JSON.parse(v) : null; };
+export const deletePhoto = (id) => (id ? cmd('HDEL', 'photos', id) : 0);
+// Withdrawals (fortrydelser) sent with the online form on /fortryd/.
+export const getWithdrawals = async () => Object.values(pairs(await cmd('HGETALL', 'withdrawals'))).map((v) => JSON.parse(v)).sort((a, b) => b.at.localeCompare(a.at)).slice(0, 100);
+export const getWithdrawal = async (id) => { const v = await cmd('HGET', 'withdrawals', id); return v ? JSON.parse(v) : null; };
+export const saveWithdrawal = (w) => cmd('HSET', 'withdrawals', w.id, JSON.stringify(w));
+// Who may review: a customer with a finished walk or a confirmed booking that has passed.
+export const canReview = (bookings) => bookings.some((b) => Object.keys(b.walks || {}).length || (b.status === 'confirmed' && lastDate(b) < today()));
+// "Mette Hansen" → "Mette H."
+export const shortName = (n) => { const [f, ...r] = String(n || '').trim().split(/\s+/); return f ? f + (r.length ? ' ' + r.at(-1)[0].toUpperCase() + '.' : '') : ''; };
+
 // A cancelled booking paid with credits gives them back (if the membership still runs).
 // ---- GPS walk tracking (the walker's phone records the route; owners see a map report) ----
 export const getTrack = async (key) => { const v = await cmd('HGET', 'tracks', key); return v ? JSON.parse(v) : null; };
@@ -325,9 +354,15 @@ export function buildBooking(input, config, { admin = false, member = false } = 
 
   // Pets: a list of profiles (name, dog/cat, size, breed); older input only sends a count.
   const allowed = SERVICE_PETS[svc.id] || ['dog', 'cat'];
-  const petList = (Array.isArray(input.petList) ? input.petList : []).slice(0, 6).map((p) => ({
-    name: clean(p?.name, 40), type: p?.type === 'cat' ? 'cat' : 'dog', size: ['S', 'M', 'L'].includes(p?.size) ? p.size : '', breed: clean(p?.breed, 40),
-  }));
+  // Dogs also carry the owner's declaration (hundeerklæring): vaccinated, chipped, liability insurance, bite history,
+  // ok with other dogs, health notes.
+  const one = (v, ok) => (ok.includes(v) ? v : '');
+  const petList = (Array.isArray(input.petList) ? input.petList : []).slice(0, 6).map((p) => {
+    const type = p?.type === 'cat' ? 'cat' : 'dog';
+    return { name: clean(p?.name, 40), type, size: ['S', 'M', 'L'].includes(p?.size) ? p.size : '', breed: clean(p?.breed, 40),
+      ...(type === 'dog' ? { vacc: p?.vacc === true, chip: p?.chip === true, ins: clean(p?.ins, 80), bite: one(p?.bite, ['no', 'yes']), social: one(p?.social, ['yes', 'no', 'unsure']) } : {}),
+      health: clean(p?.health, 300) };
+  });
   if (petList.some((p) => !allowed.includes(p.type))) return { error: 'pets' };
   const pets = petList.length || Math.min(6, Math.max(1, parseInt(input.pets, 10) || 1));
 
@@ -335,6 +370,14 @@ export function buildBooking(input, config, { admin = false, member = false } = 
   if (!name || phone.replace(/\D/g, '').length < 8) return { error: 'contact' };
   // Customers need an email for the booking receipt and the confirmation (admin-made bookings may skip it).
   if (!admin && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(clean(input.email, 120))) return { error: 'email' };
+  if (!admin) {
+    if (!petList.length) return { error: 'pets' };
+    for (const p of petList.filter((x) => x.type === 'dog')) {
+      if (!p.vacc || !p.chip) return { error: 'vacc' };                 // only vaccinated, chipped dogs
+      if (!p.ins || !p.bite || !p.social) return { error: 'decl' };
+    }
+    if (input.accept !== true) return { error: 'terms' };              // terms + declaration accepted
+  }
   const units = dates.length; // nights for a range, otherwise visits/walks/days
   const first = petList[0] || {};
   return { booking: {
@@ -346,6 +389,8 @@ export function buildBooking(input, config, { admin = false, member = false } = 
     email: clean(input.email, 120), address: clean(input.address, 160),
     dog: clean(input.dog, 60) || first.name || '', breed: clean(input.breed, 60) || first.breed || '', size: clean(input.size, 10) || first.size || '',
     notes: clean(input.notes, 600),
+    vet: clean(input.vet, 120), emergency: clean(input.emergency, 120),
+    terms: admin ? null : { v: TERMS_VERSION, at: new Date().toISOString() },
     freq: plan === 'weekly' ? 'weekly' : ['weekly', 'multi'].includes(input.freq) ? input.freq : 'once',
     lang: input.lang === 'en' ? 'en' : 'da', status: admin ? 'confirmed' : 'pending', paid: false, source: admin ? 'admin' : 'web'
   } };

@@ -13,7 +13,8 @@ async function me(user) {
   const live = all.filter((b) => b.live).map((b) => ({ key: b.live, service: b.service }));
   const premium = s.isPremium(user, await s.getConfig());
   const { sub, ...profile } = user;
-  return { user: profile, bookings, reports, live, premium };
+  const review = await s.getReview(user.sub);
+  return { user: profile, bookings, reports, live, premium, canReview: s.canReview(all), review };
 }
 
 // Checks a Google ID token with Google and returns its claims, or null.
@@ -53,7 +54,23 @@ export default async function handler(req, res) {
     if (b.action === 'join') {
       const plan = (await s.getConfig()).plans.find((p) => p.id === b.plan && p.active);
       if (!plan) return res.status(400).json({ error: 'plan' });
-      s.requestMembership(user, plan); await s.saveUser(user);
+      if (b.accept !== true) return res.status(400).json({ error: 'terms' });
+      s.requestMembership(user, plan);
+      user.terms = user.membership.terms = { v: s.TERMS_VERSION, at: new Date().toISOString() };
+      await s.saveUser(user);
+    }
+    // A review: 1–5 stars, text, optional photo. Only customers who have had a walk; shown after the admin approves.
+    if (b.action === 'review') {
+      const all = (await s.getBookings()).filter((x) => x.user === user.sub);
+      if (!s.canReview(all)) return res.status(403).json({ error: 'review' });
+      const stars = parseInt(b.stars, 10), text = String(b.text || '').trim().slice(0, 600);
+      if (!(stars >= 1 && stars <= 5) || text.length < 10) return res.status(400).json({ error: 'reviewText' });
+      const old = await s.getReview(user.sub);
+      let photo = old?.photo || '';
+      if (b.photo === null) { await s.deletePhoto(photo); photo = ''; }
+      else if (b.photo) { const id = await s.savePhoto(b.photo); if (!id) return res.status(400).json({ error: 'photo' }); await s.deletePhoto(photo); photo = id; }
+      const dog = String(b.dog || '').trim().slice(0, 40) || (user.pets || [])[0]?.name || user.dog || '';
+      await s.saveReview({ sub: user.sub, name: s.shortName(user.name), dog, stars, text, photo, avatar: photo ? '' : user.picture || '', at: new Date().toISOString(), status: 'pending' });
     }
     if (b.action === 'leave') { s.leaveMembership(user); await s.saveUser(user); }
     res.status(200).json(await me(user));

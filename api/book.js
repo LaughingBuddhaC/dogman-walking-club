@@ -32,7 +32,8 @@ export default async function handler(req, res) {
       // Pet profiles are merged by name so the next booking can pick them again.
       const pets = [...(user.pets || [])];
       for (const p of booking.petList) { const i = pets.findIndex((x) => x.name && x.name.toLowerCase() === p.name.toLowerCase()); if (p.name) i >= 0 ? (pets[i] = p) : pets.push(p); }
-      try { await saveUser({ ...user, name, phone, address, dog, breed, size, pets: pets.slice(0, 10) }); } catch (e) {}
+      const { vet, emergency, terms } = booking;
+      try { await saveUser({ ...user, name, phone, address, dog, breed, size, pets: pets.slice(0, 10), vet: vet || user.vet || '', emergency: emergency || user.emergency || '', terms }); } catch (e) {}
     }
     res.status(200).json({ ok: true, id: booking.id, mobilepay: config.mobilepay, credits: booking.credits || 0, due: booking.due ?? null, creditsLeft: user?.membership?.credits ?? null });
   } catch (e) { res.status(500).json({ error: 'server' }); }

@@ -1,5 +1,5 @@
 import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
-const routes = { '/api/public': './api/public.js', '/api/book': './api/book.js', '/api/admin': './api/admin.js', '/api/account': './api/account.js', '/api/address': './api/address.js', '/api/track': './api/track.js', '/api/owntracks': './api/owntracks.js' };
+const routes = { '/api/public': './api/public.js', '/api/book': './api/book.js', '/api/admin': './api/admin.js', '/api/account': './api/account.js', '/api/address': './api/address.js', '/api/track': './api/track.js', '/api/owntracks': './api/owntracks.js', '/api/club': './api/club.js', '/api/withdraw': './api/withdraw.js' };
 http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x');
   if (routes[u.pathname]) {
@@ -12,4 +12,4 @@ http.createServer(async (req, res) => {
   let f = path.join('public', u.pathname); if (fs.existsSync(f) && fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
   if (!fs.existsSync(f)) { res.statusCode = 404; return res.end('not found'); }
   res.setHeader('Content-Type', f.endsWith('.html') ? 'text/html; charset=utf-8' : f.endsWith('.jpg') ? 'image/jpeg' : f.endsWith('.png') ? 'image/png' : f.endsWith('.js') ? 'text/javascript' : f.endsWith('.json') ? 'application/manifest+json' : 'application/octet-stream'); res.end(fs.readFileSync(f));
-}).listen(3000, () => console.log('http://localhost:3000'));
+}).listen(Number(process.env.PORT) || 3000, () => console.log('http://localhost:' + (Number(process.env.PORT) || 3000)));

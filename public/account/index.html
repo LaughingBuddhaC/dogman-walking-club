@@ -75,7 +75,12 @@ h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-to
 .empty p{color:var(--muted)}
 .msg{color:var(--err);font-weight:600;margin-bottom:16px}
 .skeleton{height:120px;border-radius:28px;box-shadow:var(--inset-sm);opacity:.6}
-.memb{margin-bottom:44px;scroll-margin-top:100px}.memb h2{font-size:1.5rem;margin-bottom:16px}
+.memb{margin-bottom:44px;scroll-margin-top:100px}
+.rform{width:100%}.rform input,.rform textarea{font:400 .95rem var(--font);padding:12px 14px;border:0;border-radius:14px;background:var(--bg);color:var(--text);box-shadow:var(--inset-sm);width:100%;outline:none;resize:vertical}
+.starpick{display:flex;gap:4px}.starpick button{font-size:2rem;line-height:1;border:0;background:none;color:#f07a1e;cursor:pointer;padding:2px}
+.rphoto{width:140px;aspect-ratio:4/3;border-radius:16px;object-fit:cover;box-shadow:var(--raise-sm)}
+.accept{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;margin-bottom:14px;cursor:pointer}.accept input{width:20px;height:20px;accent-color:#f07a1e;flex:none;margin-top:2px}.accept a,.foot a{color:var(--accent)}
+.foot{max-width:880px;margin:0 auto;padding:10px 16px 60px;font-size:.85rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}.memb h2{font-size:1.5rem;margin-bottom:16px}
 .mcard{border-radius:28px;box-shadow:var(--raise);padding:24px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
 .credits{display:flex;align-items:baseline;gap:10px}.credits b{font-size:3.2rem;font-weight:800;letter-spacing:-.04em;line-height:1}
 .plan-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px;margin-top:6px}
@@ -143,9 +148,11 @@ h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-to
     <section class="memb" id="membership"><h2 data-t="memTitle"></h2><div id="mem-box"></div></section>
     <div class="list" id="list"></div>
     <section class="reports" id="reports" hidden><h2 data-t="repTitle"></h2><div id="live-box"></div><div id="rep-list"></div></section>
+    <section class="memb" id="review" hidden><h2 data-t="revTitle"></h2><div id="rev-box"></div></section>
     <section class="badges" id="badges"><h2 data-t="badgesTitle"></h2><div class="badge-grid" id="badge-grid"></div></section>
   </div>
 </main>
+<footer class="foot"><a href="/vilkaar/" data-t="termsLink"></a><a href="/privacy/" data-t="privacyLink"></a><a href="/fortryd/" data-t="withdrawLink"></a></footer>
 
 <script src="/js/badges.js"></script>
 <script>
@@ -154,12 +161,20 @@ da:{plan_flex10:'Klippekort 10',plan_weekly2:'Ugetur',plan_daily5:'Hverdag',plan
 logout:'Log ud',phone:'Telefon',address:'Adresse',dog:'Hund',walk:'Gåtur · 30 min.',dog1:'hund',dogN:'hunde',once:'Én gang',weekly:'Hver uge',multi:'Flere gange om ugen',
 st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys turen',sure:'Ja, aflys',calendar:'Tilføj til kalender',
 emptyTitle:'Ingen kommende ture',emptyText:'Når du booker en gåtur, kan du se den her.',today:'I dag',tomorrow:'I morgen',
-cancelled:'Turen er aflyst.',eServer:'Noget gik galt. Prøv igen om lidt.',eLogin:'Log ind mislykkedes. Prøv igen.',calTitle:'Gåtur med The DogMan',sv_walk:'Gåtur',sv_visit1:'Hjemmebesøg',sv_visit2:'2 besøg om dagen',sv_daycare:'Dagpleje',sv_boarding:'Pasning hos mig',sv_housesit:'Huspasning',at:'kl.',every:'Hver'},
+cancelled:'Turen er aflyst.',eServer:'Noget gik galt. Prøv igen om lidt.',eLogin:'Log ind mislykkedes. Prøv igen.',calTitle:'Gåtur med The DogMan',sv_walk:'Gåtur',sv_visit1:'Hjemmebesøg',sv_visit2:'2 besøg om dagen',sv_daycare:'Dagpleje',sv_boarding:'Pasning hos mig',sv_housesit:'Huspasning',at:'kl.',every:'Hver',termsLink:'Handelsbetingelser',privacyLink:'Privatlivspolitik',withdrawLink:'Fortryd køb',cancelRule:'Gratis afbestilling indtil 24 timer før (pasning: 7 dage). Vil du fortryde et køb inden for 14 dage, så brug "Fortryd køb" nederst.',
+memAccept:'Jeg accepterer <a href="/vilkaar/" target="_blank">handelsbetingelser og ansvarsvilkår</a> for medlemskab og ønsker, at medlemskabet starter inden fortrydelsesfristen udløber.',eAccept:'Sæt flueben ved vilkårene først.',
+revTitle:'Din anmeldelse',revLater:'Når du har haft din første tur, kan du skrive en anmeldelse her – med et billede af din hund.',revDog:'Hundens navn',revPh:'Hvordan var turen? (mindst 10 tegn)',
+revPhoto:'Tilføj et billede af din hund',revPhotoNew:'Skift billede',revRemove:'Fjern billede',revSend:'Send anmeldelse',revStars:'Vælg 1–5 stjerner.',revShort:'Skriv lidt mere (mindst 10 tegn).',
+revThanks:'Tak! Din anmeldelse vises på siden, når jeg har godkendt den.',revPending:'Afventer godkendelse',revLive:'Vises på forsiden',revHidden:'Ikke vist',revPhotoErr:'Billedet kunne ikke bruges. Prøv et andet.',revNote:'Dit fornavn, forbogstav i efternavnet, hundens navn og billedet vises offentligt.'},
 en:{plan_flex10:'10-walk card',plan_weekly2:'Weekly walker',plan_daily5:'Every weekday',planSub_flex10:'10 walks – use them whenever you like',planSub_weekly2:'8 walks a month – 2 a week',planSub_daily5:'22 walks a month – every weekday',perPack:'valid for {m} months',perMonth:'per month',perWalkSave:'{p} per walk · save {s}%',memTitle:'Membership',choose:'Choose',creditsLeft:'walks left',validTo:'Valid until {d}',endsOn:'Not renewing – ends {d}',switchPending:'Switch to {p} is waiting for payment.',useCredits:'Book with credits',stopRenew:'Stop renewing',sureStop:'Yes, stop',switchPlan:'Switch plan:',pendingTitle:'Waiting for payment',withdraw:'Withdraw',memIntro:'Become a member for a lower price per walk, book up to 3 months ahead and get your member badge. No lock-in – you pay with MobilePay when the period starts.',payMp:'Pay {p} with MobilePay to {n}. I activate your membership as soon as the payment arrives.',payLater:'Price: {p} – I will send you payment details and activate your membership when the payment arrives.',h_requested:'Requested',h_paid:'Paid',h_used:'Used on a walk',h_refund:'Refunded',h_adjusted:'Adjusted',h_notRenewing:'Stopped renewing',h_withdrawn:'Withdrawn',h_cancelledByAdmin:'Ended',bookNew:'Book a walk',eyebrow:'Your account',title:'My walks',loginTitle:'Sign in to see your walks',loginText:'Sign in with Google and get your welcome badge. You can also see and cancel your upcoming walks.',badgesTitle:'My badges',notYet:'Not earned yet',repTitle:'Walk reports',seeRoute:'See the route',hideRoute:'Hide the route',liveNow:'Can is on a {s} with your dog right now',liveLocked:'The route report arrives when the walk ends. With Premium you can follow the walk live.',plan_alfa:'Premium Alfa',planSub_alfa:'22 solo walks a month · live GPS · priority · 1 night boarding',moreBadges:'More badges on the way',moreBadgesP:'Walk and collect badges. New ones are coming soon.',guest:'Or book without signing in →',
 logout:'Log out',phone:'Phone',address:'Address',dog:'Dog',walk:'Walk · 30 min.',dog1:'dog',dogN:'dogs',once:'Once',weekly:'Every week',multi:'Several times a week',
 st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel walk',sure:'Yes, cancel',calendar:'Add to calendar',
 emptyTitle:'No upcoming walks',emptyText:'When you book a walk, it will show up here.',today:'Today',tomorrow:'Tomorrow',
-cancelled:'The walk is cancelled.',eServer:'Something went wrong. Try again shortly.',eLogin:'Sign-in failed. Please try again.',calTitle:'Dog walk with The DogMan',sv_walk:'Dog walk',sv_visit1:'Home visit',sv_visit2:'2 visits a day',sv_daycare:'Day care',sv_boarding:'Boarding',sv_housesit:'House sitting',at:'at',every:'Every'}};
+cancelled:'The walk is cancelled.',eServer:'Something went wrong. Try again shortly.',eLogin:'Sign-in failed. Please try again.',calTitle:'Dog walk with The DogMan',sv_walk:'Dog walk',sv_visit1:'Home visit',sv_visit2:'2 visits a day',sv_daycare:'Day care',sv_boarding:'Boarding',sv_housesit:'House sitting',at:'at',every:'Every',termsLink:'Terms',privacyLink:'Privacy policy',withdrawLink:'Withdraw a purchase',cancelRule:'Free cancellation until 24 hours before (boarding: 7 days). To withdraw from a purchase within 14 days, use "Withdraw a purchase" at the bottom.',
+memAccept:'I accept the <a href="/vilkaar/" target="_blank">terms and liability conditions</a> for membership and ask for the membership to start before the withdrawal period ends.',eAccept:'Tick the box to accept the terms first.',
+revTitle:'Your review',revLater:'After your first walk you can write a review here – with a photo of your dog.',revDog:"Your dog's name",revPh:'How was the walk? (at least 10 characters)',
+revPhoto:'Add a photo of your dog',revPhotoNew:'Change photo',revRemove:'Remove photo',revSend:'Send review',revStars:'Choose 1–5 stars.',revShort:'Write a little more (at least 10 characters).',
+revThanks:'Thank you! Your review appears on the site once I have approved it.',revPending:'Waiting for approval',revLive:'Shown on the front page',revHidden:'Not shown',revPhotoErr:'That photo could not be used. Try another one.',revNote:'Your first name, last-name initial, your dog\'s name and the photo are shown publicly.'}};
 const PAW='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="10" r="2.1"/><circle cx="9.2" cy="5.4" r="2.1"/><circle cx="14.8" cy="5.4" r="2.1"/><circle cx="18.5" cy="10" r="2.1"/><path d="M12 11.2c-3 0-6 4-6 6.4 0 1.7 1.3 2.6 3 2.6 1.3 0 2-.6 3-.6s1.7.6 3 .6c1.7 0 3-.9 3-2.6 0-2.4-3-6.4-6-6.4z"/></svg>';
 const CAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>';
 const $=(id)=>document.getElementById(id);
@@ -174,7 +189,7 @@ function flash(text,ok){const m=$('msg');m.hidden=!text;m.textContent=text||'';m
 
 async function account(body){
   const r=await fetch('/api/account',{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
-  const j=await r.json();if(!r.ok)throw new Error(j.error||'server');S.user=j.user;S.bookings=j.bookings||[];S.reports=j.reports||[];S.live=j.live||[];S.premium=!!j.premium;S.state=S.user?'in':'out';
+  const j=await r.json();if(!r.ok)throw new Error(j.error||'server');S.user=j.user;S.bookings=j.bookings||[];S.reports=j.reports||[];S.live=j.live||[];S.premium=!!j.premium;S.canReview=!!j.canReview;S.review=j.review||null;S.state=S.user?'in':'out';
 }
 // Calendar file for one walk (floating local time, 30 minutes).
 // Calendar file: one event per walk/visit/day; an overnight stay is one all-day event from drop-off to pick-up.
@@ -218,8 +233,10 @@ function payText(id){const p=(S.config?.plans||[]).find(x=>x.id===id)||{},mp=S.c
 function planCard(p,cta){const c=el('div','pcard'+(p.id===wanted?' sel':'')),per=Math.round(p.price/p.walks);
   c.append(el('b',null,t('plan_'+p.id)),el('span','small',t('planSub_'+p.id)),el('span','pp',kr(p.price)),el('span','small',p.kind==='pack'?t('perPack').replace('{m}',p.months):t('perMonth')),
     el('span','small',t('perWalkSave').replace('{p}',kr(per)).replace('{s}',Math.max(0,Math.round((1-per/walkPrice())*100)))));
-  if(cta){const b=el('button','btn primary sm',cta);b.type='button';b.onclick=async()=>{b.disabled=true;try{await account({action:'join',plan:p.id})}catch(e){flash(t('eServer'))}render()};c.append(b)}
+  if(cta){const b=el('button','btn primary sm',cta);b.type='button';b.onclick=async()=>{if(!$('mem-accept')?.checked){flash(t('eAccept'));$('mem-accept')?.focus();return}
+    b.disabled=true;try{await account({action:'join',plan:p.id,accept:true});flash('')}catch(e){flash(t(e.message==='terms'?'eAccept':'eServer'))}render()};c.append(b)}
   return c}
+function acceptRow(){const l=el('label','accept'),i=el('input');i.type='checkbox';i.id='mem-accept';const sp=el('span');sp.innerHTML=t('memAccept');l.append(i,sp);return l}
 // Membership panel: choose a plan → waiting for payment → active (credits, period, history, switch or stop renewing).
 function renderMembership(){
   const m=S.user.membership,plans=(S.config?.plans||[]).filter(p=>p.active),active=m&&m.status==='active'&&m.end>=S.today,kids=[];
@@ -232,12 +249,34 @@ function renderMembership(){
     const hist=(m.history||[]).slice(-6).reverse();
     if(hist.length){const h=el('div','hist');hist.forEach(x=>h.append(el('span',null,fdate(x.at.slice(0,10))+' · '+t('h_'+x.action)+(x.credits?' ('+(x.credits>0?'+':'')+x.credits+')':''))));card.append(h)}
     kids.push(card);
-    if(!m.request&&plans.length>1){kids.push(el('p','small',t('switchPlan')));const g=el('div','plan-pick');plans.filter(p=>p.id!==m.plan).forEach(p=>g.append(planCard(p,t('choose'))));kids.push(g)}
+    if(!m.request&&plans.length>1){kids.push(el('p','small',t('switchPlan')),acceptRow());const g=el('div','plan-pick');plans.filter(p=>p.id!==m.plan).forEach(p=>g.append(planCard(p,t('choose'))));kids.push(g)}
   }else if(m&&m.status==='pending'){const card=el('div','mcard');
     card.append(el('span','eyebrow',t('pendingTitle')),el('h3',null,t('plan_'+(m.request||m.plan))),el('div','mp-box',payText(m.request||m.plan)));
     const l=el('button','link',t('withdraw'));l.type='button';l.onclick=async()=>{await account({action:'leave'});render()};card.append(l);kids.push(card)}
-  else{kids.push(el('p','muted',t('memIntro')));const g=el('div','plan-pick');plans.forEach(p=>g.append(planCard(p,t('choose'))));kids.push(g)}
+  else{kids.push(el('p','muted',t('memIntro')),acceptRow());const g=el('div','plan-pick');plans.forEach(p=>g.append(planCard(p,t('choose'))));kids.push(g)}
   $('mem-box').replaceChildren(...kids)}
+// ---- Review (customers with a walk behind them; the admin approves before it is public) ----
+const RV={init:false,stars:0,text:'',dog:'',photo:undefined,preview:''};
+function shrink(file,max=1000){return new Promise((ok,no)=>{const img=new Image();img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');
+  c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);ok(c.toDataURL('image/jpeg',.82))};img.onerror=no;img.src=URL.createObjectURL(file)})}
+function renderReview(){$('review').hidden=false;const box=$('rev-box');
+  if(!S.canReview){box.replaceChildren(el('p','muted',t('revLater')));return}
+  const r=S.review;if(!RV.init){RV.init=true;RV.stars=r?.stars||0;RV.text=r?.text||'';RV.dog=r?.dog||(S.user.pets||[])[0]?.name||S.user.dog||''}
+  const card=el('div','mcard rform');
+  if(r)card.append(el('span','eyebrow',t(r.status==='approved'?'revLive':r.status==='hidden'?'revHidden':'revPending')));
+  const st=el('div','starpick');for(let i=1;i<=5;i++){const b=el('button',null,i<=RV.stars?'★':'☆');b.type='button';b.setAttribute('aria-label',i+' / 5');b.onclick=()=>{RV.stars=i;renderReview()};st.append(b)}
+  const dog=el('input');dog.value=RV.dog;dog.placeholder=t('revDog');dog.setAttribute('aria-label',t('revDog'));dog.oninput=()=>{RV.dog=dog.value};
+  const tx=el('textarea');tx.rows=4;tx.maxLength=600;tx.value=RV.text;tx.placeholder=t('revPh');tx.setAttribute('aria-label',t('revPh'));tx.oninput=()=>{RV.text=tx.value};
+  const cur=RV.preview||(r?.photo&&RV.photo!==null?'/api/club?photo='+r.photo:'');
+  const row=el('div','row');if(cur){const im=el('img','rphoto');im.src=cur;im.alt='';row.append(im)}
+  const fl=el('label','btn sm',cur?t('revPhotoNew'):t('revPhoto')),fi=el('input');fi.type='file';fi.accept='image/*';fi.hidden=true;fl.append(fi);
+  fi.onchange=async()=>{const f=fi.files[0];if(!f)return;try{RV.photo=await shrink(f);RV.preview=RV.photo;renderReview()}catch(e){flash(t('revPhotoErr'))}};row.append(fl);
+  if(cur){const rm=el('button','link',t('revRemove'));rm.type='button';rm.onclick=()=>{RV.photo=null;RV.preview='';renderReview()};row.append(rm)}
+  const send=el('button','btn primary',t('revSend'));send.type='button';
+  send.onclick=async()=>{if(!RV.stars){flash(t('revStars'));return}if(RV.text.trim().length<10){flash(t('revShort'));return}
+    send.disabled=true;try{await account({action:'review',stars:RV.stars,text:RV.text,dog:RV.dog,photo:RV.photo});RV.photo=undefined;RV.preview='';flash(t('revThanks'),true)}
+    catch(e){flash(t(e.message==='photo'?'revPhotoErr':e.message==='reviewText'?'revShort':'eServer'))}render()};
+  card.append(st,dog,tx,row,el('p','small',t('revNote')),send);box.replaceChildren(card)}
 // ---- GPS walk reports ----
 let leafletP=null;const leaflet=()=>leafletP||(leafletP=new Promise((ok,no)=>{if(window.L)return ok();const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';sc.onload=ok;sc.onerror=no;document.head.append(sc)}));
 async function drawRoute(box,key,live){await leaflet();const r=await fetch('/api/track?key='+encodeURIComponent(key));const j=await r.json();
@@ -271,10 +310,10 @@ function render(){
   const ids=[...DogBadges.ids.filter(id=>earned[id]),...DogBadges.ids.filter(id=>!earned[id])];
   $('badge-grid').replaceChildren(...ids.map(id=>{const got=!!earned[id],c=el('div','bcard'+(got?'':' locked')),r=el('div','rosette');r.innerHTML=DogBadges.svg(id);
     const [name,desc]=DogBadges.texts(id,lang);c.append(r,el('b',null,name),el('p',null,desc),el('small',null,got?bu.earned+' '+parse(earned[id].slice(0,10)).toLocaleDateString(loc(),{day:'numeric',month:'short',year:'numeric'}):t('notYet')));return c}));
-  renderReports();
+  renderReports();renderReview();
   const list=S.bookings.filter(b=>b.status!=='cancelled');
   if(!list.length){const e=el('div','card empty');e.append(el('h2',null,t('emptyTitle')),el('p',null,t('emptyText')));const a=el('a','btn primary',t('bookNew'));a.href='/#book';e.append(a);$('list').replaceChildren(e)}
-  else $('list').replaceChildren(...list.map(walkCard));
+  else $('list').replaceChildren(...list.map(walkCard),el('p','small',t('cancelRule')));
 }
 function drawGbtn(){if(!window.google?.accounts?.id||S.state!=='out')return;$('gbtn').replaceChildren();
   google.accounts.id.renderButton($('gbtn'),{theme:matchMedia('(prefers-color-scheme: dark)').matches?'filled_black':'outline',size:'large',shape:'pill',text:'continue_with',locale:lang,width:280})}
@@ -291,6 +330,7 @@ $('logout').onclick=async()=>{try{await account({action:'logout'})}catch(e){}S.s
   if(pub){S.config=pub.config;S.today=pub.today}
   render();loadGis();
   if(S.user)DogBadges.celebrate(S.user.badges,lang,null);
+  if(location.hash==='#review')setTimeout(()=>$('review').scrollIntoView({block:'start'}),300);
 })();
 </script>
 

@@ -42,6 +42,10 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
 .slots .booked{box-shadow:none;opacity:.45;cursor:default}
 .prices{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:10px 14px;align-items:center}
 .msg{font-weight:600;color:var(--err);min-height:1.4em}
+.thumb{width:76px;height:76px;border-radius:16px;object-fit:cover;flex:none}
+.warn{color:var(--err);font-weight:600}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
+.gal .card{align-items:center;text-align:center;gap:6px}.gal img{width:96px;height:96px;border-radius:50%;object-fit:cover}
 </style>
 <div class="wrap">
   <div class="row" style="justify-content:space-between"><h1>The DogMan · Admin</h1><span class="row"><a href="/walk/" class="label">🐾 Walk mode</a><a href="/" class="label">← Site</a></span></div>
@@ -52,6 +56,18 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
       <div class="row" style="margin-block:10px" id="filters"></div>
       <div class="list" id="bookings"></div></div>
     <div class="box"><h2>Members</h2><div class="row" style="margin-bottom:12px" id="m-filters"></div><div class="list" id="members"></div></div>
+    <div class="box" id="wd-box" hidden><h2>Withdrawals (fortrydelser)</h2><p class="label" style="margin:6px 0 12px">Refund what was paid for the part not delivered within 14 days, then mark it handled.</p><div class="list" id="withdrawals"></div></div>
+    <div class="box"><h2>Reviews</h2><p class="label" style="margin:6px 0 12px">Only customers who have had a walk can write one. Nothing is public until you approve it.</p><div class="list" id="reviews"></div></div>
+    <div class="box"><h2>Dogs I have walked (gallery)</h2>
+      <form id="dog-form" class="grid" style="margin:10px 0 16px">
+        <div class="f"><label class="label" for="g-name">Dog's name</label><input id="g-name" required></div>
+        <div class="f"><label class="label" for="g-breed">Breed</label><input id="g-breed"></div>
+        <div class="f"><label class="label" for="g-note">Short note (optional)</label><input id="g-note" placeholder="e.g. Walked since 2025"></div>
+        <div class="f"><label class="label" for="g-photo">Photo</label><input id="g-photo" type="file" accept="image/*"></div>
+        <div class="f" style="justify-content:flex-end"><button class="p" type="submit" id="g-add">Add to gallery</button></div>
+      </form>
+      <p class="label" style="margin-bottom:12px">Ask the owner before you show their dog.</p>
+      <div class="gal" id="gallery"></div></div>
     <div class="box"><h2>Add a booking</h2>
       <form id="add" class="grid" style="margin-top:10px">
         <div class="f"><label class="label" for="a-service">Service</label><select id="a-service"></select></div>
@@ -92,7 +108,7 @@ let pw='';try{pw=sessionStorage.getItem('pw')||''}catch(e){}
 let D=null,filter='upcoming',openDays=[];
 async function api(body){const r=await fetch('/api/admin',{method:body?'POST':'GET',headers:{'Content-Type':'application/json','x-admin-password':pw},body:body?JSON.stringify(body):undefined});
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'server');D=j;return j}
-const ERR={member:'Member not found.',plan:'That plan is not available.',taken:'That time is already taken.',auth:'Wrong password.',contact:'Name and an 8-digit phone number are required.',time:'Pick a time inside opening hours.',date:'Pick a valid date.'};
+const ERR={photo:'That photo is too large or not an image.',dogName:'Give the dog a name.',review:'Review not found.',member:'Member not found.',plan:'That plan is not available.',taken:'That time is already taken.',auth:'Wrong password.',contact:'Name and an 8-digit phone number are required.',time:'Pick a time inside opening hours.',date:'Pick a valid date.'};
 async function act(body){$('msg').textContent='';try{await api(body);render()}catch(e){$('msg').textContent=ERR[e.message]||'Could not save: '+e.message}}
 function el(tag,props,...kids){const e=document.createElement(tag);Object.assign(e,props||{});e.append(...kids);return e}
 const PLAN_NAMES={flex10:'10-walk card',weekly2:'Weekly walker (8/month)',daily5:'Every weekday (22/month)',alfa:'Premium Alfa (22 solo/month)'};
@@ -112,8 +128,36 @@ function memberCard(m){const ms=m.membership,plan=D.config.plans.find(p=>p.id===
   if(active)actions.append(b('+1 credit',{action:'member-credits',delta:1}),b('−1 credit',{action:'member-credits',delta:-1}));
   if(status!=='ended')actions.append(b('Cancel membership',{action:'member-cancel'}));
   return el('div',{className:'card'},el('div',{className:'row',style:'justify-content:space-between'},el('span',{className:'when',textContent:(m.name||m.email)}),el('span',{className:'row'},...pills)),dl,actions)}
+// Image → JPEG data URL, longest side ≤ max px (photos are stored in the database, so keep them small).
+function shrink(file,max=1000){return new Promise((ok,no)=>{const img=new Image();img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');
+  c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);ok(c.toDataURL('image/jpeg',.82))};img.onerror=no;img.src=URL.createObjectURL(file)})}
+const photoUrl=(id)=>'/api/club?photo='+id;
+function renderExtras(){
+  const wd=D.withdrawals||[];$('wd-box').hidden=!wd.length;
+  $('withdrawals').replaceChildren(...wd.map(w=>{const dl=el('dl',{});
+    [['Received',w.at.slice(0,16).replace('T',' ')],['From',w.name+' · '+w.email+(w.phone?' · '+w.phone:'')],['What',(w.what==='membership'?'Membership':'Booking ')+(w.ref||'')],['Message',w.message],['Auto',w.cancelled?(w.what==='membership'?'membership stopped from renewing':'booking cancelled'):'nothing changed – check and cancel yourself'],['Handled',w.handled?w.handled.slice(0,10):'']]
+      .filter(r=>r[1]).forEach(r=>dl.append(el('dt',{textContent:r[0]}),el('dd',{textContent:r[1]})));
+    const acts=el('div',{className:'row'},el('a',{href:'mailto:'+encodeURIComponent(w.email)+'?subject='+encodeURIComponent('Din fortrydelse '+w.id),textContent:'Email '+w.name.split(' ')[0],className:'label'}));
+    if(!w.handled){const b=el('button',{type:'button',className:'p',textContent:'Mark handled'});b.onclick=()=>act({action:'withdrawal-done',wid:w.id});acts.append(b)}
+    return el('div',{className:'card'+(w.handled?' cancelled':'')},dl,acts)}));
+  const rv=[...(D.reviews||[])].sort((a,b)=>(a.status==='pending'?0:1)-(b.status==='pending'?0:1)||b.at.localeCompare(a.at));
+  $('reviews').replaceChildren(...(rv.length?rv.map(r=>{const top=el('div',{className:'row',style:'align-items:flex-start;flex-wrap:nowrap'});
+    if(r.photo||r.avatar)top.append(el('img',{className:'thumb',src:r.photo?photoUrl(r.photo):r.avatar,alt:'',referrerPolicy:'no-referrer'}));
+    top.append(el('div',{},el('div',{textContent:'★'.repeat(r.stars)+'☆'.repeat(5-r.stars),style:'color:#f07a1e;font-size:1.1rem'}),el('p',{textContent:'“'+r.text+'”'}),el('span',{className:'label',textContent:'— '+r.name+(r.dog?' & '+r.dog:'')+' · '+r.at.slice(0,10)})));
+    const b=(txt,body,cls)=>{const x=el('button',{type:'button',textContent:txt,className:cls||''});x.onclick=()=>act({sub:r.sub,...body});return x};
+    const acts=el('div',{className:'row'},el('span',{className:'pill '+(r.status==='approved'?'confirmed':r.status==='pending'?'pending':'cancelled'),textContent:r.status}));
+    if(r.status!=='approved')acts.append(b('Approve – show on site',{action:'review-status',status:'approved'},'p'));
+    if(r.status!=='hidden')acts.append(b('Hide',{action:'review-status',status:'hidden'}));
+    const del=el('button',{type:'button',textContent:'Delete'});del.onclick=()=>{if(del.dataset.sure)act({action:'review-delete',sub:r.sub});else{del.dataset.sure=1;del.textContent='Delete for good?'}};acts.append(del);
+    return el('div',{className:'card'},top,acts)}):[el('p',{className:'label',textContent:'No reviews yet.'})]));
+  $('gallery').replaceChildren(...(D.dogs||[]).map(g=>{const del=el('button',{type:'button',textContent:'Remove'});del.onclick=()=>{if(del.dataset.sure)act({action:'dog-delete',did:g.id});else{del.dataset.sure=1;del.textContent='Sure?'}};
+    return el('div',{className:'card'},g.photo?el('img',{src:photoUrl(g.photo),alt:g.name}):el('span',{textContent:'🐾',style:'font-size:2rem'}),el('b',{textContent:g.name}),el('span',{className:'label',textContent:[g.breed,g.note].filter(Boolean).join(' · ')}),del)}));
+}
+$('dog-form').onsubmit=async(e)=>{e.preventDefault();const f=$('g-photo').files[0],btn=$('g-add');btn.disabled=true;
+  try{const photo=f?await shrink(f):'';await act({action:'dog-add',name:$('g-name').value.trim(),breed:$('g-breed').value.trim(),note:$('g-note').value.trim(),photo});
+    if(!$('msg').textContent){$('dog-form').reset()}}catch(x){$('msg').textContent='That photo could not be read.'}btn.disabled=false};
 function render(){
-  $('login').hidden=true;$('app').hidden=false;
+  $('login').hidden=true;$('app').hidden=false;renderExtras();
   const mem=D.members||[],mstate=(x)=>x.membership.status==='active'&&x.membership.end>=D.today?'active':x.membership.status==='pending'?'pending':'ended';
   $('m-filters').replaceChildren(...['active','pending','ended'].map(f=>{const n=mem.filter(x=>mstate(x)===f).length;const b=el('button',{type:'button',textContent:f[0].toUpperCase()+f.slice(1)+' ('+n+')'});b.setAttribute('aria-pressed',f===mfilter);b.onclick=()=>{mfilter=f;render()};return b}));
   const ml=mem.filter(x=>mstate(x)===mfilter);
@@ -137,8 +181,9 @@ function whenOf(b){const tm=b.time?' '+b.time:'';
   const ds=b.dates&&b.dates.length?b.dates:[b.date];return ds.map(dshort).join(' · ')+tm}
 function card(b){
   const pills=[el('span',{className:'pill '+b.status,textContent:b.status})];if(b.paid)pills.push(el('span',{className:'pill paid',textContent:'paid'}));if(b.user)pills.push(el('span',{className:'pill',textContent:'google'}));
-  const rows=[['Owner',b.name],['Phone',b.phone],['Email',b.email],['Address',b.address],['Pets',(b.petList&&b.petList.length?b.petList.map(p=>[p.name||'(no name)',p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · '):[b.dog,b.breed,b.size,b.pets>1?b.pets+' pets':''].filter(Boolean).join(' · '))],['Meet & greet',b.meet?'Yes – wants a free meeting first':''],['GPS walks',Object.entries(b.walks||{}).map(([d,w])=>d.slice(5)+': '+w.km+' km/'+w.minutes+' min').join(' · ')],['Estimate',b.estimate!=null?b.estimate+' kr.':''],['How often',{weekly:'Every week',multi:'Several times a week'}[b.freq]||''],['Notes',b.notes],['Emails',[b.mails?.request&&'receipt sent',b.mails?.confirmed&&'confirmation sent'].filter(Boolean).join(' · ')],['Booked',b.created.slice(0,10)+' via '+b.source]].filter(r=>r[1]);
-  const dl=el('dl',{});rows.forEach(r=>{const dd=el('dd',{});if(r[0]==='Address')dd.append(el('a',{href:'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(r[1]),target:'_blank',rel:'noopener',textContent:r[1]+' ↗'}));else dd.textContent=r[1];dl.append(el('dt',{textContent:r[0]}),dd)});
+  const rows=[['Owner',b.name],['Phone',b.phone],['Email',b.email],['Address',b.address],['Pets',(b.petList&&b.petList.length?b.petList.map(p=>[p.name||'(no name)',p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · '):[b.dog,b.breed,b.size,b.pets>1?b.pets+' pets':''].filter(Boolean).join(' · '))],['Declaration',(b.petList||[]).filter(p=>p.type==='dog'&&'vacc' in p).map(p=>(p.name||'Dog')+': '+[p.vacc?'vaccinated':'NOT vaccinated',p.chip?'chipped':'NOT chipped','insurance '+(p.ins||'–'),p.bite==='yes'?'⚠ HAS BITTEN / ATTACKED':'never bitten',p.social==='no'?'⚠ not with other dogs':p.social==='unsure'?'other dogs: not sure':'ok with other dogs',p.health?'health: '+p.health:''].filter(Boolean).join(' · ')).join(' | ')],
+    ['Vet',b.vet],['Emergency contact',b.emergency],['Terms accepted',b.terms?b.terms.at.slice(0,16).replace('T',' ')+' (v'+b.terms.v+')':''],['Meet & greet',b.meet?'Yes – wants a free meeting first':''],['GPS walks',Object.entries(b.walks||{}).map(([d,w])=>d.slice(5)+': '+w.km+' km/'+w.minutes+' min').join(' · ')],['Estimate',b.estimate!=null?b.estimate+' kr.':''],['How often',{weekly:'Every week',multi:'Several times a week'}[b.freq]||''],['Notes',b.notes],['Emails',[b.mails?.request&&'receipt sent',b.mails?.confirmed&&'confirmation sent'].filter(Boolean).join(' · ')],['Booked',b.created.slice(0,10)+' via '+b.source]].filter(r=>r[1]);
+  const dl=el('dl',{});rows.forEach(r=>{const dd=el('dd',{className:r[0]==='Declaration'&&/⚠|NOT/.test(r[1])?'warn':''});if(r[0]==='Address')dd.append(el('a',{href:'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(r[1]),target:'_blank',rel:'noopener',textContent:r[1]+' ↗'}));else dd.textContent=r[1];dl.append(el('dt',{textContent:r[0]}),dd)});
   const btn=(txt,body,cls)=>{const x=el('button',{type:'button',textContent:txt,className:cls||''});x.onclick=()=>act({id:b.id,...body});return x};
   const actions=el('div',{className:'row'});
   if(b.status==='pending')actions.append(btn('Confirm',{action:'status',status:'confirmed'},'p'));
