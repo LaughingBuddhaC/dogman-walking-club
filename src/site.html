@@ -439,7 +439,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
       <div class="done" id="done" hidden>
         <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
         <h3 data-t="doneTitle" style="font-size:1.6rem"></h3><p id="done-text" class="muted"></p>
-        <div id="mp-box" hidden><p data-t="doneMp" style="margin-bottom:10px"></p><div class="mp" id="mp-num"></div><a class="btn primary" id="mp-open" data-t="mpOpen" style="margin-top:14px" hidden></a></div>
+        <div id="mp-box" hidden><p data-t="doneMp" style="margin-bottom:10px"></p><div class="mp" id="mp-num"></div><button type="button" class="btn primary" id="mp-open" data-t="mpCopy" style="margin-top:14px" hidden></button></div>
         <button type="button" class="btn" id="again" data-t="again"></button>
       </div>
       <div class="mine" id="mine" hidden><div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><h3 data-t="mineTitle"></h3><a class="link" href="/account/" data-t="seeAll"></a></div><div id="mine-list"></div></div>
@@ -508,7 +508,7 @@ send:'Send booking',sending:'Sender…',privacy:'Dine oplysninger bruges kun til
 gHint:'Log ind med Google og få dit velkomstmærke. Så udfyldes dine oplysninger automatisk, og du kan se og aflyse dine ture.',logout:'Log ud',mineTitle:'Dine kommende ture',st_pending:'Afventer bekræftelse',st_confirmed:'Bekræftet',st_cancelled:'Aflyst',cancel:'Aflys',sure:'Aflys turen?',eLogin:'Log ind mislykkedes. Prøv igen.',
 sumPick:'Vælg en dag og en tid.',walk:'Gåtur · 30 min.',est:'Pris',perTurn:'pr. tur',
 eContact:'Skriv dit navn og et telefonnummer.',eEmail:'Skriv din e-mail – så får du kvittering og bekræftelse.',eTime:'Vælg en ledig tid.',eTaken:'Den tid er lige blevet taget. Vælg en anden.',eServer:'Noget gik galt. Prøv igen om lidt.',eClosed:'Den dag er lukket. Vælg en anden.',
-doneTitle:'Tak – booking modtaget!',doneText:'Du har fået en kvittering på e-mail. Når jeg har bekræftet, får du en mail mere – med knap til din kalender.',mpOpen:'Åbn MobilePay',doneMp:'Betal med MobilePay, når turen er bekræftet:',again:'Book en tur mere',
+doneTitle:'Tak – booking modtaget!',doneText:'Du har fået en kvittering på e-mail. Når jeg har bekræftet, får du en mail mere – med knap til din kalender.',mpCopy:'Kopiér nummer',mpCopied:'Kopieret ✓',doneMp:'Betal med MobilePay, når turen er bekræftet:',again:'Book en tur mere',
 howLabel:'Sådan foregår det',howTitle:'Tre enkle trin',how1:'Du vælger en tid',how1p:'Vælg dag og tidspunkt i kalenderen. Det tager et minut.',how2:'Jeg bekræfter',how2p:'Jeg ringer eller skriver, og vi aftaler det praktiske.',how3:'Vi går en tur',how3p:'Jeg henter din hund, vi går 30 minutter, og du betaler med MobilePay.',
 aboutLabel:'Om os',aboutTitle:'Can og Boris',aboutText:'Jeg hedder Can og bor i Skovlunde med Boris, en rolig golden retriever på 7 år. Vi elsker lange ture – i bjergene, i sneen og langs vandet. Nu vil jeg gerne gå tur med din hund også.',
 factArea:'Område',factAreaV:'Skovlunde, Ballerup, Herlev og omegn',factWalk:'Tur',factWalkV:'Mindst 30 minutter',factWhen:'Tider',hoursV:'Kl. {a}–{b}, alle ugens dage',factPay:'Betaling',factPhone:'Telefon',
@@ -536,7 +536,7 @@ send:'Send booking',sending:'Sending…',privacy:'Your details are only used to 
 gHint:'Sign in with Google and get your welcome badge. Your details are filled in automatically, and you can see or cancel your walks.',logout:'Log out',mineTitle:'Your upcoming walks',st_pending:'Waiting for confirmation',st_confirmed:'Confirmed',st_cancelled:'Cancelled',cancel:'Cancel',sure:'Cancel this walk?',eLogin:'Sign-in failed. Please try again.',
 sumPick:'Choose a day and a time.',walk:'Walk · 30 min.',est:'Price',perTurn:'per walk',
 eContact:'Enter your name and a phone number.',eEmail:'Enter your email – for the receipt and the confirmation.',eTime:'Choose a free time.',eTaken:'That time was just taken. Choose another.',eServer:'Something went wrong. Try again shortly.',eClosed:'That day is closed. Choose another.',
-doneTitle:'Thanks – booking received!',doneText:'A receipt is on its way to your email. Once I confirm, you get another email – with a button for your calendar.',mpOpen:'Open MobilePay',doneMp:'Pay with MobilePay once the walk is confirmed:',again:'Book another walk',
+doneTitle:'Thanks – booking received!',doneText:'A receipt is on its way to your email. Once I confirm, you get another email – with a button for your calendar.',mpCopy:'Copy number',mpCopied:'Copied ✓',doneMp:'Pay with MobilePay once the walk is confirmed:',again:'Book another walk',
 howLabel:'How it works',howTitle:'Three simple steps',how1:'You pick a time',how1p:'Choose a day and time in the calendar. It takes a minute.',how2:'I confirm',how2p:'I call or text you and we sort out the details.',how3:'We go for a walk',how3p:'I pick up your dog, we walk for 30 minutes, and you pay with MobilePay.',
 aboutLabel:'About',aboutTitle:'Can and Boris',aboutText:'I am Can. I live in Skovlunde with Boris, a calm 7-year-old golden retriever. We love long trips – in the mountains, in the snow and by the water. Now I would love to walk your dog too.',
 factArea:'Area',factAreaV:'Skovlunde, Ballerup, Herlev and around',factWalk:'Walk',factWalkV:'At least 30 minutes',factWhen:'Times',hoursV:'{a}–{b}, every day',factPay:'Payment',factPhone:'Phone',
@@ -592,7 +592,8 @@ const creditsOn=()=>S.service==='walk'&&S.useCredits&&!!member()&&member().credi
 // 60-minute walks cost longWalkPct % more (of the walk price incl. extra dogs), also when paid with credits.
 const longPct=()=>S.config.longWalkPct??30,isLong=()=>S.service==='walk'&&S.minutes===60;
 const longOf=(per)=>Math.round(per*longPct()/100);
-const mpLink=(n,amount,note)=>{const d=String(n||'').replace(/\D/g,'').replace(/^45(?=\d{8}$)/,'');return 'mobilepay://send?phone='+d+'&amount='+(amount||'')+'&comment='+encodeURIComponent(note||'DogMan')},mpTouch=()=>matchMedia('(pointer:coarse)').matches;
+// Copies the MobilePay number (8 digits, no country code) so it can be pasted into the app.
+function mpCopy(btn,n){const d=String(n||'').replace(/\D/g,'').replace(/^45(?=\d{8}$)/,'');btn.onclick=async()=>{try{await navigator.clipboard.writeText(d);btn.textContent=t('mpCopied');setTimeout(()=>btn.textContent=t('mpCopy'),2500)}catch(e){}}}
 function quote(){const s=svc(),units=chosen().length;if(s.price==null||!units)return null;
   const base=creditsOn()?0:s.price*units,extra=(s.extra||0)*(petsN()-1)*units,long=isLong()?longOf(s.price+(s.extra||0)*(petsN()-1))*units:0;
   return{units,base,extra,long,total:base+extra+long,credits:creditsOn()}}
@@ -796,15 +797,15 @@ $('form').onsubmit=async(e)=>{e.preventDefault();const msg=$('msg');msg.classNam
   const body={service:S.service,plan,dates:plan==='once'?dates:undefined,weekdays:[...S.weekdays],date:plan==='once'?dates[0]:S.start,end:S.end||'',time:S.time||'',
     petList:S.pets,minutes:S.service==='walk'?S.minutes:undefined,meet:$('meet').checked,useCredits:creditsOn(),name:v('name'),phone:v('phone'),email:v('email'),address:v('address'),notes:v('notes'),website:v('website'),lang};
   const btn=$('submit');btn.disabled=true;btn.textContent=t('sending');msg.textContent='';
-  let mp=S.config.mobilepay,ok=!S.live,err='eServer',errText='',ref='',due=null;
+  let mp=S.config.mobilepay,ok=!S.live,err='eServer',errText='';
   if(S.live){try{const r=await fetch('/api/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
-    if(r.ok){ok=true;mp=j.mobilepay||mp;ref=j.id||'';due=j.due;if(U.user)account().then(render)}
+    if(r.ok){ok=true;mp=j.mobilepay||mp;if(U.user)account().then(render)}
     else{err={taken:'eTaken',time:'eTime',contact:'eContact',email:'eEmail',closed:'eClosed',date:'eDates',pets:'ePets',credits:'eCredits',creditsEnd:'eCreditsEnd',member:'eCredits'}[j.error]||'eServer';if(j.error==='taken'&&j.date)errText=t('eTakenOn').replace('{d}',fmtShort(j.date)+' '+t('at')+' '+S.time)}}catch(x){}}
   btn.disabled=false;btn.textContent=t('send');
   if(!ok){msg.textContent=errText||t(err);if(err==='eTaken'){S.time=null;load()}return}
   const q=quote(),sel={plan,date:plan==='weekly'?dates[0]:body.date,end:body.end,dates,weekdays:body.weekdays.sort(),time:S.time};
   $('done-text').textContent=t('sv_'+S.service)+' · '+whenText(sel)+(q?' · '+kr(q.total):'')+(q&&q.credits?' · '+t('creditsUsed').replace('{n}',q.units):'')+' — '+t('doneText');
-  $('mp-box').hidden=!mp;$('mp-num').textContent=mp;$('mp-open').hidden=!mp||!mpTouch();$('mp-open').href=mpLink(mp,due!=null?due:q?q.total:'','DogMan '+ref);$('book-ui').hidden=true;$('done').hidden=false;$('done').scrollIntoView({block:'center'});
+  $('mp-box').hidden=!mp;$('mp-num').textContent=mp;$('mp-open').hidden=!mp;mpCopy($('mp-open'),mp);$('book-ui').hidden=true;$('done').hidden=false;$('done').scrollIntoView({block:'center'});
 };
 // Hide the floating mobile button while the booking section is on screen.
 if('IntersectionObserver' in window){
