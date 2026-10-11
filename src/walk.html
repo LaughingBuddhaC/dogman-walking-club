@@ -43,7 +43,7 @@ a{color:var(--accent)}
 .seg button[aria-pressed="true"]{box-shadow:var(--inset-sm);color:var(--accent)}
 ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
 details summary{cursor:pointer;font-weight:600}
-.prev{width:min(260px,100%);aspect-ratio:9/16;border-radius:18px;overflow:hidden;box-shadow:var(--raise-sm);align-self:center;background:#1d1f24}.prev canvas{width:100%;height:100%;display:block}
+.prev{width:min(260px,100%);aspect-ratio:9/16;border-radius:18px;overflow:hidden;box-shadow:var(--raise-sm);align-self:center}.prev canvas{width:100%;height:100%;display:block}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button.sm{font-size:.9rem;padding:9px 14px}
 .btn.sm{display:inline-block;margin-top:8px;font-size:.9rem;padding:9px 14px}
@@ -119,11 +119,11 @@ const C={key:null,j:null,img:null,newPhoto:null,canvas:null};
 // A photo taken during the walk waits here (and in localStorage, in case the page reloads) until the walk is finished.
 let pending=null;try{pending=localStorage.getItem('walk-photo')||null}catch(e){}
 const setPending=(u)=>{pending=u;try{u?localStorage.setItem('walk-photo',u):localStorage.removeItem('walk-photo')}catch(e){}$('a-photo').textContent=u?'📷 Photo taken ✓ (tap to retake)':'📷 Photo of the dog for the card'};
-function paintCard(){const j=C.j;C.canvas=WalkCard.draw({points:j.points,km:j.km,minutes:j.minutes,date:j.date,title:j.dogs,lang:'da',photo:C.img},C.img?'photo':'dark');$('c-prev').replaceChildren(C.canvas);
+function paintCard(){const j=C.j;C.canvas=WalkCard.draw({points:j.points,km:j.km,minutes:j.minutes,date:j.date,title:j.dogs,lang:'da',photo:C.img},'soft');$('c-prev').replaceChildren(C.canvas);
   $('c-save').textContent=j.card?(C.newPhoto?'Save the new photo':'Save card again'):(j.mailed?'Save card':'Save card & notify the owner');
   $('c-pub').disabled=!j.card;$('c-pub').textContent=j.pub?'On home page ✓ (remove)':'Publish on home page';$('c-pub').setAttribute('aria-pressed',String(!!j.pub))}
 async function openCard(key,finished){$('msg').textContent='';$('c-state').textContent='';
-  try{const j=await api('/api/track?key='+encodeURIComponent(key));Object.assign(C,{key,j,img:null,newPhoto:null});
+  try{const j=await api('/api/track?key='+encodeURIComponent(key));await WalkCard.ready();Object.assign(C,{key,j,img:null,newPhoto:null});
     if(finished&&pending){C.newPhoto=pending;C.img=await WalkCard.loadImage(pending)}else if(j.photo){try{C.img=await WalkCard.loadImage('/api/club?photo='+j.photo)}catch(e){}}
     $('list').hidden=true;$('active').hidden=true;$('done').hidden=false;$('done-title').hidden=!finished;$('done-text').hidden=!finished;$('ot-quiet').hidden=!finished||A.src!=='ot';
     if(!j.card)$('c-state').textContent=C.img?'Not saved yet – tap Save.':'Add a photo of the dog, then save.';paintCard();scrollTo(0,0)}

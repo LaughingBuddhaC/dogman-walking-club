@@ -1,13 +1,14 @@
 // Route card: a picture of a walk (route line + distance, time, dog) to share or save.
-// Looks: on the dog's photo (when the walk has one), transparent (to lay over a photo in a story), light and dark.
+// Looks: a soft-UI card like the site (light or dark; the dog's photo sits in a raised frame when the walk has one)
+// and a transparent one to lay over a photo in a story. Every card carries the logo.
 // No map tiles are drawn, so the picture shows the shape of the walk but not where it was.
 // WalkCard.open({ points:[[lat,lon],…], km, minutes, date:'YYYY-MM-DD', title, lang, photoUrl? })
-// WalkCard.draw(data, style) → canvas (data.photo = a loaded image for style 'photo')
+// await WalkCard.ready(); WalkCard.draw(data, 'soft' | 'dark' | 'clear') → canvas (data.photo = a loaded image, optional)
 (function () {
   const W = 1080, H = 1920, ORANGE = ['#ffad5c', '#f07a1e'];
   const TXT = {
-    da: { dist: 'Distance', time: 'Tid', min: 'min', walk: 'Gåtur', share: 'Del', save: 'Gem billede', close: 'Luk', photo: 'Foto', clear: 'Gennemsigtig', light: 'Lys', dark: 'Mørk', hint: 'Gennemsigtig passer oven på et foto i en story.', tag: 'Hundeluftning i Skovlunde' },
-    en: { dist: 'Distance', time: 'Time', min: 'min', walk: 'Walk', share: 'Share', save: 'Save image', close: 'Close', photo: 'Photo', clear: 'Transparent', light: 'Light', dark: 'Dark', hint: 'Transparent sits on top of a photo in a story.', tag: 'Dog walking in Skovlunde' },
+    da: { dist: 'Distance', time: 'Tid', min: 'min', walk: 'Gåtur', share: 'Del', save: 'Gem billede', close: 'Luk', clear: 'Gennemsigtig', soft: 'Lys', dark: 'Mørk', hint: 'Gennemsigtig passer oven på et foto i en story.', tag: 'Hundeluftning i Skovlunde' },
+    en: { dist: 'Distance', time: 'Time', min: 'min', walk: 'Walk', share: 'Share', save: 'Save image', close: 'Close', clear: 'Transparent', soft: 'Light', dark: 'Dark', hint: 'Transparent sits on top of a photo in a story.', tag: 'Dog walking in Skovlunde' },
   };
   const FONT = 'Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif';
   const num = (n, lang, d) => Number(n || 0).toLocaleString(lang === 'da' ? 'da-DK' : 'en-GB', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -21,48 +22,99 @@
     return xy.map((p) => [box.x + (box.w - w * sc) / 2 + (p[0] - x0) * sc, box.y + (box.h - h * sc) / 2 + (p[1] - y0) * sc]);
   }
 
-  function draw(d, style) {
-    const t = TXT[d.lang === 'en' ? 'en' : 'da'], c = document.createElement('canvas'); c.width = W; c.height = H;
-    const onPhoto = style === 'photo' && d.photo, g = c.getContext('2d'), dark = style !== 'light', ink = dark ? '#ffffff' : '#1d1d1f', soft = dark ? 'rgba(255,255,255,.72)' : '#62636a';
-    if (style === 'light') { g.fillStyle = '#e7ebf0'; g.fillRect(0, 0, W, H); }
-    if (style === 'dark' || (style === 'photo' && !onPhoto)) { g.fillStyle = '#1d1f24'; g.fillRect(0, 0, W, H); }
-    if (onPhoto) {
-      // The photo fills the card (cropped around its centre); darker bands behind the text keep it readable.
-      const iw = d.photo.naturalWidth || d.photo.width, ih = d.photo.naturalHeight || d.photo.height, sc = Math.max(W / iw, H / ih);
-      g.drawImage(d.photo, (W - iw * sc) / 2, (H - ih * sc) / 2, iw * sc, ih * sc);
-      const band = (y0, y1, a0, a1) => { const gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, `rgba(12,13,16,${a0})`); gr.addColorStop(1, `rgba(12,13,16,${a1})`); g.fillStyle = gr; g.fillRect(0, y0, W, y1 - y0); };
-      band(0, 620, 0.62, 0); band(1180, H, 0, 0.82);
-    }
-    // On a transparent card the text gets a soft shadow so it stays readable on any photo.
-    const shadow = (on) => { g.shadowColor = on && (style === 'clear' || onPhoto) ? 'rgba(0,0,0,.45)' : 'transparent'; g.shadowBlur = on ? 18 : 0; g.shadowOffsetY = on ? 3 : 0; };
-    const text = (s, x, y, font, color, align) => { g.font = font; g.fillStyle = color; g.textAlign = align || 'left'; g.fillText(s, x, y); };
-    g.textBaseline = 'alphabetic';
+  // The logo (embossed round mark) is loaded once; cards drawn before it arrives simply have no logo.
+  let logo = null, logoP = null;
+  const ready = () => logoP || (logoP = loadImage('/img/brand/mark-emboss-round.png').then((i) => { logo = i; }).catch(() => {}));
+  const rr = (g, x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+  const routePath = (g, pts) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); };
+  const dateText = (d) => (d.date ? new Date(d.date + 'T12:00:00').toLocaleDateString(d.lang === 'en' ? 'en-GB' : 'da-DK', { weekday: 'long', day: 'numeric', month: 'long' }) : '');
+  // Soft UI (the site's look): one surface colour, depth from a dark shadow below-right and a light one above-left.
+  const SOFT = { light: { bg: '#e7ebf0', ink: '#1d1d1f', soft: '#62636a', sd: '#c3cad4', sl: '#ffffff', acc: '#b44d08' },
+    dark: { bg: '#23262c', ink: '#f5f5f7', soft: '#a1a1a8', sd: '#16181c', sl: '#30343c', acc: '#ffab66' } };
 
-    // Head: who walked, and when.
+  // style: 'soft' (light soft-UI card), 'dark' (the same in dark) or 'clear' (transparent, for laying over a photo).
+  function draw(d, style) {
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d'); g.textBaseline = 'alphabetic'; g.lineJoin = 'round'; g.lineCap = 'round';
+    if (style === 'clear') drawClear(g, d); else drawSoft(g, d, SOFT[style === 'dark' ? 'dark' : 'light']);
+    return c;
+  }
+
+  function drawSoft(g, d, k) {
+    const t = TXT[d.lang === 'en' ? 'en' : 'da'], M = 64;
+    const text = (s, x, y, font, color, align) => { g.font = font; g.fillStyle = color; g.textAlign = align || 'left'; g.fillText(s, x, y); };
+    const noShadow = () => { g.shadowColor = 'transparent'; g.shadowBlur = 0; g.shadowOffsetX = g.shadowOffsetY = 0; };
+    // Raised: the shape casts both shadows outwards.
+    const raised = (shape, depth) => { for (const [col, o] of [[k.sd, depth], [k.sl, -depth]]) { g.shadowColor = col; g.shadowBlur = depth * 2.2; g.shadowOffsetX = g.shadowOffsetY = o; g.fillStyle = k.bg; shape(); g.fill(); } noShadow(); };
+    // Pressed in: the same two shadows fall inside the shape (drawn by a frame around it, clipped to the shape).
+    const inset = (x, y, w, h, r, depth) => { g.save(); rr(g, x, y, w, h, r); g.fillStyle = k.bg; g.fill(); g.clip();
+      for (const [col, o] of [[k.sd, depth], [k.sl, -depth]]) { g.shadowColor = col; g.shadowBlur = depth * 2; g.shadowOffsetX = g.shadowOffsetY = o; g.fillStyle = k.bg;
+        g.beginPath(); g.rect(x - 200, y - 200, w + 400, h + 400); g.roundRect(x, y, w, h, r); g.fill('evenodd'); }
+      g.restore(); noShadow(); };
+    g.fillStyle = k.bg; g.fillRect(0, 0, W, H);
+
+    // Head: logo in a raised round badge, club name beside it.
+    const lx = M + 74, ly = 152;
+    raised(() => { g.beginPath(); g.arc(lx, ly, 74, 0, 7); }, 14);
+    if (logo) { g.save(); g.beginPath(); g.arc(lx, ly, 64, 0, 7); g.clip(); g.drawImage(logo, lx - 64, ly - 64, 128, 128); g.restore(); }
+    text('DOGMAN WALKING CLUB', M + 180, 146, `800 46px ${FONT}`, k.ink);
+    text(t.tag, M + 180, 196, `500 33px ${FONT}`, k.soft);
+
+    // The photo in a raised frame, with the route on it. Without a photo the route sits in a pressed-in panel.
+    const F = { x: M, y: 272, w: W - 2 * M, h: 1000 }, P = { x: F.x + 22, y: F.y + 22, w: F.w - 44, h: F.h - 44 };
+    raised(() => rr(g, F.x, F.y, F.w, F.h, 64), 20);
+    if (d.photo) {
+      const iw = d.photo.naturalWidth || d.photo.width, ih = d.photo.naturalHeight || d.photo.height, sc = Math.max(P.w / iw, P.h / ih);
+      g.save(); rr(g, P.x, P.y, P.w, P.h, 44); g.clip();
+      g.drawImage(d.photo, P.x + (P.w - iw * sc) / 2, P.y + (P.h - ih * sc) / 2, iw * sc, ih * sc); g.restore();
+    } else inset(P.x, P.y, P.w, P.h, 44, 12);
+    const pts = (d.points || []).length > 1 ? fit(d.points, { x: P.x + 120, y: P.y + 120, w: P.w - 240, h: P.h - 240 }) : [];
+    if (pts.length) {
+      const grad = g.createLinearGradient(P.x, P.y, P.x + P.w, P.y + P.h); grad.addColorStop(0, ORANGE[0]); grad.addColorStop(1, ORANGE[1]);
+      if (d.photo) { g.shadowColor = 'rgba(0,0,0,.4)'; g.shadowBlur = 16; g.shadowOffsetY = 3; routePath(g, pts); g.strokeStyle = 'rgba(255,255,255,.94)'; g.lineWidth = 26; g.stroke(); noShadow(); }
+      routePath(g, pts); g.strokeStyle = grad; g.lineWidth = 16; g.stroke();
+      const dot = (p, fill) => { g.beginPath(); g.arc(p[0], p[1], 19, 0, 7); g.fillStyle = fill; g.fill(); g.lineWidth = 8; g.strokeStyle = ORANGE[1]; g.stroke(); };
+      dot(pts[0], '#ffffff'); dot(pts[pts.length - 1], ORANGE[1]);
+    }
+
+    // Dog's name and the date.
+    const title = d.title || t.walk; let size = 104; g.font = `800 ${size}px ${FONT}`;
+    while (g.measureText(title).width > W - 2 * M - 16 && size > 56) { size -= 6; g.font = `800 ${size}px ${FONT}`; }
+    text(title, M + 8, 1404, `800 ${size}px ${FONT}`, k.ink);
+    text(dateText(d), M + 10, 1462, `500 38px ${FONT}`, k.soft);
+
+    // Numbers in pressed-in tiles.
+    const cols = [[t.dist, num(d.km, d.lang, 2), 'km'], [t.time, String(d.minutes || 0), t.min]], gap = 32, tw = (W - 2 * M - gap * (cols.length - 1)) / cols.length;
+    cols.forEach(([label, value, unit], i) => {
+      const x = M + (tw + gap) * i, y = 1516;
+      inset(x, y, tw, 232, 48, 10);
+      text(label.toUpperCase(), x + 40, y + 76, `600 30px ${FONT}`, k.soft);
+      g.font = `800 98px ${FONT}`; const vw = g.measureText(value).width;
+      text(value, x + 38, y + 180, `800 98px ${FONT}`, k.ink);
+      text(unit, x + 38 + vw + 12, y + 180, `600 40px ${FONT}`, k.soft);
+    });
+    text('dmw.cansasmaz.com', W / 2, 1852, `600 34px ${FONT}`, k.acc, 'center');
+  }
+
+  function drawClear(g, d) {
+    const t = TXT[d.lang === 'en' ? 'en' : 'da'], ink = '#ffffff', soft = 'rgba(255,255,255,.78)';
+    // The text gets a soft shadow so it stays readable on any photo.
+    const shadow = (on) => { g.shadowColor = on ? 'rgba(0,0,0,.45)' : 'transparent'; g.shadowBlur = on ? 18 : 0; g.shadowOffsetY = on ? 3 : 0; };
+    const text = (s, x, y, font, color) => { g.font = font; g.fillStyle = color; g.textAlign = 'left'; g.fillText(s, x, y); };
     shadow(true);
-    const date = d.date ? new Date(d.date + 'T12:00:00').toLocaleDateString(d.lang === 'en' ? 'en-GB' : 'da-DK', { weekday: 'long', day: 'numeric', month: 'long' }) : '';
-    let size = 124; g.font = `800 ${size}px ${FONT}`;
-    const title = d.title || t.walk;
+    const title = d.title || t.walk; let size = 124; g.font = `800 ${size}px ${FONT}`;
     while (g.measureText(title).width > W - 180 && size > 60) { size -= 6; g.font = `800 ${size}px ${FONT}`; }
     text(title, 90, 330, `800 ${size}px ${FONT}`, ink);
-    text(date, 92, 400, `500 44px ${FONT}`, soft);
-
-    // Route.
+    text(dateText(d), 92, 400, `500 44px ${FONT}`, soft);
     const pts = (d.points || []).length > 1 ? fit(d.points, { x: 150, y: 520, w: W - 300, h: 760 }) : [];
     if (pts.length) {
       const grad = g.createLinearGradient(150, 520, W - 150, 1280); grad.addColorStop(0, ORANGE[0]); grad.addColorStop(1, ORANGE[1]);
-      g.lineJoin = 'round'; g.lineCap = 'round';
-      const path = () => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); };
-      shadow(true); if (onPhoto) { path(); g.strokeStyle = 'rgba(255,255,255,.92)'; g.lineWidth = 26; g.stroke(); shadow(false); }
-      path(); g.strokeStyle = grad; g.lineWidth = 16; g.stroke(); shadow(false);
+      routePath(g, pts); g.strokeStyle = grad; g.lineWidth = 16; g.stroke(); shadow(false);
       const dot = (p, fill) => { g.beginPath(); g.arc(p[0], p[1], 19, 0, 7); g.fillStyle = fill; g.fill(); g.lineWidth = 8; g.strokeStyle = ORANGE[1]; g.stroke(); };
-      dot(pts[0], dark ? '#1d1f24' : '#ffffff'); dot(pts[pts.length - 1], ORANGE[1]);
+      dot(pts[0], '#ffffff'); dot(pts[pts.length - 1], ORANGE[1]);
     }
-
-    // Numbers.
     shadow(true);
-    const cols = [[t.dist, num(d.km, d.lang, 2), 'km'], [t.time, String(d.minutes || 0), t.min]];
-    const cw = (W - 180) / cols.length;
+    const cols = [[t.dist, num(d.km, d.lang, 2), 'km'], [t.time, String(d.minutes || 0), t.min]], cw = (W - 180) / cols.length;
     cols.forEach(([label, value, unit], i) => {
       const x = 90 + cw * i;
       text(label.toUpperCase(), x, 1440, `600 34px ${FONT}`, soft);
@@ -70,13 +122,12 @@
       text(value, x, 1556, `800 104px ${FONT}`, ink);
       text(unit, x + vw + 14, 1556, `600 44px ${FONT}`, soft);
     });
-
-    // Brand line.
-    g.fillStyle = ORANGE[1]; shadow(false); g.fillRect(90, 1660, 96, 10); shadow(true);
-    text('DOGMAN WALKING CLUB', 90, 1740, `800 50px ${FONT}`, ink);
-    text(t.tag + ' · dmw.cansasmaz.com', 90, 1800, `500 36px ${FONT}`, soft);
+    // Brand line with the logo.
+    const bx = logo ? 230 : 90;
+    if (logo) { g.save(); g.beginPath(); g.arc(150, 1730, 60, 0, 7); g.clip(); shadow(false); g.drawImage(logo, 90, 1670, 120, 120); g.restore(); shadow(true); }
+    text('DOGMAN WALKING CLUB', bx, 1724, `800 48px ${FONT}`, ink);
+    text(t.tag + ' · dmw.cansasmaz.com', bx, 1778, `500 ${logo ? 31 : 36}px ${FONT}`, soft);
     shadow(false);
-    return c;
   }
 
   const blob = (canvas) => new Promise((ok) => canvas.toBlob(ok, 'image/png'));
@@ -100,8 +151,9 @@
     const btn = (txt, primary) => { const b = el('button', `font:600 15px ${FONT};padding:11px 12px;border:0;border-radius:999px;box-shadow:none;cursor:pointer;flex:1;white-space:nowrap;${primary ? 'background:linear-gradient(135deg,#ffad5c,#f07a1e);color:#1d1d1f' : 'background:#33363d;color:#fff'}`, txt); b.type = 'button'; return b; };
     const row = () => el('div', 'display:flex;gap:8px;width:100%');
     if (d.photoUrl && !d.photo) { try { d.photo = await loadImage(d.photoUrl); } catch (e) { /* card without the photo */ } }
-    let style = d.photo ? 'photo' : 'clear', canvas = null;
-    const styles = row(), tabs = [...(d.photo ? ['photo'] : []), 'clear', 'light', 'dark'].map((s) => { const b = btn(t[s]); b.onclick = () => { style = s; paint(); }; styles.append(b); return [s, b]; });
+    await ready();
+    let style = 'soft', canvas = null;
+    const styles = row(), tabs = ['soft', 'dark', 'clear'].map((s) => { const b = btn(t[s]); b.onclick = () => { style = s; paint(); }; styles.append(b); return [s, b]; });
     function paint() {
       canvas = draw(d, style); canvas.style.cssText = 'height:100%;width:auto;max-width:100%;display:block';
       frame.replaceChildren(canvas);
@@ -128,5 +180,5 @@
   }
   // A photo file from the camera or gallery → { url (JPEG data URL, ≤ 1280 px), img }.
   async function photoFile(file) { const u = URL.createObjectURL(file); try { const url = jpeg(await loadImage(u), 1280); return { url, img: await loadImage(url) }; } finally { URL.revokeObjectURL(u); } }
-  window.WalkCard = { open, draw, share, jpeg, loadImage, photoFile };
+  window.WalkCard = { open, draw, ready, share, jpeg, loadImage, photoFile };
 })();
