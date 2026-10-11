@@ -1,5 +1,5 @@
 // Public club data for the home page: approved reviews (best first) and the gallery of dogs walked so far.
-// GET            → { reviews, avg, count, dogs, walks }   (walks = shapes of the latest walks, no location)
+// GET            → { reviews, avg, count, dogs, walks }   (walks = approved walk cards, newest first)
 // GET ?photo=ID  → the image (reviews and gallery)
 import * as s from './_store.js';
 
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
       reviews: ok.sort((a, b) => b.stars - a.stars || b.at.localeCompare(a.at)).slice(0, 9)
         .map(({ name, dog, stars, text, photo, avatar, at }) => ({ name, dog, stars, text, photo, avatar, at: at.slice(0, 10) })),
       dogs: dogs.map(({ id, name, breed, note, photo }) => ({ id, name, breed, note, photo })),
-      walks: walks.slice(0, 6).map(({ date, km, minutes, service, shape }) => ({ date, km, minutes, service, shape })),
+      walks: walks.filter((w) => w.ok && (w.card || w.shape)).slice(0, 6).map(({ date, km, minutes, service, shape, card, dog }) => ({ date, km, minutes, service, shape, card: card || '', dog: card ? dog : '' })),
     });
   } catch (e) { res.status(500).json({ error: 'server' }); }
 }

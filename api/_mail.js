@@ -175,3 +175,22 @@ export async function mailWithdrawal(w) {
   ]);
   return res.some(Boolean);
 }
+
+// The walk card is ready: the picture, the numbers and a link to the route map under "Mine ture".
+export async function mailCard(b, { date, km, minutes, card, dog }) {
+  if (!b.email) return false;
+  const en = b.lang === 'en', lang = en ? 'en' : 'da', loc = en ? 'en-GB' : 'da-DK';
+  const day = new Date(date + 'T12:00:00Z').toLocaleDateString(loc, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+  const dist = Number(km).toLocaleString(loc, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' km';
+  const name = dog || (en ? 'your dog' : 'din hund');
+  const head = en ? `${dog || 'Your dog'}'s walk card` : `Turkort: ${dog || 'din hund'}`;
+  const intro = en
+    ? `Here is the card from today's walk with ${name}. You can see the route on a map under "My walks". I may show the card on the front page of dmw.cansasmaz.com – just reply to this email if you would rather I did not.`
+    : `Her er kortet fra dagens tur med ${name}. Du kan se ruten på et kort under "Mine ture". Jeg viser måske kortet på forsiden af dmw.cansasmaz.com – svar bare på denne mail, hvis du helst vil være fri.`;
+  const table = [[en ? 'Date' : 'Dato', day], [en ? 'Distance' : 'Distance', dist], [en ? 'Time' : 'Tid', `${minutes} min`]];
+  const img = `${SITE}/api/club?photo=${card}`;
+  const extra = `<tr><td style="padding-top:20px" align="center"><img src="${img}" width="300" alt="${esc(head)}" style="display:block;width:300px;max-width:100%;height:auto;border-radius:18px"></td></tr>
+<tr><td style="padding-top:16px" align="center">${button(SITE + '/account/#reports', en ? 'See the route on the map' : 'Se ruten på kortet')}</td></tr>`;
+  const { html, text } = layout(head, intro, table, extra, lang);
+  return sendMail({ to: b.email, subject: en ? `${dog || 'Your dog'}: ${dist} in ${minutes} min – walk card` : `${dog || 'Din hund'}: ${dist} på ${minutes} min – turkort`, html, text: text + `\n\n${img}`, replyTo: ADMIN });
+}

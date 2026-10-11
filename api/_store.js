@@ -247,16 +247,30 @@ export function publicShape(points) {
   if (out[out.length - 1] !== xy[xy.length - 1]) out.push(xy[xy.length - 1]);
   return out.map((p) => [Math.round((p[0] - x0) * sc + (1000 - w * sc) / 2), Math.round((p[1] - y0) * sc + (1000 - h * sc) / 2)]);
 }
+// One entry per walk: { at, date, km, minutes, service, dog, shape, card, ok }. `card` is the finished picture
+// (the dog's photo with the route and the numbers on it); `ok` is set when the walker approves it for the home page.
 export const getShowcase = async () => Object.values(pairs(await cmd('HGETALL', 'showcase'))).map((v) => JSON.parse(v)).sort((a, b) => b.at - a.at);
-export const dropShowcase = async (bookingId) => { for (const k of Object.keys(pairs(await cmd('HGETALL', 'showcase')))) if (k.startsWith(bookingId + '|')) await cmd('HDEL', 'showcase', k); };
-// Puts a finished walk on the home page, or takes it off again. Returns whether it is shown now.
-export async function setShowcase(key, track, bk, on) {
-  const date = key.split('|')[1], shape = on && track.status === 'done' ? publicShape(track.points) : null;
-  if (shape) await cmd('HSET', 'showcase', key, JSON.stringify({ at: track.startedAt, date, km: Math.round(track.km * 10) / 10, minutes: track.minutes, service: bk.service, shape }));
-  else await cmd('HDEL', 'showcase', key);
-  if (bk.walks?.[date]) { bk.walks[date].pub = !!shape; await saveBooking(bk); }
-  return !!shape;
+export const dogNames = (bk) => (bk.petList || []).map((p) => p.name).filter(Boolean).join(' & ') || bk.dog || '';
+async function showcaseEntry(key, track, bk) {
+  const v = await cmd('HGET', 'showcase', key), old = v ? JSON.parse(v) : {};
+  return { ok: false, ...old, at: track.startedAt, date: key.split('|')[1], km: Math.round(track.km * 10) / 10, minutes: track.minutes,
+    service: bk.service, dog: dogNames(bk), shape: publicShape(track.points), card: track.card || '' };
 }
+// Stores the card picture for a finished walk. It waits for approval; an approved walk keeps its approval.
+export async function saveCard(key, track, bk) {
+  const e = await showcaseEntry(key, track, bk);
+  await cmd('HSET', 'showcase', key, JSON.stringify(e));
+  return e;
+}
+// Approves a finished walk for the home page, or takes it off again. Returns whether it is shown now.
+export async function setShowcase(key, track, bk, on) {
+  const date = key.split('|')[1], e = await showcaseEntry(key, track, bk);
+  e.ok = !!on && track.status === 'done' && !!(e.card || e.shape);
+  await cmd('HSET', 'showcase', key, JSON.stringify(e));
+  if (bk.walks?.[date]) { bk.walks[date].pub = e.ok; await saveBooking(bk); }
+  return e.ok;
+}
+export const dropShowcase = async (bookingId) => { for (const k of Object.keys(pairs(await cmd('HGETALL', 'showcase')))) if (k.startsWith(bookingId + '|')) await cmd('HDEL', 'showcase', k); };
 
 // Ends a walk: summary on the booking, stats + badges on the customer.
 // An imported route (GPX) brings its own end time and gets no weather lookup (the weather is only known "now").

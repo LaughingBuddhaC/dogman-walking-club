@@ -15,7 +15,7 @@ async function me(user) {
   const bookings = all.filter((b) => s.lastDate(b) >= t)
     .map(({ id, service, plan, date, end, dates, weekdays, time, minutes, pets, petList, freq, status, estimate, meet }) => ({ id, service, plan, date, end, dates, weekdays, time, minutes, pets, petList, freq, status, estimate, meet }));
   // GPS walk reports (newest first) and a walk in progress, if any.
-  const reports = all.flatMap((b) => Object.entries(b.walks || {}).map(([date, w]) => ({ key: w.key, date, km: w.km, minutes: w.minutes, service: b.service })))
+  const reports = all.flatMap((b) => Object.entries(b.walks || {}).map(([date, w]) => ({ key: w.key, date, km: w.km, minutes: w.minutes, service: b.service, photo: w.photo || '', card: w.card || '' })))
     .sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30);
   const live = all.filter((b) => b.live).map((b) => ({ key: b.live, service: b.service }));
   const premium = s.isPremium(user, await s.getConfig());

@@ -43,7 +43,8 @@ a{color:var(--accent)}
 .seg button[aria-pressed="true"]{box-shadow:var(--inset-sm);color:var(--accent)}
 ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
 details summary{cursor:pointer;font-weight:600}
-.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}.check input{width:20px;height:20px;flex:none;margin-top:2px;box-shadow:none;accent-color:#f07a1e}
+.prev{width:min(260px,100%);aspect-ratio:9/16;border-radius:18px;overflow:hidden;box-shadow:var(--raise-sm);align-self:center;background:#1d1f24}.prev canvas{width:100%;height:100%;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button.sm{font-size:.9rem;padding:9px 14px}
 .btn.sm{display:inline-block;margin-top:8px;font-size:.9rem;padding:9px 14px}
 </style>
@@ -59,6 +60,7 @@ button.sm{font-size:.9rem;padding:9px 14px}
     <div id="map"></div>
     <p class="small" id="a-note"></p>
     <a class="btn" id="ot-move" hidden>Set OwnTracks to Move ↗</a>
+    <button type="button" id="a-photo">📷 Photo of the dog for the card</button>
     <button class="stop" type="button" id="stop">Finish walk</button>
   </section>
 
@@ -78,10 +80,6 @@ button.sm{font-size:.9rem;padding:9px 14px}
       </details>
     </div>
     <div class="card" style="margin-top:20px">
-      <h2>Home page</h2>
-      <label class="check"><input type="checkbox" id="show"><span>Show finished walks on the home page<br><span class="small">Only the shape of the route, the distance and the time – no map, no address, no names. The first and last 150 m are cut off.</span></span></label>
-    </div>
-    <div class="card" style="margin-top:20px">
       <h2>Recorded with another app?</h2>
       <p class="small">Tap <b>Import GPX</b> on a booking to add a route you recorded elsewhere. From Strava: open the activity on strava.com → ⋯ → <b>Export GPX</b>.</p>
       <input type="file" id="gpx" accept=".gpx,application/gpx+xml,application/xml,text/xml" hidden>
@@ -89,7 +87,16 @@ button.sm{font-size:.9rem;padding:9px 14px}
   </section>
 
   <section id="done" class="card" hidden>
-    <h2>Walk saved ✓</h2><div id="done-text"></div><button class="p" type="button" id="done-card">Share route card</button><a class="btn" id="ot-quiet" hidden>Set OwnTracks to Quiet ↗ (saves battery)</a><button type="button" id="back">Back to the list</button>
+    <h2 id="done-title">Walk saved ✓</h2><div id="done-text"></div><a class="btn" id="ot-quiet" hidden>Set OwnTracks to Quiet ↗ (saves battery)</a>
+    <h2 style="margin-top:8px">Walk card</h2>
+    <div class="prev" id="c-prev"></div>
+    <div class="two"><button type="button" id="c-cam">📷 Take photo</button><button type="button" id="c-pick">Choose photo</button></div>
+    <input type="file" id="f-cam" accept="image/*" capture="environment" hidden><input type="file" id="f-pick" accept="image/*" hidden>
+    <button class="p" type="button" id="c-save">Save card &amp; notify the owner</button>
+    <div class="small" id="c-state" role="status"></div>
+    <div class="two"><button type="button" id="c-share">Share</button><button type="button" id="c-pub" disabled>Publish on home page</button></div>
+    <p class="small">The card is saved with the walk and emailed to the owner once. It only appears on the home page after you tap <b>Publish</b>.</p>
+    <button type="button" id="back">Back to the list</button>
   </section>
   <section id="install" class="card" hidden>
     <b>📲 Put Walk mode on your home screen</b>
@@ -106,17 +113,43 @@ let pw='';try{pw=sessionStorage.getItem('pw')||''}catch(e){}
 const NAMES={walk:'Dog walk',visit1:'Home visit',visit2:'2 visits a day',daycare:'Day care',boarding:'Boarding',housesit:'House sitting',visit:'Home visit'};
 const A={data:null,day:null,key:null,booking:null,watch:null,buf:[],pts:[],started:0,timer:0,flush:0,lock:null,map:null,line:null,me:null,src:'phone',ot:null};
 try{A.src=localStorage.getItem('walk-src')||'phone'}catch(e){}
-// Finished walks go on the home page (shape only) unless this is switched off.
-A.show=true;try{A.show=localStorage.getItem('walk-show')!=='0'}catch(e){}
-$('show').checked=A.show;$('show').onchange=()=>{A.show=$('show').checked;try{localStorage.setItem('walk-show',A.show?'1':'0')}catch(e){}};
-async function card(key){try{const j=await api('/api/track?key='+encodeURIComponent(key));await WalkCard.open({points:j.points,km:j.km,minutes:j.minutes,date:j.date,title:j.dogs,lang:'da'})}catch(e){$('msg').textContent='Could not load the route: '+e.message}}
+// ---- Walk card: the dog's photo with the route and the numbers on it ----
+// Saved with the walk (photo + finished picture), emailed to the owner once, and shown on the home page only after Publish.
+const C={key:null,j:null,img:null,newPhoto:null,canvas:null};
+// A photo taken during the walk waits here (and in localStorage, in case the page reloads) until the walk is finished.
+let pending=null;try{pending=localStorage.getItem('walk-photo')||null}catch(e){}
+const setPending=(u)=>{pending=u;try{u?localStorage.setItem('walk-photo',u):localStorage.removeItem('walk-photo')}catch(e){}$('a-photo').textContent=u?'📷 Photo taken ✓ (tap to retake)':'📷 Photo of the dog for the card'};
+function paintCard(){const j=C.j;C.canvas=WalkCard.draw({points:j.points,km:j.km,minutes:j.minutes,date:j.date,title:j.dogs,lang:'da',photo:C.img},C.img?'photo':'dark');$('c-prev').replaceChildren(C.canvas);
+  $('c-save').textContent=j.card?(C.newPhoto?'Save the new photo':'Save card again'):(j.mailed?'Save card':'Save card & notify the owner');
+  $('c-pub').disabled=!j.card;$('c-pub').textContent=j.pub?'On home page ✓ (remove)':'Publish on home page';$('c-pub').setAttribute('aria-pressed',String(!!j.pub))}
+async function openCard(key,finished){$('msg').textContent='';$('c-state').textContent='';
+  try{const j=await api('/api/track?key='+encodeURIComponent(key));Object.assign(C,{key,j,img:null,newPhoto:null});
+    if(finished&&pending){C.newPhoto=pending;C.img=await WalkCard.loadImage(pending)}else if(j.photo){try{C.img=await WalkCard.loadImage('/api/club?photo='+j.photo)}catch(e){}}
+    $('list').hidden=true;$('active').hidden=true;$('done').hidden=false;$('done-title').hidden=!finished;$('done-text').hidden=!finished;$('ot-quiet').hidden=!finished||A.src!=='ot';
+    if(!j.card)$('c-state').textContent=C.img?'Not saved yet – tap Save.':'Add a photo of the dog, then save.';paintCard();scrollTo(0,0)}
+  catch(e){$('msg').textContent='Could not load the walk card: '+e.message;if($('list').hidden){A.data=null;load()}}}
+async function gotPhoto(input){const f=input.files[0];input.value='';if(!f)return null;try{return await WalkCard.photoFile(f)}catch(e){$('msg').textContent='Could not read that photo.';return null}}
+$('c-cam').onclick=()=>$('f-cam').click();$('c-pick').onclick=()=>$('f-pick').click();
+// The same two file inputs serve the card editor and the photo button shown during a walk.
+for(const id of ['f-cam','f-pick'])$(id).onchange=async()=>{const p=await gotPhoto($(id));if(!p||!p.url)return;
+  if(!$('active').hidden){setPending(p.url);return}C.newPhoto=p.url;C.img=p.img;$('c-state').textContent='New photo – tap Save.';paintCard()};
+$('a-photo').onclick=()=>$('f-cam').click();
+$('c-save').onclick=async()=>{const b=$('c-save');b.disabled=true;$('c-state').textContent='Saving…';
+  try{const card=WalkCard.jpeg(C.canvas,1280);if(!card)throw new Error('photo');
+    const r=await api('/api/track',{action:'card',key:C.key,card,photo:C.newPhoto||undefined});Object.assign(C.j,{card:r.card,photo:r.photo,pub:r.pub});
+    $('c-state').textContent='Saved ✓ · '+(r.mailed?(C.j.mailed?'the owner already got the email for this walk.':'the owner got an email with the card.'):r.hasEmail?'no email was sent – check the mail status in Admin.':'this booking has no email address, so nobody was notified.')+(r.pub?'':' Not on the home page until you publish it.');
+    C.j.mailed=r.mailed;C.newPhoto=null;setPending(null)}
+  catch(e){$('c-state').textContent=e.message==='photo'?'The picture is too large to save – try another photo.':'Could not save: '+e.message}
+  b.disabled=false;paintCard()};
+$('c-pub').onclick=async()=>{const b=$('c-pub');b.disabled=true;try{const r=await api('/api/track',{action:'show',key:C.key,on:!C.j.pub});C.j.pub=r.pub;$('c-state').textContent=r.pub?'Published – it is on the home page now.':'Removed from the home page.'}catch(e){$('c-state').textContent='Could not change it: '+e.message}paintCard()};
+$('c-share').onclick=()=>WalkCard.share(C.canvas,{date:C.j.date});
 // GPX file → [lat, lon, ms, accuracy]; long files are thinned to 1500 points.
 function parseGpx(text){const doc=new DOMParser().parseFromString(text,'application/xml');
   let pts=[...doc.getElementsByTagName('trkpt')].map(n=>[Number(n.getAttribute('lat')),Number(n.getAttribute('lon')),Date.parse(n.getElementsByTagName('time')[0]?.textContent||''),5]).filter(p=>isFinite(p[0])&&isFinite(p[1]));
   if(!pts.length)throw new Error('No route found in this file.');if(pts.some(p=>!isFinite(p[2])))throw new Error('This GPX has no times, so the duration is unknown.');
   const step=Math.ceil(pts.length/1500);if(step>1)pts=pts.filter((p,i)=>i%step===0||i===pts.length-1);return pts}
 let gpxFor=null;$('gpx').onchange=async()=>{const f=$('gpx').files[0],b=gpxFor;$('gpx').value='';if(!f||!b)return;$('msg').textContent='';
-  try{const pts=parseGpx(await f.text());await api('/api/track',{action:'import',booking:b.id,date:A.day,pts,show:A.show});A.data=await api('/api/admin');renderList()}
+  try{const pts=parseGpx(await f.text());const r=await api('/api/track',{action:'import',booking:b.id,date:A.day,pts});A.data=await api('/api/admin');openCard(r.key)}
   catch(e){$('msg').textContent=e.message==='exists'?'This booking already has a route for that day.':e.message==='points'?'The file has no usable route.':'Import failed: '+e.message}};
 const iso=(d)=>d.toISOString().slice(0,10);
 const addD=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return iso(d)};
@@ -152,10 +185,8 @@ function renderList(){
     if(pf.vet)c.append(el('div','small','Vet: '+pf.vet));if(pf.emergency)c.append(el('div','small','Emergency contact: '+pf.emergency));
     if(b.notes)c.append(el('div','small','“'+b.notes+'”'));if(b.meet)c.append(el('div','small','Wants a free meet & greet first'));
     const w=b.walks&&b.walks[A.day];
-    if(w){c.append(el('div','small','✓ Walked '+w.km+' km in '+w.minutes+' min'));const r=el('div','row'),cb=el('button','sm','Route card'),hb=el('button','sm',w.pub?'On home page ✓':'Add to home page');cb.type=hb.type='button';
-      cb.onclick=()=>card(w.key);hb.setAttribute('aria-pressed',String(!!w.pub));
-      hb.onclick=async()=>{hb.disabled=true;try{const j=await api('/api/track',{action:'show',key:w.key,on:!w.pub});if(!j.pub&&!w.pub)$('msg').textContent='This walk is too short to show without revealing the address.';w.pub=j.pub}catch(e){$('msg').textContent='Could not change it: '+e.message}renderList()};
-      r.append(cb,hb);c.append(r)}
+    if(w){c.append(el('div','small','✓ Walked '+w.km+' km in '+w.minutes+' min'));const r=el('div','row'),cb=el('button','sm',w.card?'Walk card':'Make walk card');cb.type='button';cb.onclick=()=>openCard(w.key);
+      r.append(cb,el('span','pill',w.pub?'on home page':w.card?'waiting for your approval':'no card yet'));c.append(r)}
     else{const s=el('button','p',b.live===b.id+'|'+A.day?'Resume tracking':'Start walk');s.type='button';s.onclick=()=>start(b);const g=el('button','sm','Import GPX');g.type='button';g.onclick=()=>{gpxFor=b;$('gpx').click()};c.append(s,g)}
     return c}):[el('p','small','No bookings this day.')]))}
 async function load(){try{A.data=await api('/api/admin');try{sessionStorage.setItem('pw',pw)}catch(e){}$('login').hidden=true;
@@ -199,13 +230,12 @@ function track(){
   clearInterval(A.flush);A.flush=setInterval(flush,15000)}
 $('stop').onclick=async()=>{const b=$('stop');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to finish';setTimeout(()=>{delete b.dataset.sure;b.textContent='Finish walk'},4000);return}
   b.disabled=true;if(A.watch!=null)navigator.geolocation.clearWatch(A.watch);A.watch=null;clearInterval(A.timer);clearInterval(A.flush);
-  try{const pts=A.buf.splice(0);const r=await api('/api/track',{action:'stop',key:A.key,pts,show:A.show});const doneKey=A.key;$('done-card').onclick=()=>card(doneKey);
+  try{const pts=A.buf.splice(0);const r=await api('/api/track',{action:'stop',key:A.key,pts});const doneKey=A.key;
     try{localStorage.removeItem('walk-active')}catch(e){}try{A.lock&&A.lock.release()}catch(e){}
-    $('active').hidden=true;$('done').hidden=false;$('ot-quiet').hidden=A.src!=='ot';
-    $('done-text').textContent=r.km+' km in '+r.minutes+' min'+(r.weather?.rain?' · rain 🌧':'')+(r.weather?.snow?' · snow ❄':'')+'. The owner can see the route report now.'+(r.pub?' Its shape is on the home page.':'');
-    A.key=null;A.booking=null;A.pts=[];A.line&&A.line.setLatLngs([])}
+    $('done-text').textContent=r.km+' km in '+r.minutes+' min'+(r.weather?.rain?' · rain 🌧':'')+(r.weather?.snow?' · snow ❄':'')+'. The owner can see the route report now.';
+    A.key=null;A.booking=null;A.pts=[];A.line&&A.line.setLatLngs([]);b.disabled=false;b.textContent='Finish walk';delete b.dataset.sure;await openCard(doneKey,true)}
   catch(e){$('msg').textContent='Could not save – check the connection and try again.';b.disabled=false;b.textContent='Finish walk';delete b.dataset.sure}};
-$('back').onclick=()=>{A.data=null;load()};
+$('back').onclick=()=>{A.data=null;load()};setPending(pending);
 $('prev-day').onclick=()=>{A.day=addD(A.day,-1);renderList()};$('next-day').onclick=()=>{A.day=addD(A.day,1);renderList()};
 $('login').onsubmit=(e)=>{e.preventDefault();pw=$('pw').value;$('msg').textContent='';load()};
 if(pw)load();else $('login').hidden=false;

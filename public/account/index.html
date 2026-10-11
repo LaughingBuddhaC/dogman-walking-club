@@ -111,6 +111,7 @@ h1{font-size:clamp(2.2rem,6vw,3.2rem);font-weight:800;line-height:1.05;margin-to
 .rep{border-radius:22px;box-shadow:var(--raise);padding:16px 18px;margin-bottom:14px;display:flex;flex-direction:column;gap:10px}
 .rep-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .rep-map{height:260px;border-radius:16px;box-shadow:var(--inset-sm)}
+.rep-card{width:min(220px,100%);height:auto;aspect-ratio:9/16;object-fit:cover;border-radius:16px;box-shadow:var(--raise-sm);display:block}
 .live{border-radius:22px;padding:16px 18px;margin-bottom:16px;box-shadow:var(--inset-sm);display:flex;flex-direction:column;gap:10px}
 .live .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#d9442b;margin-right:8px;animation:blink 1.2s infinite}
 @keyframes blink{50%{opacity:.25}}
@@ -349,8 +350,10 @@ function renderReports(){
     const b=el('button','btn sm',t('seeRoute'));b.type='button';const m=el('div','rep-map');m.hidden=true;
     b.onclick=async()=>{m.hidden=!m.hidden;b.textContent=t(m.hidden?'seeRoute':'hideRoute');if(!m.hidden){if(!m._map)await drawRoute(m,rp.key);setTimeout(()=>m._map&&m._map.invalidateSize(),50)}};
     const sh=el('button','btn sm',t('shareCard'));sh.type='button';
-    sh.onclick=async()=>{sh.disabled=true;try{const j=await (await fetch('/api/track?key='+encodeURIComponent(rp.key))).json();if(j.points)await WalkCard.open({points:j.points,km:j.km,minutes:j.minutes,date:rp.date,title:j.dogs,lang})}catch(e){flash(t('eServer'))}sh.disabled=false};
-    const btns=el('div');btns.style.cssText='display:flex;gap:8px;flex-wrap:wrap';btns.append(b,sh);head.append(left,btns);c.append(head,m);return c}))}
+    sh.onclick=async()=>{sh.disabled=true;try{const j=await (await fetch('/api/track?key='+encodeURIComponent(rp.key))).json();if(j.points)await WalkCard.open({points:j.points,km:j.km,minutes:j.minutes,date:rp.date,title:j.dogs,lang,photoUrl:rp.photo?'/api/club?photo='+rp.photo:''})}catch(e){flash(t('eServer'))}sh.disabled=false};
+    const btns=el('div');btns.style.cssText='display:flex;gap:8px;flex-wrap:wrap';btns.append(b,sh);head.append(left,btns);c.append(head);
+    if(rp.card){const i=el('img','rep-card');i.src='/api/club?photo='+rp.card;i.loading='lazy';i.width=720;i.height=1280;i.alt=t('shareCard');c.append(i)}
+    c.append(m);return c}))}
 function render(){
   document.documentElement.lang=lang;
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));

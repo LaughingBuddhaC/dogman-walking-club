@@ -2,11 +2,14 @@
 // Walker (admin password): POST {action:'start', booking, date} → POST {action:'points', key, pts:[[lat,lon,ms,acc],…]} → POST {action:'stop', key}
 // Points can also arrive from the OwnTracks phone app (api/owntracks.js), which keeps tracking with the screen off.
 // Walker, a route recorded elsewhere: POST {action:'import', booking, date, pts} (GPX file read in the browser).
-// Walker: POST {action:'show', key, on} puts a finished walk's shape on the home page or takes it off.
+// Walker, after the walk: POST {action:'card', key, photo?, card} stores the dog's photo and the finished card picture
+// (both JPEG data URLs made in the browser) and emails the card to the owner once.
+// Walker: POST {action:'show', key, on} approves the card for the home page or takes it off.
 // Owner (signed in) or admin: GET ?key=bookingId|YYYY-MM-DD → route + summary. A walk in progress is only
 // visible live to premium members (and the admin); everyone else gets the report when it ends.
 import crypto from 'node:crypto';
 import * as s from './_store.js';
+import { mailCard } from './_mail.js';
 
 const PASS = process.env.ADMIN_PASSWORD || (s.hasDb || process.env.VERCEL ? '' : 'dev');
 function isAdmin(req) {
@@ -38,8 +41,8 @@ export default async function handler(req, res) {
       }
       const km = track.status === 'live' ? s.routeKm(track.points) : track.km;
       const date = key.split('|')[1];
-      return res.status(200).json({ status: track.status, date, service: bk.service, pub: !!bk.walks?.[date]?.pub,
-        dogs: (bk.petList || []).map((p) => p.name).filter(Boolean).join(' & ') || bk.dog || '', startedAt: track.startedAt, endedAt: track.endedAt || null, km,
+      return res.status(200).json({ status: track.status, date, service: bk.service, pub: !!bk.walks?.[date]?.pub, mailed: !!bk.walks?.[date]?.mailed,
+        photo: track.photo || '', card: track.card || '', dogs: s.dogNames(bk), startedAt: track.startedAt, endedAt: track.endedAt || null, km,
         minutes: track.minutes || Math.round((Date.now() - track.startedAt) / 60000), weather: track.weather || null,
         last: track.points.length ? track.points[track.points.length - 1][2] : null,
         points: track.points.filter((p) => p[3] <= 40).map((p) => [p[0], p[1]]) });
@@ -70,8 +73,7 @@ export default async function handler(req, res) {
       const startedAt = points[0][2], endedAt = points[points.length - 1][2];
       if (endedAt > Date.now() + 60e3 || endedAt - startedAt > 12 * 3600e3) return res.status(400).json({ error: 'points' });
       const done = await s.finishTrack(key, { status: 'live', startedAt, points, imported: true }, bk, { endedAt, weather: false });
-      const pub = await s.setShowcase(key, done, await s.getBooking(bk.id), !!b.show);
-      return res.status(200).json({ key, km: done.km, minutes: done.minutes, pub });
+      return res.status(200).json({ key, km: done.km, minutes: done.minutes });
     }
     const key = String(b.key || '');
     if (!validKey(key)) return res.status(400).json({ error: 'key' });
@@ -88,8 +90,24 @@ export default async function handler(req, res) {
       track.points = s.mergePoints(track.points, cleanPts(b.pts));
       const bk = await s.getBooking(key.split('|')[0]);
       const done = await s.finishTrack(key, track, bk);
-      const pub = await s.setShowcase(key, done, await s.getBooking(bk.id), !!b.show);
-      return res.status(200).json({ km: done.km, minutes: done.minutes, weather: done.weather, pub });
+      return res.status(200).json({ km: done.km, minutes: done.minutes, weather: done.weather });
+    }
+    if (b.action === 'card') {
+      if (track.status !== 'done') return res.status(409).json({ error: 'live' });
+      const bk = await s.getBooking(key.split('|')[0]), date = key.split('|')[1], w = bk?.walks?.[date];
+      if (!w) return res.status(404).json({ error: 'booking' });
+      const photo = b.photo ? await s.savePhoto(b.photo) : track.photo || '';
+      const card = await s.savePhoto(b.card);
+      if (!card || (b.photo && !photo)) { if (b.photo) await s.deletePhoto(photo); await s.deletePhoto(card); return res.status(400).json({ error: 'photo' }); }
+      if (b.photo) await s.deletePhoto(track.photo);
+      await s.deletePhoto(track.card);
+      track.photo = photo; track.card = card; await s.saveTrack(key, track);
+      const entry = await s.saveCard(key, track, bk);
+      w.photo = photo; w.card = card;
+      // The owner hears about it once – saving the card again (a better photo) does not send another email.
+      if (!w.mailed && bk.email && (await mailCard(bk, { date, km: track.km, minutes: track.minutes, card, dog: s.dogNames(bk) }))) w.mailed = new Date().toISOString();
+      await s.saveBooking(bk);
+      return res.status(200).json({ photo, card, pub: entry.ok, mailed: !!w.mailed, hasEmail: !!bk.email });
     }
     if (b.action === 'show') {
       if (track.status !== 'done') return res.status(409).json({ error: 'live' });
