@@ -45,6 +45,8 @@ a{color:var(--accent)}
 .seg button[aria-pressed="true"]{box-shadow:var(--inset-sm);color:var(--accent)}
 ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
 details summary{cursor:pointer;font-weight:600}
+.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}.check input{width:20px;height:20px;flex:none;margin-top:2px;box-shadow:none;accent-color:#f07a1e}
+button.sm{font-size:.9rem;padding:9px 14px}
 .btn.sm{display:inline-block;margin-top:8px;font-size:.9rem;padding:9px 14px}
 </style>
 <main>
@@ -77,10 +79,19 @@ details summary{cursor:pointer;font-weight:600}
         </ol>
       </details>
     </div>
+    <div class="card" style="margin-top:20px">
+      <h2>Home page</h2>
+      <label class="check"><input type="checkbox" id="show"><span>Show finished walks on the home page<br><span class="small">Only the shape of the route, the distance and the time – no map, no address, no names. The first and last 150 m are cut off.</span></span></label>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <h2>Recorded with another app?</h2>
+      <p class="small">Tap <b>Import GPX</b> on a booking to add a route you recorded elsewhere. From Strava: open the activity on strava.com → ⋯ → <b>Export GPX</b>.</p>
+      <input type="file" id="gpx" accept=".gpx,application/gpx+xml,application/xml,text/xml" hidden>
+    </div>
   </section>
 
   <section id="done" class="card" hidden>
-    <h2>Walk saved ✓</h2><div id="done-text"></div><a class="btn" id="ot-quiet" hidden>Set OwnTracks to Quiet ↗ (saves battery)</a><button type="button" id="back">Back to the list</button>
+    <h2>Walk saved ✓</h2><div id="done-text"></div><button class="p" type="button" id="done-card">Share route card</button><a class="btn" id="ot-quiet" hidden>Set OwnTracks to Quiet ↗ (saves battery)</a><button type="button" id="back">Back to the list</button>
   </section>
   <section id="install" class="card" hidden>
     <b>📲 Put Walk mode on your home screen</b>
@@ -89,6 +100,7 @@ details summary{cursor:pointer;font-weight:600}
   </section>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="/js/walkcard.js"></script>
 <script>
 const $=(id)=>document.getElementById(id);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
@@ -96,6 +108,18 @@ let pw='';try{pw=sessionStorage.getItem('pw')||''}catch(e){}
 const NAMES={walk:'Dog walk',visit1:'Home visit',visit2:'2 visits a day',daycare:'Day care',boarding:'Boarding',housesit:'House sitting',visit:'Home visit'};
 const A={data:null,day:null,key:null,booking:null,watch:null,buf:[],pts:[],started:0,timer:0,flush:0,lock:null,map:null,line:null,me:null,src:'phone',ot:null};
 try{A.src=localStorage.getItem('walk-src')||'phone'}catch(e){}
+// Finished walks go on the home page (shape only) unless this is switched off.
+A.show=true;try{A.show=localStorage.getItem('walk-show')!=='0'}catch(e){}
+$('show').checked=A.show;$('show').onchange=()=>{A.show=$('show').checked;try{localStorage.setItem('walk-show',A.show?'1':'0')}catch(e){}};
+async function card(key){try{const j=await api('/api/track?key='+encodeURIComponent(key));await WalkCard.open({points:j.points,km:j.km,minutes:j.minutes,date:j.date,title:j.dogs,lang:'da'})}catch(e){$('msg').textContent='Could not load the route: '+e.message}}
+// GPX file → [lat, lon, ms, accuracy]; long files are thinned to 1500 points.
+function parseGpx(text){const doc=new DOMParser().parseFromString(text,'application/xml');
+  let pts=[...doc.getElementsByTagName('trkpt')].map(n=>[Number(n.getAttribute('lat')),Number(n.getAttribute('lon')),Date.parse(n.getElementsByTagName('time')[0]?.textContent||''),5]).filter(p=>isFinite(p[0])&&isFinite(p[1]));
+  if(!pts.length)throw new Error('No route found in this file.');if(pts.some(p=>!isFinite(p[2])))throw new Error('This GPX has no times, so the duration is unknown.');
+  const step=Math.ceil(pts.length/1500);if(step>1)pts=pts.filter((p,i)=>i%step===0||i===pts.length-1);return pts}
+let gpxFor=null;$('gpx').onchange=async()=>{const f=$('gpx').files[0],b=gpxFor;$('gpx').value='';if(!f||!b)return;$('msg').textContent='';
+  try{const pts=parseGpx(await f.text());await api('/api/track',{action:'import',booking:b.id,date:A.day,pts,show:A.show});A.data=await api('/api/admin');renderList()}
+  catch(e){$('msg').textContent=e.message==='exists'?'This booking already has a route for that day.':e.message==='points'?'The file has no usable route.':'Import failed: '+e.message}};
 const iso=(d)=>d.toISOString().slice(0,10);
 const addD=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return iso(d)};
 const save=()=>{try{localStorage.setItem('walk-active',JSON.stringify({key:A.key,booking:A.booking,started:A.started,src:A.src,buf:A.buf,pts:A.pts.slice(-500)}))}catch(e){}};
@@ -130,8 +154,11 @@ function renderList(){
     if(pf.vet)c.append(el('div','small','Vet: '+pf.vet));if(pf.emergency)c.append(el('div','small','Emergency contact: '+pf.emergency));
     if(b.notes)c.append(el('div','small','“'+b.notes+'”'));if(b.meet)c.append(el('div','small','Wants a free meet & greet first'));
     const w=b.walks&&b.walks[A.day];
-    if(w)c.append(el('div','small','✓ Walked '+w.km+' km in '+w.minutes+' min'));
-    else{const s=el('button','p',b.live===b.id+'|'+A.day?'Resume tracking':'Start walk');s.type='button';s.onclick=()=>start(b);c.append(s)}
+    if(w){c.append(el('div','small','✓ Walked '+w.km+' km in '+w.minutes+' min'));const r=el('div','row'),cb=el('button','sm','Route card'),hb=el('button','sm',w.pub?'On home page ✓':'Add to home page');cb.type=hb.type='button';
+      cb.onclick=()=>card(w.key);hb.setAttribute('aria-pressed',String(!!w.pub));
+      hb.onclick=async()=>{hb.disabled=true;try{const j=await api('/api/track',{action:'show',key:w.key,on:!w.pub});if(!j.pub&&!w.pub)$('msg').textContent='This walk is too short to show without revealing the address.';w.pub=j.pub}catch(e){$('msg').textContent='Could not change it: '+e.message}renderList()};
+      r.append(cb,hb);c.append(r)}
+    else{const s=el('button','p',b.live===b.id+'|'+A.day?'Resume tracking':'Start walk');s.type='button';s.onclick=()=>start(b);const g=el('button','sm','Import GPX');g.type='button';g.onclick=()=>{gpxFor=b;$('gpx').click()};c.append(s,g)}
     return c}):[el('p','small','No bookings this day.')]))}
 async function load(){try{A.data=await api('/api/admin');try{sessionStorage.setItem('pw',pw)}catch(e){}$('login').hidden=true;
     if(!A.day)A.day=A.data.today;
@@ -174,10 +201,10 @@ function track(){
   clearInterval(A.flush);A.flush=setInterval(flush,15000)}
 $('stop').onclick=async()=>{const b=$('stop');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to finish';setTimeout(()=>{delete b.dataset.sure;b.textContent='Finish walk'},4000);return}
   b.disabled=true;if(A.watch!=null)navigator.geolocation.clearWatch(A.watch);A.watch=null;clearInterval(A.timer);clearInterval(A.flush);
-  try{const pts=A.buf.splice(0);const r=await api('/api/track',{action:'stop',key:A.key,pts});
+  try{const pts=A.buf.splice(0);const r=await api('/api/track',{action:'stop',key:A.key,pts,show:A.show});const doneKey=A.key;$('done-card').onclick=()=>card(doneKey);
     try{localStorage.removeItem('walk-active')}catch(e){}try{A.lock&&A.lock.release()}catch(e){}
     $('active').hidden=true;$('done').hidden=false;$('ot-quiet').hidden=A.src!=='ot';
-    $('done-text').textContent=r.km+' km in '+r.minutes+' min'+(r.weather?.rain?' · rain 🌧':'')+(r.weather?.snow?' · snow ❄':'')+'. The owner can see the route report now.';
+    $('done-text').textContent=r.km+' km in '+r.minutes+' min'+(r.weather?.rain?' · rain 🌧':'')+(r.weather?.snow?' · snow ❄':'')+'. The owner can see the route report now.'+(r.pub?' Its shape is on the home page.':'');
     A.key=null;A.booking=null;A.pts=[];A.line&&A.line.setLatLngs([])}
   catch(e){$('msg').textContent='Could not save – check the connection and try again.';b.disabled=false;b.textContent='Finish walk';delete b.dataset.sure}};
 $('back').onclick=()=>{A.data=null;load()};

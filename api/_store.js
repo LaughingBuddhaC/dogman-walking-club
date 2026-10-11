@@ -230,13 +230,42 @@ async function weatherNow(lat, lon) {
     return { rain: (c.rain || 0) > 0 || (c.precipitation || 0) > 0.1, snow: (c.snowfall || 0) > 0 };
   } catch { return { rain: false, snow: false }; }
 }
+// ---- Home-page showcase: the shape of a finished walk, with nothing that says where it was ----
+// The first and last 150 m are cut off (the customer's door), coordinates are replaced by a 0–1000 drawing
+// grid, and no name, address or time of day is kept.
+export function publicShape(points) {
+  const pts = points.filter((p) => p[3] <= 40);
+  const trim = (arr) => { let d = 0, i = 0; while (i < arr.length - 1 && d < 150) { d += hav(arr[i], arr[i + 1]); i++; } return arr.slice(i); };
+  const core = trim(trim(pts).reverse()).reverse();
+  let len = 0; for (let i = 1; i < core.length; i++) len += hav(core[i - 1], core[i]);
+  if (core.length < 8 || len < 300) return null;
+  const k = Math.cos((core[0][0] * Math.PI) / 180), xy = core.map((p) => [p[1] * k, -p[0]]);
+  const xs = xy.map((p) => p[0]), ys = xy.map((p) => p[1]);
+  const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, h = Math.max(...ys) - y0, sc = 1000 / Math.max(w, h, 1e-9);
+  const step = Math.ceil(xy.length / 160), out = [];
+  for (let i = 0; i < xy.length; i += step) out.push(xy[i]);
+  if (out[out.length - 1] !== xy[xy.length - 1]) out.push(xy[xy.length - 1]);
+  return out.map((p) => [Math.round((p[0] - x0) * sc + (1000 - w * sc) / 2), Math.round((p[1] - y0) * sc + (1000 - h * sc) / 2)]);
+}
+export const getShowcase = async () => Object.values(pairs(await cmd('HGETALL', 'showcase'))).map((v) => JSON.parse(v)).sort((a, b) => b.at - a.at);
+export const dropShowcase = async (bookingId) => { for (const k of Object.keys(pairs(await cmd('HGETALL', 'showcase')))) if (k.startsWith(bookingId + '|')) await cmd('HDEL', 'showcase', k); };
+// Puts a finished walk on the home page, or takes it off again. Returns whether it is shown now.
+export async function setShowcase(key, track, bk, on) {
+  const date = key.split('|')[1], shape = on && track.status === 'done' ? publicShape(track.points) : null;
+  if (shape) await cmd('HSET', 'showcase', key, JSON.stringify({ at: track.startedAt, date, km: Math.round(track.km * 10) / 10, minutes: track.minutes, service: bk.service, shape }));
+  else await cmd('HDEL', 'showcase', key);
+  if (bk.walks?.[date]) { bk.walks[date].pub = !!shape; await saveBooking(bk); }
+  return !!shape;
+}
+
 // Ends a walk: summary on the booking, stats + badges on the customer.
-export async function finishTrack(key, track, bk) {
-  track.status = 'done'; track.endedAt = Date.now();
+// An imported route (GPX) brings its own end time and gets no weather lookup (the weather is only known "now").
+export async function finishTrack(key, track, bk, { endedAt = Date.now(), weather = true } = {}) {
+  track.status = 'done'; track.endedAt = endedAt;
   track.km = routeKm(track.points);
   track.minutes = Math.max(1, Math.round((track.endedAt - track.startedAt) / 60000));
   const last = track.points[track.points.length - 1];
-  track.weather = last ? await weatherNow(last[0], last[1]) : { rain: false, snow: false };
+  track.weather = last && weather ? await weatherNow(last[0], last[1]) : { rain: false, snow: false };
   await saveTrack(key, track); await setLive(key, false);
   const date = key.split('|')[1];
   bk.walks = { ...(bk.walks || {}), [date]: { km: track.km, minutes: track.minutes, startedAt: track.startedAt, key } };

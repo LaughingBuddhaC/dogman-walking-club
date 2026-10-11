@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         if (confirming && !bk.mails?.confirmed && (await mailConfirmed(bk, await s.getConfig()))) bk.mails = { ...(bk.mails || {}), confirmed: new Date().toISOString() };
         await s.saveBooking(bk);
       } else if (b.action === 'paid' && bk) { bk.paid = !!b.paid; await s.saveBooking(bk); }
-      else if (b.action === 'delete' && bk) { await s.freeAll(bk); if (bk.status !== 'cancelled') await s.refundCredits(bk); await s.deleteBooking(bk.id); }
+      else if (b.action === 'delete' && bk) { await s.freeAll(bk); if (bk.status !== 'cancelled') await s.refundCredits(bk); await s.dropShowcase(bk.id); await s.deleteBooking(bk.id); }
       else if (b.action === 'review-status' && ['approved', 'hidden'].includes(b.status)) {
         const r = await s.getReview(String(b.sub || ''));
         if (!r) return res.status(404).json({ error: 'review' });
