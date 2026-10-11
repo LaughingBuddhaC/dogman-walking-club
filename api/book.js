@@ -1,5 +1,5 @@
 import { mailNewBooking } from './_mail.js';
-import { getConfig, buildBooking, claimAll, freeAll, saveBooking, readSession, getUser, saveUser, activeMembership, adjustCredits, lastDate } from './_store.js';
+import { getConfig, longExtra, buildBooking, claimAll, freeAll, saveBooking, readSession, getUser, saveUser, activeMembership, adjustCredits, lastDate } from './_store.js';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   try {
@@ -18,7 +18,10 @@ export default async function handler(req, res) {
       if (lastDate(booking) > member.end) return res.status(400).json({ error: 'creditsEnd' });
       const walk = config.services.find((x) => x.id === 'walk');
       booking.credits = booking.count;
-      booking.due = (walk.extra || 0) * (booking.pets - 1) * booking.count;
+      // Extra dogs and the 60-minute surcharge are paid on top of the credits.
+      const per = walk.price + (walk.extra || 0) * (booking.pets - 1);
+      const long = booking.minutes === 60 ? longExtra(per, config.longWalkPct) : 0;
+      booking.due = ((walk.extra || 0) * (booking.pets - 1) + long) * booking.count;
     }
     const taken = await claimAll(booking);
     if (taken) return res.status(409).json({ error: 'taken', date: taken.slice(0, 10) });

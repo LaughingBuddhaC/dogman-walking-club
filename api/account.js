@@ -6,7 +6,7 @@ async function me(user) {
   const all = (await s.getBookings()).filter((b) => b.user === user.sub);
   await s.awardBadges(user, all);
   const bookings = all.filter((b) => s.lastDate(b) >= t)
-    .map(({ id, service, plan, date, end, dates, weekdays, time, pets, petList, freq, status, estimate, meet }) => ({ id, service, plan, date, end, dates, weekdays, time, pets, petList, freq, status, estimate, meet }));
+    .map(({ id, service, plan, date, end, dates, weekdays, time, minutes, pets, petList, freq, status, estimate, meet }) => ({ id, service, plan, date, end, dates, weekdays, time, minutes, pets, petList, freq, status, estimate, meet }));
   // GPS walk reports (newest first) and a walk in progress, if any.
   const reports = all.flatMap((b) => Object.entries(b.walks || {}).map(([date, w]) => ({ key: w.key, date, km: w.km, minutes: w.minutes, service: b.service })))
     .sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30);

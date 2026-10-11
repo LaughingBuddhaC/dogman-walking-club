@@ -82,7 +82,8 @@ export default async function handler(req, res) {
           mobilepay: String(c.mobilepay || '').slice(0, 30), phone: String(c.phone || '').slice(0, 30),
           pawshake: /^https:\/\//.test(c.pawshake || '') ? String(c.pawshake).slice(0, 200) : d.pawshake,
           plans: d.plans.map((x) => { const y = (c.plans || []).find((z) => z.id === x.id) || {}; return { ...x, price: num(y.price) ?? x.price, walks: Math.max(1, Math.min(60, parseInt(y.walks, 10) || x.walks)), active: y.active === undefined ? x.active : !!y.active }; }),
-          googleClientId: /^[\w.-]+\.apps\.googleusercontent\.com$/.test(String(c.googleClientId || '').trim()) ? String(c.googleClientId).trim() : ''
+          googleClientId: /^[\w.-]+\.apps\.googleusercontent\.com$/.test(String(c.googleClientId || '').trim()) ? String(c.googleClientId).trim() : '',
+          longWalkPct: Math.min(200, Math.max(0, parseInt(c.longWalkPct, 10) || 0))
         });
       } else return res.status(400).json({ error: 'action' });
     }

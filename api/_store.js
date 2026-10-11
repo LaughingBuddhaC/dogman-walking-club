@@ -41,6 +41,7 @@ export const DEFAULT_CONFIG = {
     { id: 'walk', mode: 'slot', price: 120, extra: 80 }
   ],
   hours: { start: 6, end: 24 },      // first slot 06:00, last slot 23:00
+  longWalkPct: 30,                   // a 60-minute walk costs this much more than the standard 30 minutes (%)
   openDays: [0, 1, 2, 3, 4, 5, 6],   // 0 = Sunday
   closedDates: [],
   mobilepay: '',
@@ -71,10 +72,14 @@ export async function getConfig() {
   config.googleClientId = config.googleClientId || process.env.GOOGLE_CLIENT_ID || '';
   return config;
 }
-export function estimate(svc, units, pets) {
+export function estimate(svc, units, pets, longPct = 0) {
   if (svc.price == null) return null;
-  return (svc.price + (svc.extra || 0) * (pets - 1)) * units;
+  const per = svc.price + (svc.extra || 0) * (pets - 1);
+  return (per + longExtra(per, longPct)) * units;
 }
+// Surcharge per walk for a 60-minute walk (percent of the walk's price incl. extra dogs, whole kroner).
+export const longExtra = (per, pct) => (pct ? Math.round((per * pct) / 100) : 0);
+export const WALK_MINUTES = [30, 60];
 export const setConfig = (c) => cmd('SET', 'config', JSON.stringify(c));
 export const getSlots = async () => pairs(await cmd('HGETALL', 'slots'));
 export const claimSlot = (key, val) => cmd('HSETNX', 'slots', key, val);
@@ -299,7 +304,10 @@ const isOpen = (config, d) => !config.closedDates.includes(d) && config.openDays
 // Hour slots a booking holds (walks only): one "date|HH:00" key per walk date.
 // Last day a booking covers (pick-up day for a range, last walk/visit otherwise).
 export const lastDate = (b) => b.end || (b.dates?.length ? b.dates[b.dates.length - 1] : b.date);
-export const slotKeys = (b) => (b.time ? (b.dates?.length ? b.dates : [b.date]).map((d) => `${d}|${b.time}`) : []);
+// A 60-minute walk (plus pick-up and drop-off) also takes the next hour, so it claims two slots.
+const nextHour = (time) => String(Number(time.slice(0, 2)) + 1).padStart(2, '0') + ':00';
+export const slotKeys = (b) => (b.time ? (b.dates?.length ? b.dates : [b.date])
+  .flatMap((d) => [`${d}|${b.time}`, ...(b.minutes === 60 ? [`${d}|${nextHour(b.time)}`] : [])]) : []);
 
 // Claims all slots of a booking or none. Returns the first taken key, or null when everything was claimed.
 export async function claimAll(b) {
@@ -373,6 +381,9 @@ export function buildBooking(input, config, { admin = false, member = false } = 
     if (!/^\d{2}:00$/.test(time) || h < config.hours.start || h >= config.hours.end) return { error: 'time' };
     if (!admin && dates[0] === t && h <= nowHour()) return { error: 'time' };
   }
+  // Walks are 30 minutes as standard; 60 minutes on request (+longWalkPct %), and must end before closing.
+  const minutes = svc.id === 'walk' ? (Number(input.minutes) === 60 ? 60 : 30) : 0;
+  if (minutes === 60 && Number(time.slice(0, 2)) + 1 >= config.hours.end) return { error: 'time' };
 
   // Pets: a list of profiles (name, dog/cat, size, breed); older input only sends a count.
   const allowed = SERVICE_PETS[svc.id] || ['dog', 'cat'];
@@ -391,7 +402,7 @@ export function buildBooking(input, config, { admin = false, member = false } = 
     date: dates[0], end: plan === 'range' ? end : '', dates: plan === 'range' ? [] : dates, weekdays, time,
     nights: plan === 'range' ? dates.length : 0, days: svc.mode === 'days' ? dates.length : 0, count: units,
     pets, petList, meet: !!input.meet,
-    estimate: estimate(svc, units, pets), name, phone,
+    minutes, estimate: estimate(svc, units, pets, minutes === 60 ? config.longWalkPct : 0), name, phone,
     email: clean(input.email, 120), address: clean(input.address, 160),
     dog: clean(input.dog, 60) || first.name || '', breed: clean(input.breed, 60) || first.breed || '', size: clean(input.size, 10) || first.size || '',
     notes: clean(input.notes, 600),

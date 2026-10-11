@@ -68,7 +68,7 @@ const utc = (d) => d.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
 export function events(b) {
   if (b.end) return [{ allDay: true, start: ymd(b.date), end: ymd(addDay(b.end, 1)), date: b.date }];
   return dates(b).map((d) => (b.time
-    ? { start: utc(cph(d, b.time)), end: utc(new Date(cph(d, b.time).getTime() + 30 * 60e3)), date: d }
+    ? { start: utc(cph(d, b.time)), end: utc(new Date(cph(d, b.time).getTime() + (b.minutes || 30) * 60e3)), date: d }
     : { allDay: true, start: ymd(d), end: ymd(addDay(d, 1)), date: d }));
 }
 const BYDAY = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
@@ -107,7 +107,7 @@ function rows(b, config, lang, admin, confirmed = false) {
   const t = L[lang], w = whenLines(b, lang);
   const pets = (b.petList || []).map((p) => [p.name, p.breed].filter(Boolean).join(', ')).filter(Boolean).join(' · ') || String(b.pets || 1);
   const price = b.credits ? t.credits.replace('{n}', b.credits) + (b.due ? ' · ' + t.due.replace('{p}', kr(b.due)) : '') : b.estimate != null ? kr(b.estimate) : '';
-  return [[t.service, t[b.service]], [t.when, w.length > 6 ? [...w.slice(0, 6), `+ ${w.length - 6}`].join('\n') : w.join('\n')], [t.pets, pets],
+  return [[t.service, t[b.service] + (b.minutes ? ` · ${b.minutes} min` : '')], [t.when, w.length > 6 ? [...w.slice(0, 6), `+ ${w.length - 6}`].join('\n') : w.join('\n')], [t.pets, pets],
     [t.address, b.address], [t.price, price],
     [t.pay, b.credits && !b.due ? '' : config.mobilepay ? t[confirmed ? 'payMpNow' : 'payMp'].replace('{n}', config.mobilepay) : t[confirmed ? 'payLaterNow' : 'payLater']],
     [t.meet, b.meet ? t.meetYes : ''], [t.notes, b.notes],

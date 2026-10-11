@@ -370,6 +370,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
         <span class="eyebrow" data-t="offerLabel"></span>
         <div class="big"><b id="walk-price"></b><span data-t="perWalk"></span></div>
         <span class="extra" id="walk-extra"></span>
+        <span class="extra" id="walk-long"></span>
         <ul><li data-check="inc1"></li><li data-check="inc2"></li><li data-check="inc3"></li><li data-check="inc4"></li></ul>
         <a class="btn primary" href="#book" data-t="ctaBook"></a>
       </div>
@@ -395,6 +396,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
         <div>
           <div class="step"><div class="step-h"><span class="num">1</span><h3 data-t="step1b"></h3></div>
             <div class="svc-grid" id="svc-grid"></div><p class="svc-desc" id="svc-desc"></p>
+            <div class="seg2" id="dur-seg" hidden><button type="button" data-min="30"></button><button type="button" data-min="60"></button></div>
           </div>
           <div class="step"><div class="step-h"><span class="num">2</span><h3 data-t="step2b"></h3></div>
             <div class="chips" id="pet-saved"></div>
@@ -514,7 +516,7 @@ capDuo:'Klar til regnvejr',capSummit:'På toppen',capSnow:'I sneen',altDuo:'Can 
 clubLabel:'Kommer senere',clubTitle:'Fælles ture for hundeejere',clubText:'Klubben starter med daglige gåture. Senere kommer der månedlige ture for hundeejere og deres hunde.',
 moreLabel:'Andre ydelser',moreTitle:'Brug for mere end en gåtur?',moreText:'Jeg tilbyder også pasning, dagpleje og hjemmebesøg – du kan booke det hele direkte i kalenderen ovenfor.',ctaPawshake:'Se Pawshake-profil',
 boarding:'Hundepasning (24 t hos mig)',daycare:'Hundedagpleje (om dagen hos mig)',housesit:'Huspasning (24 t hos dig)',visit1:'Ét hjemmebesøg om dagen (30 min.)',visit2:'To hjemmebesøg om dagen (2 × 30 min.)',
-uNight:'pr. nat',uDay:'pr. dag',xPet:'+{n} kr. pr. ekstra dyr',footer:'Hundeluftning i Skovlunde',privacyLink:'Privatlivspolitik',termsLink:'Handelsbetingelser',withdrawLink:'Fortryd køb',termsLine:'Når du sender bookingen, accepterer du <a href="/vilkaar/" target="_blank">handelsbetingelserne</a>. Hundeerklæring, dyrlæge og nødkontakt kan du udfylde bagefter under Mine ture – det er frivilligt.',
+uNight:'pr. nat',uDay:'pr. dag',xPet:'+{n} kr. pr. ekstra dyr',footer:'Hundeluftning i Skovlunde',privacyLink:'Privatlivspolitik',termsLink:'Handelsbetingelser',dur30:'30 min',dur60:'60 min · +{p} %',longOffer:'60 min. tur: {p}',longLine:'60 min. tur (+{p} %)',withdrawLink:'Fortryd køb',termsLine:'Når du sender bookingen, accepterer du <a href="/vilkaar/" target="_blank">handelsbetingelserne</a>. Hundeerklæring, dyrlæge og nødkontakt kan du udfylde bagefter under Mine ture – det er frivilligt.',
 revLabel:'Anmeldelser',revTitle:'Det siger hundeejerne',revAvg:'★ {a} ud af 5',revCount:'{n} anmeldelser fra kunder',revCount1:'1 anmeldelse fra en kunde',revWrite:'Skriv en anmeldelse →',
 packLabel:'Galleri',packTitle:'Hunde, jeg har gået med',packCount:'{n} hunde indtil nu – og Boris, selvfølgelig.',packCount1:'1 hund indtil nu – og Boris, selvfølgelig.'},
 en:{plan_flex10:'10-walk card',plan_weekly2:'Weekly walker',plan_daily5:'Every weekday',plan_alfa:'Premium Alfa',planSub_alfa:'22 solo walks a month · follow the walk live on GPS · priority times · 1 night boarding',premTag:'Premium',planSub_flex10:'10 walks – use them whenever you like',planSub_weekly2:'8 walks a month – 2 a week',planSub_daily5:'22 walks a month – every weekday',perPack:'valid for {m} months',perMonth:'per month',perWalkSave:'{p} per walk · save {s}%',navMember:'DogMan Pack',memLabel:'DogMan Pack',memTitle:'Join the DogMan Pack',memText:'Regular walks at a lower price. No lock-in – you pay with MobilePay when the period starts.',memPerk1:'Lower price per walk',memPerk2:'Book up to 3 months ahead',memPerk3:'A GPS route report after every walk – and badges for km and walks',memPerk4:'Unused credits come back when you cancel',joinCta:'Join the Pack',recTag:'Recommended',useCreditsLbl:'Use my credits ({n} left) – extra dogs are still charged.',noCredits:'You have {n} credits – not enough for all chosen walks.',creditsLine:'{n} with credits',eCredits:'You do not have enough credits for all chosen walks.',eCreditsEnd:'Some walks are after your membership ends.',creditsUsed:'{n} credits used',bookTitle2:'What do you need?',step1b:'Choose a service',step4:'Your details',step2b:'Your pets',step3b:'When?',sv_walk:'Dog walk',sv_visit1:'Home visit',sv_visit2:'2 visits a day',sv_daycare:'Day care',sv_boarding:'Boarding',sv_housesit:'House sitting',onReq:'Price on request',petName:'Name',dog:'Dog',cat:'Cat',addPet:'+ Add a pet',remove:'Remove',petNote:'This service is for dogs only.',planOnce:'One or more days',planWeekly:'Every week',prevMonth:'Previous month',nextMonth:'Next month',hintOnce:'Pick one or more days in the calendar.',hintWeekly:'Choose weekdays and the first day in the calendar.',hintRange:'Pick the drop-off day and the pick-up day.',hintEnd:'Now pick the pick-up day.',pickDayFirst:'Pick a day first.',noSlotsAll:'No free time on all the chosen days.',sumPick2:'Choose a service, pets and days.',sumTime:'Choose a time.',walk1:'walk',walkN:'walks',day1:'day',dayN:'days',night1:'night',nightN:'nights',visitDay1:'visit day',visitDayN:'visit days',at:'at',every:'Every',from:'from',desc_walk:'At least 30 minutes. I pick up and drop off at your door.',desc_visit1:'One visit a day at your home (at least 30 min.): food, water, play and company.',desc_visit2:'Two visits a day at your home (2 × 30 min.).',desc_daycare:'Daytime at my home with Boris: walks, play and rest.',desc_boarding:'24 hours at my home with Boris while you are away.',desc_housesit:'24 hours at your home – I stay in and look after your pets.',extraLine:'+{n} extra pet(s)',perWeek:'Per week',est8:'8 weeks in total',weeklyNote:'Repeats every week. I reserve the next 8 weeks, and then we extend together.',meetLabel:'I would like a free meet & greet (15 min.) before the first booking.',fMsg:'Message to Can',msgPh:'Tell me about your pet, keys, routines…',eDates:'Choose at least one day.',eRange:'Choose drop-off and pick-up days.',ePets:"Cats can't be booked for this service.",eTakenOn:'The time on {d} was just taken. Choose another time.',navWalk:'The walk',navAbout:'About',navBook:'Book',heroLabel:'Walks in',capRiver:'By the river',h1a:'Dog walking',h1b:'in Skovlunde',
@@ -542,7 +544,7 @@ capDuo:'Ready for rain',capSummit:'At the summit',capSnow:'In the snow',altDuo:'
 clubLabel:'Coming later',clubTitle:'Group walks for dog owners',clubText:'The club starts with daily walks. Monthly outings for dog owners and their dogs will follow.',
 moreLabel:'Other services',moreTitle:'Need more than a walk?',moreText:'I also offer sitting, day care and home visits – you can book all of it directly in the calendar above.',ctaPawshake:'See Pawshake profile',
 boarding:'Dog boarding (24h at my home)',daycare:'Doggy day care (daytime at my home)',housesit:'House sitting (24h at your home)',visit1:'One home visit a day (30 min.)',visit2:'Two home visits a day (2 × 30 min.)',
-uNight:'per night',uDay:'per day',xPet:'+{n} kr. per extra pet',footer:'Dog walking in Skovlunde',privacyLink:'Privacy policy',termsLink:'Terms',withdrawLink:'Withdraw a purchase',termsLine:'By sending the booking you accept the <a href="/vilkaar/" target="_blank">terms</a>. You can add the dog declaration, vet and emergency contact afterwards under My walks – it is optional.',
+uNight:'per night',uDay:'per day',xPet:'+{n} kr. per extra pet',footer:'Dog walking in Skovlunde',privacyLink:'Privacy policy',termsLink:'Terms',dur30:'30 min',dur60:'60 min · +{p}%',longOffer:'60-min walk: {p}',longLine:'60-min walk (+{p}%)',withdrawLink:'Withdraw a purchase',termsLine:'By sending the booking you accept the <a href="/vilkaar/" target="_blank">terms</a>. You can add the dog declaration, vet and emergency contact afterwards under My walks – it is optional.',
 revLabel:'Reviews',revTitle:'What dog owners say',revAvg:'★ {a} out of 5',revCount:'{n} reviews from customers',revCount1:'1 review from a customer',revWrite:'Write a review →',
 packLabel:'Gallery',packTitle:'Dogs I have walked',packCount:'{n} dogs so far – and Boris, of course.',packCount1:'1 dog so far – and Boris, of course.'}};
 const SV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
@@ -562,7 +564,7 @@ const DEFAULT={services:[{id:'boarding',mode:'nights',price:275,extra:125},{id:'
 let lang='da';try{lang=localStorage.getItem('lang')||((navigator.language||'da').toLowerCase().startsWith('da')?'da':'en')}catch(e){}
 const S={config:DEFAULT,today:iso(new Date()),taken:new Set(),live:false,
   service:'walk',plan:'once',dates:new Set(),weekdays:new Set(),start:null,end:null,time:null,month:0,
-  pets:[{name:'',type:'dog',size:'',breed:''}],meet:true,useCredits:true};
+  pets:[{name:'',type:'dog',size:'',breed:''}],meet:true,useCredits:true,minutes:30};
 const t=(k)=>T[lang][k]??k;
 const ORDER=['walk','visit1','visit2','daycare','boarding','housesit'];
 const PETS_OK={walk:['dog'],daycare:['dog'],boarding:['dog','cat'],housesit:['dog','cat'],visit1:['dog','cat'],visit2:['dog','cat']};
@@ -587,8 +589,12 @@ function chosen(){return isRange()?nightsList():S.plan==='weekly'?occurrences():
 const petsN=()=>Math.max(1,S.pets.length);
 // Credits pay the walk itself; extra dogs are still charged.
 const creditsOn=()=>S.service==='walk'&&S.useCredits&&!!member()&&member().credits>=chosen().length;
+// 60-minute walks cost longWalkPct % more (of the walk price incl. extra dogs), also when paid with credits.
+const longPct=()=>S.config.longWalkPct??30,isLong=()=>S.service==='walk'&&S.minutes===60;
+const longOf=(per)=>Math.round(per*longPct()/100);
 function quote(){const s=svc(),units=chosen().length;if(s.price==null||!units)return null;
-  const base=creditsOn()?0:s.price*units,extra=(s.extra||0)*(petsN()-1)*units;return{units,base,extra,total:base+extra,credits:creditsOn()}}
+  const base=creditsOn()?0:s.price*units,extra=(s.extra||0)*(petsN()-1)*units,long=isLong()?longOf(s.price+(s.extra||0)*(petsN()-1))*units:0;
+  return{units,base,extra,long,total:base+extra+long,credits:creditsOn()}}
 function unitWord(n,id){id=id||S.service;const m=svcOf(id).mode,k=id.startsWith('visit')?['visitDay1','visitDayN']:m==='nights'?['night1','nightN']:m==='slot'?['walk1','walkN']:['day1','dayN'];return n+' '+t(n===1?k[0]:k[1])}
 // "Mon 12 Oct, Wed 14 Oct at 07:00" / "Every Monday, Thursday at 07:00 · from …" / "12 Oct → 15 Oct" – for the selection and saved bookings.
 function whenText(b){const time=b.time?' '+t('at')+' '+b.time:'';
@@ -597,8 +603,9 @@ function whenText(b){const time=b.time?' '+t('at')+' '+b.time:'';
   const ds=b.dates&&b.dates.length?b.dates:[b.date];
   return (ds.length>3?ds.slice(0,3).map(fmtShort).join(', ')+' +'+(ds.length-3):ds.map(fmtShort).join(', '))+time}
 // A time is free only if it is free on every chosen day.
-function slotsFor(dates){const out=[],now=new Date();for(let h=S.config.hours.start;h<S.config.hours.end;h++){const time=pad(h)+':00';
-  out.push({time,free:dates.length>0&&dates.every(d=>!(d===S.today&&h<=now.getHours())&&!S.taken.has(d+'|'+time))})}return out}
+// A 60-minute walk also needs the next hour free (and must end before closing).
+function slotsFor(dates){const out=[],now=new Date(),two=isLong();for(let h=S.config.hours.start;h<S.config.hours.end;h++){const time=pad(h)+':00',next=pad(h+1)+':00';
+  out.push({time,free:dates.length>0&&!(two&&h+1>=S.config.hours.end)&&dates.every(d=>!(d===S.today&&h<=now.getHours())&&!S.taken.has(d+'|'+time)&&!(two&&S.taken.has(d+'|'+next)))})}return out}
 function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
 
 const U={user:null,bookings:[],gis:false};
@@ -641,6 +648,7 @@ function render(){
   const lp=t('lead').split(/(<b>.*?<\/b>)/);$('lead').replaceChildren(...lp.filter(Boolean).map(x=>x.startsWith('<b>')?el('b',null,x.slice(3,-4).replace('{p}',w.price!=null?kr(w.price):'')):document.createTextNode(x)));
   $('walk-price').textContent=w.price!=null?kr(w.price):'—';
   $('walk-extra').hidden=w.extra==null;$('walk-extra').textContent=t('extra').replace('{n}',w.extra);
+  $('walk-long').hidden=w.price==null||!longPct();if(w.price!=null)$('walk-long').textContent=t('longOffer').replace('{p}',kr(w.price+longOf(w.price)));
   $('hours').textContent=t('hoursV').replace('{a}',pad(S.config.hours.start)+':00').replace('{b}',pad(S.config.hours.end)+':00');
   $('pawshake').href=S.config.pawshake;$('demo').hidden=S.live;
   $('phone-row').hidden=!S.config.phone;$('phone-dd').textContent=S.config.phone;
@@ -694,12 +702,15 @@ function renderBooking(){
     b.append(ic,el('b',null,t('sv_'+id)),el('span','sprice',v.price!=null?kr(v.price)+' '+t(v.mode==='nights'?'uNight':id==='walk'?'perWalk':'uDay'):t('onReq')));
     b.onclick=()=>{if(S.service===id)return;const wasRange=isRange();S.service=id;if(isRange()!==wasRange){S.dates.clear();S.start=S.end=null}S.time=null;render()};return b}));
   $('svc-desc').textContent=t('desc_'+S.service);
+  $('dur-seg').hidden=S.service!=='walk';
+  $('dur-seg').querySelectorAll('button').forEach(b=>{const m=Number(b.dataset.min);b.textContent=m===60?t('dur60').replace('{p}',longPct()):t('dur30');b.setAttribute('aria-pressed',S.minutes===m)});
   $('pet-saved').replaceChildren(...(U.user?.pets||[]).filter(p=>p.name&&!S.pets.some(x=>x.name.toLowerCase()===p.name.toLowerCase())).map(p=>{const c=el('button','chip','+ '+p.name);c.type='button';
     c.onclick=()=>{if(S.pets.length===1&&!S.pets[0].name)S.pets=[];if(S.pets.length<6)S.pets.push({...p});render()};return c}));
   $('pet-list').replaceChildren(...S.pets.map((p,i)=>petRow(p,i,ok)));
   $('pet-add').hidden=S.pets.length>=6;$('pet-note').hidden=ok.includes('cat');
   $('plan-seg').hidden=mode==='nights';
-  $('plan-seg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.plan===S.plan));
+  $('dur-seg').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.minutes=Number(b.dataset.min);render()});
+$('plan-seg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.plan===S.plan));
   $('wk-days').hidden=mode==='nights'||S.plan!=='weekly';
   $('wk-days').replaceChildren(...[1,2,3,4,5,6,0].map(n=>{const b=el('button','chip',WD(n,'short').replace('.',''));b.type='button';b.setAttribute('aria-pressed',S.weekdays.has(n));
     b.onclick=()=>{S.weekdays.has(n)?S.weekdays.delete(n):S.weekdays.add(n);S.time=null;render()};return b}));
@@ -718,9 +729,10 @@ function renderBooking(){
   const sum=$('summary'),q=quote(),ready=dates.length&&(mode!=='slot'||S.time);
   if(!ready){sum.replaceChildren(el('div','muted',t(mode==='slot'&&dates.length?'sumTime':'sumPick2')));return}
   const sel={plan:mode==='nights'?'range':S.plan,date:mode==='nights'?S.start:dates[0],end:mode==='nights'?S.end:'',dates,weekdays:[...S.weekdays].sort(),time:S.time};
-  const kids=[el('div','s1',t('sv_'+S.service)),el('div','muted',whenText(sel)),el('div','muted',[unitWord(dates.length),S.pets.map(p=>p.name||t(p.type)).join(', ')].join(' · '))];
+  const kids=[el('div','s1',t('sv_'+S.service)+(S.service==='walk'?' · '+S.minutes+' min':'')),el('div','muted',whenText(sel)),el('div','muted',[unitWord(dates.length),S.pets.map(p=>p.name||t(p.type)).join(', ')].join(' · '))];
   if(q){kids.push(q.credits?line(t('creditsLine').replace('{n}',unitWord(q.units)),kr(0)):line(unitWord(q.units)+' × '+kr(s.price),kr(q.base)));
     if(q.extra)kids.push(line(t('extraLine').replace('{n}',petsN()-1),kr(q.extra)));
+    if(q.long)kids.push(line(t('longLine').replace('{p}',longPct()),kr(q.long)));
     if(S.plan==='weekly'&&mode!=='nights')kids.push(line(t('perWeek'),kr(q.total/q.units*S.weekdays.size)));
     const row=el('div','est');row.append(el('span','muted',S.plan==='weekly'&&mode!=='nights'?t('est8'):t('est')),el('b',null,kr(q.total)));kids.push(row)}
   if(petsN()>1&&s.extra==null)kids.push(el('div','small',t('extraAsk')));
@@ -781,7 +793,7 @@ $('form').onsubmit=async(e)=>{e.preventDefault();const msg=$('msg');msg.classNam
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v('email'))){msg.textContent=t('eEmail');return}
   const plan=isRange()?'range':S.plan;
   const body={service:S.service,plan,dates:plan==='once'?dates:undefined,weekdays:[...S.weekdays],date:plan==='once'?dates[0]:S.start,end:S.end||'',time:S.time||'',
-    petList:S.pets,meet:$('meet').checked,useCredits:creditsOn(),name:v('name'),phone:v('phone'),email:v('email'),address:v('address'),notes:v('notes'),website:v('website'),lang};
+    petList:S.pets,minutes:S.service==='walk'?S.minutes:undefined,meet:$('meet').checked,useCredits:creditsOn(),name:v('name'),phone:v('phone'),email:v('email'),address:v('address'),notes:v('notes'),website:v('website'),lang};
   const btn=$('submit');btn.disabled=true;btn.textContent=t('sending');msg.textContent='';
   let mp=S.config.mobilepay,ok=!S.live,err='eServer',errText='';
   if(S.live){try{const r=await fetch('/api/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();

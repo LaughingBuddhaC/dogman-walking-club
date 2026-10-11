@@ -117,7 +117,7 @@ function renderList(){
   const today=A.data.today;$('list-title').textContent=A.day===today?'Today':new Date(A.day+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
   const list=A.data.bookings.filter(b=>covers(b,A.day)).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
   $('walks').replaceChildren(...(list.length?list.map(b=>{const c=el('div','card');
-    const head=el('div','row');head.style.justifyContent='space-between';head.append(el('b',null,(b.time?b.time+' · ':'')+NAMES[b.service]),el('span','pill',b.status));
+    const head=el('div','row');head.style.justifyContent='space-between';head.append(el('b',null,(b.time?b.time+' · ':'')+NAMES[b.service]+(b.minutes===60?' · 60 min':'')),el('span','pill',b.status));
     c.append(head,el('div',null,b.name+' · '+b.phone));
     if(b.address){const a=el('a',null,b.address+' ↗');a.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(b.address);a.target='_blank';c.append(a)}
     const pets=(b.petList||[]).map(p=>[p.name,p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · ');if(pets)c.append(el('div','small',pets));
