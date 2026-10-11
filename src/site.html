@@ -460,7 +460,7 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
   <section id="about">
     <div class="about">
       <div class="head reveal" style="margin:0"><span class="eyebrow" data-t="aboutLabel"></span><h2 data-t="aboutTitle"></h2><p class="text" data-t="aboutText"></p></div>
-      <dl class="facts reveal"><div><dt data-t="factArea"></dt><dd data-t="factAreaV"></dd></div><div><dt data-t="factWalk"></dt><dd data-t="factWalkV"></dd></div><div><dt data-t="factWhen"></dt><dd id="hours"></dd></div><div><dt data-t="factPay"></dt><dd>MobilePay</dd></div><div id="phone-row" hidden><dt data-t="factPhone"></dt><dd id="phone-dd" style="user-select:all"></dd></div></dl>
+      <dl class="facts reveal"><div><dt data-t="factArea"></dt><dd data-t="factAreaV"></dd></div><div><dt data-t="factWalk"></dt><dd data-t="factWalkV"></dd></div><div><dt data-t="factWhen"></dt><dd id="hours"></dd></div><div><dt data-t="factPay"></dt><dd id="pay-dd">MobilePay</dd></div><div id="phone-row" hidden><dt data-t="factPhone"></dt><dd id="phone-dd" style="user-select:all"></dd></div></dl>
     </div>
     <div class="gallery reveal">
       <figure class="shot tall"><img src="img/duo.jpg" width="900" height="1600" loading="lazy" data-ta="altDuo" alt=""><figcaption data-t="capDuo"></figcaption></figure>
@@ -560,7 +560,7 @@ const $=(id)=>document.getElementById(id);
 const pad=(n)=>String(n).padStart(2,'0');
 const iso=(d)=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parse=(s)=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
-const DEFAULT={services:[{id:'boarding',mode:'nights',price:275,extra:125},{id:'daycare',mode:'days',price:200,extra:80},{id:'housesit',mode:'nights',price:250,extra:null},{id:'visit1',mode:'days',price:140,extra:null},{id:'visit2',mode:'days',price:250,extra:null},{id:'walk',mode:'slot',price:120,extra:80}],plans:[{id:'flex10',kind:'pack',walks:10,price:1080,months:3,active:true},{id:'weekly2',kind:'monthly',walks:8,price:880,months:1,active:true},{id:'daily5',kind:'monthly',walks:22,price:2090,months:1,active:true}],hours:{start:6,end:24},openDays:[0,1,2,3,4,5,6],closedDates:[],mobilepay:'',phone:'',pawshake:'https://en.pawshake.dk/sitter/can'};
+const DEFAULT={services:[{id:'boarding',mode:'nights',price:275,extra:125},{id:'daycare',mode:'days',price:200,extra:80},{id:'housesit',mode:'nights',price:250,extra:null},{id:'visit1',mode:'days',price:140,extra:null},{id:'visit2',mode:'days',price:250,extra:null},{id:'walk',mode:'slot',price:120,extra:80}],plans:[{id:'flex10',kind:'pack',walks:10,price:1080,months:3,active:true},{id:'weekly2',kind:'monthly',walks:8,price:880,months:1,active:true},{id:'daily5',kind:'monthly',walks:22,price:2090,months:1,active:true}],hours:{start:6,end:24},openDays:[0,1,2,3,4,5,6],closedDates:[],mobilepay:'+45 53 51 42 00',phone:'',pawshake:'https://en.pawshake.dk/sitter/can'};
 let lang='da';try{lang=localStorage.getItem('lang')||((navigator.language||'da').toLowerCase().startsWith('da')?'da':'en')}catch(e){}
 const S={config:DEFAULT,today:iso(new Date()),taken:new Set(),live:false,
   service:'walk',plan:'once',dates:new Set(),weekdays:new Set(),start:null,end:null,time:null,month:0,
@@ -651,7 +651,7 @@ function render(){
   $('walk-long').hidden=w.price==null||!longPct();if(w.price!=null)$('walk-long').textContent=t('longOffer').replace('{p}',kr(w.price+longOf(w.price)));
   $('hours').textContent=t('hoursV').replace('{a}',pad(S.config.hours.start)+':00').replace('{b}',pad(S.config.hours.end)+':00');
   $('pawshake').href=S.config.pawshake;$('demo').hidden=S.live;
-  $('phone-row').hidden=!S.config.phone;$('phone-dd').textContent=S.config.phone;
+  $('pay-dd').textContent='MobilePay'+(S.config.mobilepay?' · '+S.config.mobilepay:'');$('phone-row').hidden=!S.config.phone;$('phone-dd').textContent=S.config.phone;
   $('others').replaceChildren(...S.config.services.filter(s=>s.id!=='walk').map(s=>{const r=el('div','orow');const l=el('div');l.append(el('b',null,t(s.id)));
     if(s.extra!=null){l.append(document.createElement('br'),el('span',null,t('xPet').replace('{n}',s.extra)))}
     r.append(l,el('div','p',s.price!=null?kr(s.price)+' '+t(s.mode==='nights'?'uNight':'uDay'):'—'));return r}));

@@ -44,7 +44,7 @@ export const DEFAULT_CONFIG = {
   longWalkPct: 30,                   // a 60-minute walk costs this much more than the standard 30 minutes (%)
   openDays: [0, 1, 2, 3, 4, 5, 6],   // 0 = Sunday
   closedDates: [],
-  mobilepay: '',
+  mobilepay: '+45 53 51 42 00',   // MobilePay number customers pay to (admin can change it)
   phone: '',
   pawshake: 'https://en.pawshake.dk/sitter/can',
   googleClientId: '',               // OAuth web client ID for "Sign in with Google" (public, set in admin)
@@ -69,6 +69,8 @@ export async function getConfig() {
   const plans = DEFAULT_CONFIG.plans.map((d) => ({ ...d, ...((saved.plans || []).find((x) => x.id === d.id) || {}), id: d.id, kind: d.kind, months: d.months }));
   const config = { ...DEFAULT_CONFIG, ...saved, services, plans };
   // Admin setting wins; otherwise fall back to the GOOGLE_CLIENT_ID env var (a public value).
+  // An empty admin field falls back to the default number instead of hiding MobilePay.
+  config.mobilepay = config.mobilepay || DEFAULT_CONFIG.mobilepay;
   config.googleClientId = config.googleClientId || process.env.GOOGLE_CLIENT_ID || '';
   return config;
 }
