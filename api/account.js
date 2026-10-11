@@ -3,7 +3,14 @@ import * as s from './_store.js';
 
 async function me(user) {
   const t = s.today();
-  const all = (await s.getBookings()).filter((b) => b.user === user.sub);
+  // Bookings made without signing in are linked by e-mail: the Google address is verified, so a booking
+  // made with that address belongs to this customer. Linking it also lets them cancel it.
+  const mail = String(user.email || '').trim().toLowerCase();
+  const all = [];
+  for (const b of await s.getBookings()) {
+    if (b.user === user.sub) all.push(b);
+    else if (!b.user && mail && String(b.email || '').trim().toLowerCase() === mail) { b.user = user.sub; await s.saveBooking(b); all.push(b); }
+  }
   await s.awardBadges(user, all);
   const bookings = all.filter((b) => s.lastDate(b) >= t)
     .map(({ id, service, plan, date, end, dates, weekdays, time, minutes, pets, petList, freq, status, estimate, meet }) => ({ id, service, plan, date, end, dates, weekdays, time, minutes, pets, petList, freq, status, estimate, meet }));
