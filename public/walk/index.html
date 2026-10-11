@@ -170,13 +170,14 @@ async function api(path,body){const r=await fetch(path,{method:body?'POST':'GET'
 // Booking pets enriched with the owner's profile (dog declaration, vet, emergency contact from "Mine ture").
 function withProfile(b){const pr=(A.data.profiles||{})[b.user]||{},find=(n)=>(pr.pets||[]).find(x=>x.name&&n&&x.name.toLowerCase()===n.toLowerCase())||{};
   return {pets:(b.petList||[]).map(p=>({...find(p.name),...Object.fromEntries(Object.entries(p).filter(([k,v])=>v!==''&&v!=null))})),vet:b.vet||pr.vet||'',emergency:b.emergency||pr.emergency||''}}
+const tLabel=(b)=>b.windowEnd?b.time.slice(0,2)+'–'+b.windowEnd.slice(0,2):b.time;
 const covers=(b,d)=>b.status!=='cancelled'&&(b.end?d>=b.date&&d<b.end:(b.dates&&b.dates.length?b.dates:[b.date]).includes(d));
 function renderList(){
   $('list').hidden=false;$('active').hidden=true;$('done').hidden=true;
   const today=A.data.today;$('list-title').textContent=A.day===today?'Today':new Date(A.day+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
   const list=A.data.bookings.filter(b=>covers(b,A.day)).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
   $('walks').replaceChildren(...(list.length?list.map(b=>{const c=el('div','card');
-    const head=el('div','row');head.style.justifyContent='space-between';head.append(el('b',null,(b.time?b.time+' · ':'')+NAMES[b.service]+(b.minutes===60?' · 60 min':'')),el('span','pill',b.status));
+    const head=el('div','row');head.style.justifyContent='space-between';head.append(el('b',null,(b.time?tLabel(b)+' · ':'')+NAMES[b.service]+(b.minutes===60?' · 60 min':'')),el('span','pill',b.status));
     c.append(head,el('div',null,b.name+' · '+b.phone));
     if(b.address){const a=el('a',null,b.address+' ↗');a.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(b.address);a.target='_blank';c.append(a)}
     const pets=(b.petList||[]).map(p=>[p.name,p.type,p.size,p.breed].filter(Boolean).join(' ')).join(' · ');if(pets)c.append(el('div','small',pets));
@@ -199,7 +200,7 @@ async function load(){try{A.data=await api('/api/admin');try{sessionStorage.setI
   catch(e){$('login').hidden=false;$('list').hidden=true;if(pw)$('msg').textContent=e.message==='auth'?'Wrong password.':'Error: '+e.message;pw=''}}
 async function start(b){$('msg').textContent='';
   if(A.src==='phone'&&!navigator.geolocation){$('msg').textContent='This phone/browser has no GPS access.';return}
-  try{const r=await api('/api/track',{action:'start',booking:b.id,date:A.day});A.key=r.key;A.booking={id:b.id,title:(b.time?b.time+' · ':'')+NAMES[b.service],sub:b.name+(b.address?' · '+b.address:'')};
+  try{const r=await api('/api/track',{action:'start',booking:b.id,date:A.day});A.key=r.key;A.booking={id:b.id,title:(b.time?tLabel(b)+' · ':'')+NAMES[b.service],sub:b.name+(b.address?' · '+b.address:'')};
     if(!r.resumed){A.started=Date.now();A.buf=[];A.pts=[]}else if(!A.started)A.started=Date.now();save();track()}catch(e){$('msg').textContent='Could not start: '+e.message}}
 async function flush(){if(!A.buf.length||!A.key)return;const pts=A.buf.splice(0);save();
   try{await api('/api/track',{action:'points',key:A.key,pts})}catch(e){A.buf.unshift(...pts);save()}}

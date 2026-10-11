@@ -225,13 +225,14 @@ function ics(b){
   let events=[];
   if(b.end)events=ev(b.id,['DTSTART;VALUE=DATE:'+ymd(b.date),'DTEND;VALUE=DATE:'+ymd(b.end)],[]);
   else{const ds=b.dates&&b.dates.length?b.dates:[b.date];
-    events=ds.flatMap((d,i)=>b.time?ev(b.id+'-'+i,['DTSTART:'+ymd(d)+'T'+b.time.replace(':','')+'00'],['DURATION:PT'+(b.minutes||30)+'M']):ev(b.id+'-'+i,['DTSTART;VALUE=DATE:'+ymd(d)],[]))}
+    events=ds.flatMap((d,i)=>b.time?ev(b.id+'-'+i,['DTSTART:'+ymd(d)+'T'+b.time.replace(':','')+'00'],['DURATION:PT'+(b.windowEnd?(Number(b.windowEnd.slice(0,2))-Number(b.time.slice(0,2)))*60:(b.minutes||30))+'M']):ev(b.id+'-'+i,['DTSTART;VALUE=DATE:'+ymd(d)],[]))}
   const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//DogMan Walking Club//DA',...events,'END:VCALENDAR'].join(String.fromCharCode(13,10));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/calendar'}));a.download='dogman-'+b.date+'.ics';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 }
 const fshort=(d)=>parse(d).toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});
 const WDL=(n)=>new Date(2024,0,7+n).toLocaleDateString(loc(),{weekday:'long'});
-function whenOf(b){const tm=b.time?' '+t('at')+' '+b.time+(b.minutes===60?' · 60 min':''):'';
+const tLabel=(b)=>b.windowEnd?b.time.slice(0,2)+'–'+b.windowEnd.slice(0,2):b.time;
+function whenOf(b){const tm=b.time?' '+t('at')+' '+tLabel(b)+(b.minutes===60?' · 60 min':''):'';
   if(b.end)return fshort(b.date)+' → '+fshort(b.end);
   if(b.plan==='weekly')return t('every')+' '+(b.weekdays||[]).map(WDL).join(', ')+tm;
   const ds=b.dates&&b.dates.length?b.dates:[b.date];return (ds.length>3?ds.slice(0,3).map(fshort).join(', ')+' +'+(ds.length-3):ds.map(fshort).join(', '))+tm}

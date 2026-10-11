@@ -17,7 +17,7 @@ export default async function handler(req, res) {
       const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
       const bk = b.id ? await s.getBooking(b.id) : null;
       if (b.action === 'status' && bk && ['pending', 'confirmed', 'cancelled'].includes(b.status)) {
-        if (b.status === 'cancelled') { await s.freeAll(bk); await s.refundCredits(bk); }
+        if (b.status === 'cancelled') await s.freeAll(bk);
         if (b.status !== 'cancelled' && bk.status === 'cancelled' && (await s.claimAll(bk))) return res.status(409).json({ error: 'taken' });
         const confirming = b.status === 'confirmed' && bk.status !== 'confirmed';
         bk.status = b.status;
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         if (confirming && !bk.mails?.confirmed && (await mailConfirmed(bk, await s.getConfig()))) bk.mails = { ...(bk.mails || {}), confirmed: new Date().toISOString() };
         await s.saveBooking(bk);
       } else if (b.action === 'paid' && bk) { bk.paid = !!b.paid; await s.saveBooking(bk); }
-      else if (b.action === 'delete' && bk) { await s.freeAll(bk); if (bk.status !== 'cancelled') await s.refundCredits(bk); await s.dropShowcase(bk.id); for (const w of Object.values(bk.walks || {})) { await s.deletePhoto(w.photo); await s.deletePhoto(w.card); } await s.deleteBooking(bk.id); }
+      else if (b.action === 'delete' && bk) { await s.freeAll(bk); await s.dropShowcase(bk.id); for (const w of Object.values(bk.walks || {})) { await s.deletePhoto(w.photo); await s.deletePhoto(w.card); } await s.deleteBooking(bk.id); }
       else if (b.action === 'review-status' && ['approved', 'hidden'].includes(b.status)) {
         const r = await s.getReview(String(b.sub || ''));
         if (!r) return res.status(404).json({ error: 'review' });

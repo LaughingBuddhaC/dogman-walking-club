@@ -41,12 +41,17 @@ export const DEFAULT_CONFIG = {
     { id: 'walk', mode: 'slot', price: 120, extra: 80 }
   ],
   hours: { start: 6, end: 24 },      // first slot 06:00, last slot 23:00
+  // Walks are booked in time windows; I come some time inside the window. Capacity = one walk per hour of the
+  // window (a 60-minute walk counts double).
+  walkWindows: [[6, 9], [9, 12], [12, 16], [16, 20], [20, 24]],
   longWalkPct: 30,                   // a 60-minute walk costs this much more than the standard 30 minutes (%)
   openDays: [0, 1, 2, 3, 4, 5, 6],   // 0 = Sunday
   closedDates: [],
   mobilepay: '+45 53 51 42 00',   // MobilePay number customers pay to (admin can change it)
   phone: '+45 53 51 42 00',       // contact number shown on the site (admin can change it)
-  pawshake: 'https://en.pawshake.dk/sitter/can',
+  pawshake: 'https://en.pawshake.dk/sitter/EU_Yn7jKcOmgSP',
+  // My own walks with Boris since we came to Denmark, added to the home-page counter: walks a day, km and minutes each.
+  borisWalks: { since: '2026-07-21', perDay: 2, km: 2, minutes: 30 },
   googleClientId: '',               // OAuth web client ID for "Sign in with Google" (public, set in admin)
   // Membership plans. walks = walk credits per period, months = period length. "pack" credits add up and last
   // the whole period (punch card); "monthly" gives a fresh allowance each paid month. Edited in admin.
@@ -68,6 +73,7 @@ export async function getConfig() {
   });
   const plans = DEFAULT_CONFIG.plans.map((d) => ({ ...d, ...((saved.plans || []).find((x) => x.id === d.id) || {}), id: d.id, kind: d.kind, months: d.months }));
   const config = { ...DEFAULT_CONFIG, ...saved, services, plans };
+  if (!config.pawshake || /\/sitter\/can$/.test(config.pawshake)) config.pawshake = DEFAULT_CONFIG.pawshake; // old placeholder link
   // Admin setting wins; otherwise fall back to the GOOGLE_CLIENT_ID env var (a public value).
   // An empty admin field falls back to the default number instead of hiding MobilePay.
   config.mobilepay = config.mobilepay || DEFAULT_CONFIG.mobilepay;
@@ -277,6 +283,13 @@ export function showcaseTotals(entries) {
   const ok = entries.filter((e) => e.ok), dogs = new Set(ok.flatMap((e) => e.dogIds || [e.date + e.at]));
   return { walks: ok.length, km: Math.round(ok.reduce((n, e) => n + (e.km || 0), 0) * 10) / 10, minutes: ok.reduce((n, e) => n + (e.minutes || 0), 0), dogs: dogs.size };
 }
+// Boris's and my walks since we came to Denmark (twice a day), counted up to today.
+export function borisTotals(config, day = today()) {
+  const b = config.borisWalks;
+  if (!b?.since || day < b.since) return { walks: 0, km: 0, minutes: 0 };
+  const days = Math.round((Date.parse(day) - Date.parse(b.since)) / 864e5) + 1, walks = days * b.perDay;
+  return { walks, km: walks * b.km, minutes: walks * b.minutes, since: b.since };
+}
 export const dropShowcase = async (bookingId) => { for (const k of Object.keys(pairs(await cmd('HGETALL', 'showcase')))) if (k.startsWith(bookingId + '|')) await cmd('HDEL', 'showcase', k); };
 
 // Ends a walk: summary on the booking, stats + badges on the customer.
@@ -307,6 +320,7 @@ export async function finishTrack(key, track, bk, { endedAt = Date.now(), weathe
   return track;
 }
 
+// Credits are not refunded on cancellation – only when a customer uses the legal right of withdrawal (api/withdraw.js).
 export async function refundCredits(bk) {
   if (!bk.credits || !bk.user || bk.refunded) return;
   const u = await getUser(bk.user);
@@ -357,13 +371,17 @@ const isOpen = (config, d) => !config.closedDates.includes(d) && config.openDays
 // Hour slots a booking holds (walks only): one "date|HH:00" key per walk date.
 // Last day a booking covers (pick-up day for a range, last walk/visit otherwise).
 export const lastDate = (b) => b.end || (b.dates?.length ? b.dates[b.dates.length - 1] : b.date);
-// A 60-minute walk (plus pick-up and drop-off) also takes the next hour, so it claims two slots.
+// Older bookings hold whole hours (a 60-minute walk also the next hour). Window bookings hold "units" inside
+// their window (date|06:00#1, #2 …) – the claimed keys are stored on the booking.
 const nextHour = (time) => String(Number(time.slice(0, 2)) + 1).padStart(2, '0') + ':00';
-export const slotKeys = (b) => (b.time ? (b.dates?.length ? b.dates : [b.date])
+const bookingDates = (b) => (b.dates?.length ? b.dates : [b.date]);
+export const slotKeys = (b) => (b.windowEnd ? (b.slots || []) : b.time ? bookingDates(b)
   .flatMap((d) => [`${d}|${b.time}`, ...(b.minutes === 60 ? [`${d}|${nextHour(b.time)}`] : [])]) : []);
+export const windowUnits = (b) => (b.minutes === 60 ? 2 : 1);
 
 // Claims all slots of a booking or none. Returns the first taken key, or null when everything was claimed.
 export async function claimAll(b) {
+  if (b.windowEnd) return claimWindows(b);
   const done = [];
   for (const k of slotKeys(b)) {
     if (!(await claimSlot(k, b.id))) { for (const d of done) await freeSlot(d); return k; }
@@ -371,9 +389,30 @@ export async function claimAll(b) {
   }
   return null;
 }
+async function claimWindows(b) {
+  const s = Number(b.time.slice(0, 2)), e = Number(b.windowEnd.slice(0, 2)), need = windowUnits(b);
+  const slots = await getSlots(), claimed = [];
+  const undo = async (k) => { for (const c of claimed) await freeSlot(c); return k; };
+  for (const d of bookingDates(b)) {
+    if (slots[`${d}|${b.time}`] === 'blocked') return undo(`${d}|${b.time}`);   // the whole window is closed
+    // Hours taken by older hourly bookings or blocked by the admin also use up room in the window.
+    let old = 0;
+    for (let h = s; h < e; h++) if (slots[`${d}|${String(h).padStart(2, '0')}:00`]) old++;
+    let got = 0;
+    for (let i = 1; i <= e - s - old && got < need; i++) {
+      const k = `${d}|${b.time}#${i}`;
+      if (await claimSlot(k, b.id)) { claimed.push(k); got++; }
+    }
+    if (got < need) return undo(`${d}|${b.time}`);
+  }
+  b.slots = claimed;
+  return null;
+}
 export async function freeAll(b) {
   for (const k of slotKeys(b)) if ((await slotOwner(k)) === b.id) await freeSlot(k);
 }
+// "06–09" for a window booking, "10:00" for an older hourly one.
+export const timeLabel = (b) => (b.windowEnd ? `${b.time.slice(0, 2)}–${b.windowEnd.slice(0, 2)}` : b.time);
 
 // A pet profile. Dogs may carry the owner's declaration (hundeerklæring) – optional, filled in on "Mine ture":
 // vaccinated, chipped, liability insurance, bite history, ok with other dogs, health notes. Only answered fields are kept.
@@ -427,16 +466,17 @@ export function buildBooking(input, config, { admin = false, member = false } = 
   }
   if (!dates.length) return { error: 'date' };
 
-  let time = '';
+  let time = '', windowEnd = '';
   if (svc.mode === 'slot') {
     time = clean(input.time, 5);
-    const h = Number(time.slice(0, 2));
-    if (!/^\d{2}:00$/.test(time) || h < config.hours.start || h >= config.hours.end) return { error: 'time' };
-    if (!admin && dates[0] === t && h <= nowHour()) return { error: 'time' };
+    const h = Number(time.slice(0, 2)), win = (config.walkWindows || []).find(([s]) => s === h);
+    if (!/^\d{2}:00$/.test(time) || !win) return { error: 'time' };
+    // Today only while at least an hour of the window is left.
+    if (!admin && dates[0] === t && nowHour() + 1 >= win[1]) return { error: 'time' };
+    windowEnd = String(win[1]).padStart(2, '0') + ':00';
   }
-  // Walks are 30 minutes as standard; 60 minutes on request (+longWalkPct %), and must end before closing.
+  // Walks are 30 minutes as standard; 60 minutes on request (+longWalkPct %).
   const minutes = svc.id === 'walk' ? (Number(input.minutes) === 60 ? 60 : 30) : 0;
-  if (minutes === 60 && Number(time.slice(0, 2)) + 1 >= config.hours.end) return { error: 'time' };
 
   // Pets: a list of profiles (name, dog/cat, size, breed); older input only sends a count.
   const allowed = SERVICE_PETS[svc.id] || ['dog', 'cat'];
@@ -455,7 +495,7 @@ export function buildBooking(input, config, { admin = false, member = false } = 
     date: dates[0], end: plan === 'range' ? end : '', dates: plan === 'range' ? [] : dates, weekdays, time,
     nights: plan === 'range' ? dates.length : 0, days: svc.mode === 'days' ? dates.length : 0, count: units,
     pets, petList, meet: !!input.meet,
-    minutes, estimate: estimate(svc, units, pets, minutes === 60 ? config.longWalkPct : 0), name, phone,
+    windowEnd, minutes, estimate: estimate(svc, units, pets, minutes === 60 ? config.longWalkPct : 0), name, phone,
     email: clean(input.email, 120), address: clean(input.address, 160),
     dog: clean(input.dog, 60) || first.name || '', breed: clean(input.breed, 60) || first.breed || '', size: clean(input.size, 10) || first.size || '',
     notes: clean(input.notes, 600),

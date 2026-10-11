@@ -70,7 +70,7 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
       <form id="add" class="grid" style="margin-top:10px">
         <div class="f"><label class="label" for="a-service">Service</label><select id="a-service"></select></div>
         <div class="f"><label class="label" for="a-date">Date</label><input id="a-date" type="date" required></div>
-        <div class="f"><label class="label" for="a-time">Time (walks)</label><select id="a-time"></select></div>
+        <div class="f"><label class="label" for="a-time">Time window (walks)</label><select id="a-time"></select></div>
         <div class="f"><label class="label" for="a-nights">Nights / days</label><input id="a-nights" type="number" min="1" max="30" value="1"></div>
         <div class="f"><label class="label" for="a-pets">Pets</label><input id="a-pets" type="number" min="1" max="6" value="1"></div>
         <div class="f"><label class="label" for="a-name">Owner name</label><input id="a-name" required></div>
@@ -82,7 +82,7 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
       </form></div>
     <div class="box"><h2>Block times</h2>
       <div class="row" style="margin-block:10px"><input id="b-date" type="date" style="max-width:190px" aria-label="Date"><button type="button" id="b-day"></button></div>
-      <div class="slots" id="b-slots"></div><p class="label" style="margin-top:8px">Tap a free time to block it. Tap again to open it.</p></div>
+      <div class="slots" id="b-slots"></div><p class="label" style="margin-top:8px">Walks booked / room in each window. Tap a window to close it for new bookings; tap again to open it.</p></div>
     <div class="box"><h2>Email</h2><div id="mail-status" style="margin:10px 0"></div><button type="button" id="mail-test">Send a test email to me</button></div>
     <div class="box"><h2>Settings</h2>
       <form id="cfg" class="grid" style="margin-top:10px">
@@ -176,16 +176,19 @@ function render(){
   const list=D.bookings.filter(b=>filter==='all'||(filter==='pending'?b.status==='pending':b.date>=D.today&&b.status!=='cancelled'));
   $('bookings').replaceChildren(...(list.length?list.map(card):[el('p',{className:'label',textContent:'No bookings here yet.'})]));
   if(!$('b-date').value)$('b-date').value=D.today;if(!$('a-date').value)$('a-date').value=D.today;
-  const hrs=[];for(let h=D.config.hours.start;h<D.config.hours.end;h++)hrs.push(pad(h)+':00');
-  const cur=$('a-time').value;$('a-time').replaceChildren(...hrs.map(h=>el('option',{value:h,textContent:h})));if(hrs.includes(cur))$('a-time').value=cur;
+  const wins=(D.config.walkWindows||[[6,9],[9,12],[12,16],[16,20],[20,24]]),wl=(w)=>pad(w[0])+'–'+pad(w[1]);
+  const cur=$('a-time').value;$('a-time').replaceChildren(...wins.map(w=>el('option',{value:pad(w[0])+':00',textContent:wl(w)})));if(wins.some(w=>pad(w[0])+':00'===cur))$('a-time').value=cur;
   const d=$('b-date').value,closed=D.config.closedDates.includes(d);$('b-day').textContent=closed?'Open this whole day':'Close this whole day';
-  $('b-slots').replaceChildren(...hrs.map(h=>{const k=d+'|'+h,bk=D.bookings.find(b=>b.status!=='cancelled'&&keysOf(b).includes(k)),bl=D.blocked.includes(k);
-    const b=el('button',{type:'button',textContent:h,title:bk?bk.name:''});if(bk){b.className='booked';b.disabled=true}else{b.setAttribute('aria-pressed',bl);b.onclick=()=>act({action:bl?'unblock':'block',key:k})}return b}));
+  // One button per window: walks booked / room, tap to close or open the whole window.
+  $('b-slots').replaceChildren(...wins.map(w=>{const time=pad(w[0])+':00',k=d+'|'+time,bl=D.blocked.includes(k);
+    const inWin=D.bookings.filter(b=>b.status!=='cancelled'&&b.time&&(b.dates&&b.dates.length?b.dates:[b.date]).includes(d)&&Number(b.time.slice(0,2))>=w[0]&&Number(b.time.slice(0,2))<w[1]);
+    const used=inWin.reduce((n,b)=>n+(b.minutes===60?2:1),0);
+    const b=el('button',{type:'button',textContent:wl(w)+' · '+used+'/'+(w[1]-w[0]),title:inWin.map(x=>x.name).join(', ')});b.setAttribute('aria-pressed',bl);b.onclick=()=>act({action:bl?'unblock':'block',key:k});return b}));
 }
 // "Mon 12 Oct 09:00 · Tue 13 Oct …", "Every Mon, Thu 07:00 from 12 Oct (16×)", "20 Oct → 23 Oct (3 nights)"
 const WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const dshort=(d)=>new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-function whenOf(b){const tm=b.time?' '+b.time:'';
+function whenOf(b){const tm=b.time?' '+(b.windowEnd?b.time.slice(0,2)+'–'+b.windowEnd.slice(0,2):b.time):'';
   if(b.end)return dshort(b.date)+' → '+dshort(b.end)+' ('+b.nights+' nights)';
   if(b.plan==='weekly')return 'Every '+(b.weekdays||[]).map(n=>WDN[n]).join(', ')+tm+' from '+dshort(b.date)+' ('+(b.dates||[]).length+'×)';
   const ds=b.dates&&b.dates.length?b.dates:[b.date];return ds.map(dshort).join(' · ')+tm}

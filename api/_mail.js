@@ -67,8 +67,10 @@ const utc = (d) => d.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
 // Events of a booking: timed walks (30 min), all-day visit/day-care days, or one stay from drop-off to pick-up.
 export function events(b) {
   if (b.end) return [{ allDay: true, start: ymd(b.date), end: ymd(addDay(b.end, 1)), date: b.date }];
+  // A window booking blocks the whole window in the calendar (I come some time inside it).
+  const len = b.windowEnd ? (Number(b.windowEnd.slice(0, 2)) - Number(b.time.slice(0, 2))) * 60 : b.minutes || 30;
   return dates(b).map((d) => (b.time
-    ? { start: utc(cph(d, b.time)), end: utc(new Date(cph(d, b.time).getTime() + (b.minutes || 30) * 60e3)), date: d }
+    ? { start: utc(cph(d, b.time)), end: utc(new Date(cph(d, b.time).getTime() + len * 60e3)), date: d }
     : { allDay: true, start: ymd(d), end: ymd(addDay(d, 1)), date: d }));
 }
 const BYDAY = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
@@ -101,7 +103,8 @@ function whenLines(b, lang) {
   const t = L[lang], loc = lang === 'en' ? 'en-GB' : 'da-DK';
   const f = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString(loc, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
   if (b.end) return [`${f(b.date)} ${t.to} ${f(b.end)}`];
-  return dates(b).map((d) => f(d) + (b.time ? ` ${t.at} ${b.time}` : ''));
+  const tm = b.windowEnd ? `${b.time.slice(0, 2)}–${b.windowEnd.slice(0, 2)}` : b.time;
+  return dates(b).map((d) => f(d) + (b.time ? ` ${t.at} ${tm}` : ''));
 }
 function rows(b, config, lang, admin, confirmed = false) {
   const t = L[lang], w = whenLines(b, lang);
