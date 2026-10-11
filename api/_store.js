@@ -45,7 +45,7 @@ export const DEFAULT_CONFIG = {
   openDays: [0, 1, 2, 3, 4, 5, 6],   // 0 = Sunday
   closedDates: [],
   mobilepay: '+45 53 51 42 00',   // MobilePay number customers pay to (admin can change it)
-  phone: '',
+  phone: '+45 53 51 42 00',       // contact number shown on the site (admin can change it)
   pawshake: 'https://en.pawshake.dk/sitter/can',
   googleClientId: '',               // OAuth web client ID for "Sign in with Google" (public, set in admin)
   // Membership plans. walks = walk credits per period, months = period length. "pack" credits add up and last
@@ -71,6 +71,7 @@ export async function getConfig() {
   // Admin setting wins; otherwise fall back to the GOOGLE_CLIENT_ID env var (a public value).
   // An empty admin field falls back to the default number instead of hiding MobilePay.
   config.mobilepay = config.mobilepay || DEFAULT_CONFIG.mobilepay;
+  config.phone = config.phone || DEFAULT_CONFIG.phone;
   config.googleClientId = config.googleClientId || process.env.GOOGLE_CLIENT_ID || '';
   return config;
 }
