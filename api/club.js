@@ -3,6 +3,7 @@
 //                  totals = hours, km and dogs over every published walk)
 // GET ?photo=ID  → the image (reviews and gallery)
 import * as s from './_store.js';
+import { seedBoris } from './_seed.js';
 
 export default async function handler(req, res) {
   try {
@@ -14,6 +15,7 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // ids never change
       return res.end(Buffer.from(p.b64, 'base64'));
     }
+    await seedBoris();
     const [reviews, dogs, walks, config] = await Promise.all([s.getReviews(), s.getDogs(), s.getShowcase(), s.getConfig()]);
     // Counter = published customer walks + my walks with Boris since we came to Denmark (Boris counts as one dog).
     const pub = s.showcaseTotals(walks), boris = s.borisTotals(config);

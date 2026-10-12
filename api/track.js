@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       const km = track.status === 'live' ? s.routeKm(track.points) : track.km;
       const date = key.split('|')[1];
       return res.status(200).json({ status: track.status, date, service: bk.service, pub: !!bk.walks?.[date]?.pub, mailed: !!bk.walks?.[date]?.mailed,
-        photo: track.photo || '', card: track.card || '', dogs: s.dogNames(bk), startedAt: track.startedAt, endedAt: track.endedAt || null, km,
+        photo: track.photo || '', card: track.card || '', fixed: track.imported === 'strava-image', dogs: s.dogNames(bk), startedAt: track.startedAt, endedAt: track.endedAt || null, km,
         minutes: track.minutes || Math.round((Date.now() - track.startedAt) / 60000), weather: track.weather || null,
         last: track.points.length ? track.points[track.points.length - 1][2] : null,
         points: track.points.filter((p) => p[3] <= 40).map((p) => [p[0], p[1]]) });

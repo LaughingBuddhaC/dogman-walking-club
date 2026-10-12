@@ -260,7 +260,7 @@ export const dogNames = (bk) => (bk.petList || []).map((p) => p.name).filter(Boo
 async function showcaseEntry(key, track, bk) {
   const v = await cmd('HGET', 'showcase', key), old = v ? JSON.parse(v) : {};
   return { ok: false, ...old, at: track.startedAt, date: key.split('|')[1], km: Math.round(track.km * 10) / 10, minutes: track.minutes,
-    service: bk.service, dog: dogNames(bk), shape: publicShape(track.points), card: track.card || '',
+    service: bk.service, dog: dogNames(bk), shape: publicShape(track.points), card: track.card || '', own: !!bk.own,
     // For the home-page counter: one id per dog (owner + name, hashed), so a dog walked ten times counts once.
     dogIds: (bk.petList?.length ? bk.petList.map((p) => p.name) : [bk.dog || '']).map((n) => crypto.createHash('sha256').update(`${bk.user || String(bk.email || '').toLowerCase() || bk.phone || bk.id}|${String(n).trim().toLowerCase()}`).digest('hex').slice(0, 12)) };
 }
@@ -280,7 +280,8 @@ export async function setShowcase(key, track, bk, on) {
 }
 // Counter for the home page, over the walks whose card is published: time, distance and how many different dogs.
 export function showcaseTotals(entries) {
-  const ok = entries.filter((e) => e.ok), dogs = new Set(ok.flatMap((e) => e.dogIds || [e.date + e.at]));
+  // Own walks with Boris are left out: the Boris estimate in borisTotals already covers them.
+  const ok = entries.filter((e) => e.ok && !e.own), dogs = new Set(ok.flatMap((e) => e.dogIds || [e.date + e.at]));
   return { walks: ok.length, km: Math.round(ok.reduce((n, e) => n + (e.km || 0), 0) * 10) / 10, minutes: ok.reduce((n, e) => n + (e.minutes || 0), 0), dogs: dogs.size };
 }
 // Boris's and my walks since we came to Denmark (twice a day), counted up to today.
@@ -290,6 +291,7 @@ export function borisTotals(config, day = today()) {
   const days = Math.round((Date.parse(day) - Date.parse(b.since)) / 864e5) + 1, walks = days * b.perDay;
   return { walks, km: walks * b.km, minutes: walks * b.minutes, since: b.since };
 }
+export const claimSeed = async (name) => (await cmd('HSETNX', 'seeds', name, new Date().toISOString())) === 1;
 export const dropShowcase = async (bookingId) => { for (const k of Object.keys(pairs(await cmd('HGETALL', 'showcase')))) if (k.startsWith(bookingId + '|')) await cmd('HDEL', 'showcase', k); };
 
 // Ends a walk: summary on the booking, stats + badges on the customer.
