@@ -112,8 +112,9 @@ button.sm{font-size:.9rem;padding:9px 14px}
     <input type="file" id="f-cam" accept="image/*" capture="environment" hidden><input type="file" id="f-pick" accept="image/*" hidden>
     <button class="p" type="button" id="c-save">Save card &amp; notify the owner</button>
     <div class="small" id="c-state" role="status"></div>
+    <button type="button" id="c-side" hidden>Route side: automatic</button>
     <div class="two"><button type="button" id="c-share">Share</button><button type="button" id="c-pub" disabled>Publish on home page</button></div>
-    <p class="small">The card is saved with the walk and emailed to the owner once. It only appears on the home page after you tap <b>Publish</b>.</p>
+    <p class="small">Tip: leave free space on one side of the dog when you take the photo – the route is drawn there. The card is saved with the walk and emailed to the owner once. It only appears on the home page after you tap <b>Publish</b>.</p>
     <button type="button" id="back">Back to the list</button>
   </section>
   <section id="install" class="card" hidden>
@@ -133,24 +134,27 @@ const A={data:null,day:null,key:null,booking:null,watch:null,buf:[],pts:[],start
 try{A.src=localStorage.getItem('walk-src')||'phone'}catch(e){}
 // ---- Walk card: the dog's photo with the route and the numbers on it ----
 // Saved with the walk (photo + finished picture), emailed to the owner once, and shown on the home page only after Publish.
-const C={key:null,j:null,img:null,newPhoto:null,canvas:null};
+const C={key:null,j:null,img:null,newPhoto:null,canvas:null,side:''};
 // A photo taken during the walk waits here (and in localStorage, in case the page reloads) until the walk is finished.
 let pending=null;try{pending=localStorage.getItem('walk-photo')||null}catch(e){}
 const setPending=(u)=>{pending=u;try{u?localStorage.setItem('walk-photo',u):localStorage.removeItem('walk-photo')}catch(e){}$('a-photo').textContent=u?'📷 Photo taken ✓ (tap to retake)':'📷 Photo of the dog for the card'};
 function paintCard(){const j=C.j;
   // A card made by hand (route only in the picture, no GPS points): shown as it is, it cannot be redrawn here.
-  for(const id of ['c-save','c-cam','c-pick'])$(id).hidden=!!j.fixed;
+  for(const id of ['c-save','c-cam','c-pick','c-side'])$(id).hidden=!!j.fixed;
   if(j.fixed&&C.img){const cv=document.createElement('canvas');cv.width=C.img.naturalWidth;cv.height=C.img.naturalHeight;cv.getContext('2d').drawImage(C.img,0,0);C.canvas=cv;$('c-prev').replaceChildren(cv)}
-  else{C.canvas=WalkCard.draw({points:j.points,km:j.km,minutes:j.minutes,date:j.date,title:j.dogs,lang:'da',photo:C.img},'soft');$('c-prev').replaceChildren(C.canvas)}
+  // With a photo the route goes beside the dog, on the side with room; the button switches side (automatic → left → right).
+  else{const d={points:j.points,km:j.km,minutes:j.minutes,date:j.date,title:j.dogs,lang:'da',photo:C.img,side:C.side||undefined};C.canvas=WalkCard.draw(d,'soft');$('c-prev').replaceChildren(C.canvas);
+    $('c-side').hidden=!C.img;$('c-side').textContent='Route side: '+(C.side?C.side:'automatic ('+(d.usedSide||'–')+')')}
   $('c-save').textContent=j.card?(C.newPhoto?'Save the new photo':'Save card again'):(j.mailed?'Save card':'Save card & notify the owner');
   $('c-pub').disabled=!j.card;$('c-pub').textContent=j.pub?'On home page ✓ (remove)':'Publish on home page';$('c-pub').setAttribute('aria-pressed',String(!!j.pub))}
 async function openCard(key,finished){$('msg').textContent='';$('c-state').textContent='';
-  try{const j=await api('/api/track?key='+encodeURIComponent(key));await WalkCard.ready();Object.assign(C,{key,j,img:null,newPhoto:null});
+  try{const j=await api('/api/track?key='+encodeURIComponent(key));await WalkCard.ready();Object.assign(C,{key,j,img:null,newPhoto:null,side:''});
     if(j.fixed&&j.card){C.img=await WalkCard.loadImage('/api/club?photo='+j.card)}else if(finished&&pending){C.newPhoto=pending;C.img=await WalkCard.loadImage(pending)}else if(j.photo){try{C.img=await WalkCard.loadImage('/api/club?photo='+j.photo)}catch(e){}}
     $('list').hidden=true;$('active').hidden=true;$('done').hidden=false;$('done-title').hidden=!finished;$('done-text').hidden=!finished;$('ot-quiet').hidden=!finished||A.src!=='ot';
     if(j.fixed)$('c-state').textContent='This card was made by hand from a Strava picture, so it can be published or shared but not redrawn here.';else if(!j.card)$('c-state').textContent=C.img?'Not saved yet – tap Save.':'Add a photo of the dog, then save.';paintCard();scrollTo(0,0)}
   catch(e){$('msg').textContent='Could not load the walk card: '+e.message;if($('list').hidden){A.data=null;load()}}}
 async function gotPhoto(input){const f=input.files[0];input.value='';if(!f)return null;try{return await WalkCard.photoFile(f)}catch(e){$('msg').textContent='Could not read that photo.';return null}}
+$('c-side').onclick=()=>{C.side=C.side===''?'left':C.side==='left'?'right':'';if(C.j.card)$('c-state').textContent='Changed – tap Save to keep it.';paintCard()};
 $('c-cam').onclick=()=>$('f-cam').click();$('c-pick').onclick=()=>$('f-pick').click();
 // The same two file inputs serve the card editor and the photo button shown during a walk.
 for(const id of ['f-cam','f-pick'])$(id).onchange=async()=>{const p=await gotPhoto($(id));if(!p||!p.url)return;

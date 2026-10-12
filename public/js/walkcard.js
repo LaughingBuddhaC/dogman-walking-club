@@ -4,7 +4,7 @@
 // No map tiles are drawn, so the picture shows the shape of the walk but not where it was.
 // WalkCard.open({ points:[[lat,lon],…], km, minutes, date:'YYYY-MM-DD', title, lang, photoUrl? })
 // await WalkCard.ready(); WalkCard.draw(data, 'soft' | 'dark' | 'clear') → canvas (data.photo = a loaded image, optional;
-// data.layout = 'over' (default) | 'split' | 'corner'; data.drawRoute(g, box, casing) replaces the GPS line)
+// data.layout = 'side' (default with a photo) | 'split' | 'corner' | 'over'; data.side = 'left' | 'right' (else automatic); data.drawRoute(g, box, casing) replaces the GPS line)
 (function () {
   const W = 1080, H = 1920, ORANGE = ['#ffad5c', '#f07a1e'];
   const TXT = {
@@ -15,7 +15,27 @@
   const num = (n, lang, d) => Number(n || 0).toLocaleString(lang === 'da' ? 'da-DK' : 'en-GB', { minimumFractionDigits: d, maximumFractionDigits: d });
 
   // Lat/lon → canvas points that fill the box (x, y, w, h) with the route centred and north up.
+  // Where the GPS dropped out (two fixes more than 80 m apart), the straight jump is replaced by a gently winding
+  // line between the two fixes, so the route reads like a walked path. Deterministic: the same walk draws the same way.
+  function organic(points) {
+    const out = [points[0]], m = 111320;
+    for (let i = 1; i < points.length; i++) {
+      const a = points[i - 1], b = points[i], k = Math.cos((a[0] * Math.PI) / 180);
+      const dx = (b[1] - a[1]) * k * m, dy = (b[0] - a[0]) * m, len = Math.hypot(dx, dy);
+      if (len > 80) {
+        const n = Math.min(60, Math.ceil(len / 12)), nx = -dy / len, ny = dx / len, seed = (Math.abs(a[0] * 1e5 + b[1] * 1e5) % 1000) / 1000;
+        for (let j = 1; j < n; j++) {
+          const t = j / n, env = Math.sin(Math.PI * t);   // no offset at the two real fixes
+          const off = env * len * (0.05 * Math.sin(t * Math.PI * (2 + seed * 2) + seed * 6) + 0.025 * Math.sin(t * Math.PI * (7 + seed * 3)));
+          out.push([a[0] + (b[0] - a[0]) * t + (ny * off) / m, a[1] + (b[1] - a[1]) * t + (nx * off) / (m * k)]);
+        }
+      }
+      out.push(b);
+    }
+    return out;
+  }
   function fit(points, box) {
+    points = organic(points);
     const k = Math.cos((points[0][0] * Math.PI) / 180), xy = points.map((p) => [p[1] * k, -p[0]]);
     const xs = xy.map((p) => p[0]), ys = xy.map((p) => p[1]);
     const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0 || 1e-9, h = Math.max(...ys) - y0 || 1e-9;
@@ -26,6 +46,38 @@
   // The logo (embossed round mark) is loaded once; cards drawn before it arrives simply have no logo.
   let logo = null, logoP = null;
   const ready = () => logoP || (logoP = loadImage('/img/brand/mark-emboss-round.png').then((i) => { logo = i; }).catch(() => {}));
+  // Finds a golden/brown dog in the photo by its fur colour (hue 15–40°, fairly saturated): the largest connected
+  // patch of such pixels (fallen leaves are small, scattered patches). Returns the dog's box as fractions of the
+  // photo ({x0, x1, y0, y1}, with a little margin) or null. Good enough to pick the free side; Walk mode can override.
+  function findDog(img) {
+    const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, w = 96, h = Math.max(1, Math.round((w * ih) / iw));
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.drawImage(img, 0, 0, w, h);
+    const px = g.getImageData(0, 0, w, h).data, fur = new Uint8Array(w * h);
+    for (let n = 0; n < w * h; n++) {
+      const r = px[n * 4] / 255, gg = px[n * 4 + 1] / 255, b = px[n * 4 + 2] / 255, mx = Math.max(r, gg, b), dl = mx - Math.min(r, gg, b);
+      if (mx < 0.28 || dl / mx < 0.35 || mx !== r) continue;
+      const hue = 60 * (((gg - b) / dl) % 6);
+      if (hue >= 15 && hue <= 40) fur[n] = 1;
+    }
+    let best = [];
+    const seen = new Uint8Array(w * h);
+    for (let n = 0; n < w * h; n++) {
+      if (!fur[n] || seen[n]) continue;
+      const comp = [], stack = [n]; seen[n] = 1;
+      while (stack.length) {
+        const m = stack.pop(), x = m % w, y = (m - x) / w; comp.push(m);
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx, ny = y + dy, k = ny * w + nx;
+          if (nx >= 0 && nx < w && ny >= 0 && ny < h && fur[k] && !seen[k]) { seen[k] = 1; stack.push(k); }
+        }
+      }
+      if (comp.length > best.length) best = comp;
+    }
+    if (best.length < w * h * 0.015) return null;
+    const xs = best.map((m) => (m % w) / w).sort((a, b) => a - b), ys = best.map((m) => Math.floor(m / w) / h).sort((a, b) => a - b);
+    const q = (a, p) => a[Math.floor(p * (a.length - 1))];
+    return { x0: Math.max(0, q(xs, 0.02) - 0.06), x1: Math.min(1, q(xs, 0.98) + 0.06), y0: q(ys, 0.02), y1: q(ys, 0.98) };
+  }
   const rr = (g, x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
   const routePath = (g, pts) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); };
   const dateText = (d) => (d.date ? new Date(d.date + 'T12:00:00').toLocaleDateString(d.lang === 'en' ? 'en-GB' : 'da-DK', { weekday: 'long', day: 'numeric', month: 'long' }) : '');
@@ -61,9 +113,10 @@
     text('DOGMAN WALKING CLUB', M + 180, 146, `800 46px ${FONT}`, k.ink);
     text(t.tag, M + 180, 196, `500 33px ${FONT}`, k.soft);
 
-    // Layouts (default 'over' until one is chosen): 'split' – photo on top, the route in its own pressed-in tile beside the numbers (never over the dog);
+    // Layouts: 'side' (default with a photo) – the route on the photo beside the dog, on the side with room;
+    // 'split' – photo on top, the route in its own pressed-in tile beside the numbers (never over the dog);
     // 'corner' – the route in a small tile in the photo's corner; 'over' – the route drawn across the photo.
-    const layout = d.photo ? d.layout || 'over' : 'over';
+    const layout = d.photo ? d.layout || 'side' : 'over';
     const photoIn = (P) => { const iw = d.photo.naturalWidth || d.photo.width, ih = d.photo.naturalHeight || d.photo.height, sc = Math.max(P.w / iw, P.h / ih);
       g.save(); rr(g, P.x, P.y, P.w, P.h, 44); g.clip(); g.drawImage(d.photo, P.x + (P.w - iw * sc) / 2, P.y + (P.h - ih * sc) / 2, iw * sc, ih * sc); g.restore(); };
     // The route fitted into a box; `casing` puts a white outline under it so it reads on a photo.
@@ -110,6 +163,17 @@
         const s2 = 300, T = { x: P.x + P.w - s2 - 26, y: P.y + P.h - s2 - 26, w: s2, h: s2 };
         g.save(); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 24; g.shadowOffsetY = 6; rr(g, T.x, T.y, T.w, T.h, 40); g.fillStyle = k.bg; g.globalAlpha = 0.93; g.fill(); g.restore(); noShadow();
         routeIn({ x: T.x + 38, y: T.y + 38, w: T.w - 76, h: T.h - 76 }, false, 10);
+      } else if (layout === 'side') {
+        // The route on the photo itself, beside the dog: on the side with more room (or the one chosen in Walk mode).
+        const iw = d.photo.naturalWidth || d.photo.width, ih = d.photo.naturalHeight || d.photo.height, sc = Math.max(P.w / iw, P.h / ih);
+        const ox = P.x + (P.w - iw * sc) / 2, toX = (f) => Math.min(P.x + P.w, Math.max(P.x, ox + f * iw * sc));
+        const dog = d.dog === undefined ? findDog(d.photo) : d.dog, L = dog ? toX(dog.x0) : P.x + P.w * 0.35, R = dog ? toX(dog.x1) : P.x + P.w * 0.65;
+        const side = d.side === 'left' || d.side === 'right' ? d.side : L - P.x >= P.x + P.w - R ? 'left' : 'right';
+        const pad = 50, minW = P.w * 0.28;
+        // The free strip between the photo edge and the dog, at least 28 % of the photo wide.
+        const x0 = side === 'left' ? P.x + pad : Math.min(R + 24, P.x + P.w - pad - minW), x1 = side === 'left' ? Math.max(L - 24, P.x + pad + minW) : P.x + P.w - pad;
+        routeIn({ x: x0, y: P.y + 90, w: x1 - x0, h: P.h - 180 }, true, 14);
+        d.usedSide = side;
       } else routeIn({ x: P.x + 120, y: P.y + 120, w: P.w - 240, h: P.h - 240 }, !!d.photo);
       const size = titleFit(104, W - 2 * M - 16);
       text(title, M + 8, 1404, `800 ${size}px ${FONT}`, k.ink);
@@ -205,5 +269,5 @@
   }
   // A photo file from the camera or gallery → { url (JPEG data URL, ≤ 1280 px), img }.
   async function photoFile(file) { const u = URL.createObjectURL(file); try { const url = jpeg(await loadImage(u), 1280); return { url, img: await loadImage(url) }; } finally { URL.revokeObjectURL(u); } }
-  window.WalkCard = { open, draw, ready, share, jpeg, loadImage, photoFile };
+  window.WalkCard = { open, draw, findDog, ready, share, jpeg, loadImage, photoFile };
 })();

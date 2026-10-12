@@ -334,6 +334,7 @@ export async function ownWalk(date, startedAt) {
   await saveBooking(bk);
   return bk;
 }
+export const showcaseRaw = async () => Object.fromEntries(Object.entries(pairs(await cmd('HGETALL', 'showcase'))).map(([k, v]) => [k, JSON.parse(v)]));
 export const claimSeed = async (name) => (await cmd('HSETNX', 'seeds', name, new Date().toISOString())) === 1;
 export const dropShowcase = async (bookingId) => { for (const k of Object.keys(pairs(await cmd('HGETALL', 'showcase')))) if (k.startsWith(bookingId + '|')) await cmd('HDEL', 'showcase', k); };
 

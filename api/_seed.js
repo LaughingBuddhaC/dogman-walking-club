@@ -1,17 +1,20 @@
-// One-off data import, run by the first /api/club request after deploy; the claim in hash 'seeds' makes it run once.
+// One-off data change, run by the first /api/club request after deploy; the claim in hash 'seeds' makes it run once.
+// Swaps the picture of Boris's two hand-made walk cards (found by their old card id) for the new layout.
 import * as s from './_store.js';
-import { CARD, PHOTO } from './_seed-data.js';
+import { CARDS } from './_seed-data.js';
 
 export async function seedWalk() {
-  if (!(await s.claimSeed('boris-2026-10-12-evening'))) return;
-  const date = '2026-10-12', km = 1.96, minutes = 34, startedAt = Date.parse('2026-10-12T19:55:00+02:00'), endedAt = startedAt + minutes * 60e3;
-  const photo = await s.savePhoto(PHOTO), card = await s.savePhoto(CARD);
-  const bk = await s.ownWalk(date, startedAt);
-  const key = `${bk.id}|${date}`;
-  bk.notes = 'Strava-tur, GPS-signalet forsvandt på vej hjem; kortet er lavet i hånden';
-  bk.walks = { [date]: { km, minutes, startedAt, key, photo, card, pub: true } };
-  // No GPS points: the route only exists in the card picture.
-  const track = { status: 'done', startedAt, endedAt, km, minutes, points: [], imported: 'strava-image', photo, card, weather: { rain: false, snow: false } };
-  await s.saveTrack(key, track); await s.saveBooking(bk);
-  await s.setShowcase(key, track, bk, true);
+  if (!(await s.claimSeed('boris-cards-beside-dog'))) return;
+  for (const [key, e] of Object.entries(await s.showcaseRaw())) {
+    const data = CARDS[e.card];
+    if (!data) continue;
+    const [id, date] = key.split('|'), bk = await s.getBooking(id), track = await s.getTrack(key);
+    const card = await s.savePhoto(data);
+    if (!bk || !track || !card) continue;
+    const old = track.card;
+    track.card = card; await s.saveTrack(key, track);
+    if (bk.walks?.[date]) { bk.walks[date].card = card; await s.saveBooking(bk); }
+    await s.setShowcase(key, track, bk, e.ok);
+    await s.deletePhoto(old);
+  }
 }
