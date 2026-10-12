@@ -47,6 +47,11 @@ ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
 details summary{cursor:pointer;font-weight:600}
 .prev{width:min(260px,100%);aspect-ratio:9/16;border-radius:18px;overflow:hidden;box-shadow:var(--raise-sm);align-self:center}.prev canvas{width:100%;height:100%;display:block}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}.tabs button{padding:10px 4px;font-size:.88rem;border-radius:14px}
+.tabs button[aria-selected="true"]{box-shadow:var(--inset-sm);color:var(--accent)}.tabs i{font-style:normal;font-size:.72rem;font-weight:700;margin-left:4px;padding:1px 6px;border-radius:999px;background:var(--grad);color:#1d1d1f}.tabs i:empty{display:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.chips button{font-size:.82rem;padding:8px 12px}.chips button[aria-pressed="true"]{box-shadow:var(--inset-sm);color:var(--accent)}
+.wrow{display:grid;grid-template-columns:62px 1fr auto;gap:12px;align-items:center;border-radius:18px;box-shadow:var(--raise-sm);padding:10px 12px;cursor:pointer;text-align:left;font:inherit;color:inherit;background:var(--bg);border:0;width:100%}
+.wrow .th{width:62px;aspect-ratio:9/16;border-radius:10px;object-fit:cover;box-shadow:var(--inset-sm);display:grid;place-items:center;font-size:1.4rem}.wrow b{display:block}.wrow .pill{white-space:nowrap}
 .rec{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center;border-radius:18px;box-shadow:var(--inset-sm);padding:10px}
 .rec svg{width:72px;height:72px;display:block}.rec select{font:inherit;width:100%;padding:10px 12px;border:0;border-radius:12px;background:var(--bg);color:var(--text);box-shadow:var(--raise-sm)}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;margin-top:8px;align-items:center}.kv code{font-size:.78rem;word-break:break-all;padding:6px 8px;border-radius:10px;box-shadow:var(--inset-sm);cursor:pointer;display:block}
@@ -70,9 +75,17 @@ button.sm{font-size:.9rem;padding:9px 14px}
   </section>
 
   <section id="list" hidden>
+    <div class="tabs" role="tablist" id="tabs"><button type="button" data-tab="day">Day</button><button type="button" data-tab="all">Walks<i id="n-all"></i></button><button type="button" data-tab="recs">Recordings<i id="n-recs"></i></button><button type="button" data-tab="setup">Setup</button></div>
+    <div data-pane="day">
     <div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 id="list-title">Today</h2><div class="row"><button type="button" id="prev-day">‹</button><button type="button" id="next-day">›</button></div></div>
     <div id="walks" style="display:flex;flex-direction:column;gap:14px"></div>
-    <div class="card" style="margin-top:20px" id="recs-card">
+    </div>
+    <div data-pane="all" hidden>
+      <div class="chips" id="w-filters"></div>
+      <div id="w-list" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+    <div data-pane="recs" hidden>
+    <div class="card" id="recs-card">
       <div class="row" style="justify-content:space-between"><h2>Recordings · GPSLogger</h2><button type="button" class="sm" id="recs-reload">Refresh</button></div>
       <p class="small">Record with the phone locked: start logging in GPSLogger, walk, stop logging. The recording shows up here – pick the walk it belongs to and the card follows. Standing still at the start or end is cut off.</p>
       <div id="recs" style="display:flex;flex-direction:column;gap:12px"></div>
@@ -87,7 +100,9 @@ button.sm{font-size:.9rem;padding:9px 14px}
         </ol>
       </details>
     </div>
-    <div class="card" style="margin-top:20px">
+    </div>
+    <div data-pane="setup" hidden>
+    <div class="card">
       <h2>GPS source</h2>
       <div class="seg"><button type="button" data-src="phone">This page<span>screen must stay on</span></button><button type="button" data-src="ot">OwnTracks app<span>phone can be locked</span></button></div>
       <details id="ot-setup"><summary>Set up OwnTracks (once)</summary>
@@ -104,6 +119,7 @@ button.sm{font-size:.9rem;padding:9px 14px}
       <p class="small">Tap <b>Import GPX</b> on a booking to add a route you recorded elsewhere. From Strava: open the activity on strava.com → ⋯ → <b>Export GPX</b>.</p>
       <input type="file" id="gpx" accept=".gpx,application/gpx+xml,application/xml,text/xml" hidden>
     </div>
+    </div>
   </section>
 
   <section id="done" class="card" hidden>
@@ -118,6 +134,7 @@ button.sm{font-size:.9rem;padding:9px 14px}
     <div class="two"><button type="button" id="c-share">Share</button><button type="button" id="c-pub" disabled>Publish on home page</button></div>
     <p class="small">Tip: leave free space on one side of the dog when you take the photo – the route is drawn there. The card is saved with the walk and emailed to the owner once. It only appears on the home page after you tap <b>Publish</b>.</p>
     <button type="button" id="back">Back to the list</button>
+    <button type="button" class="sm" id="c-del" style="color:var(--err);align-self:center">Delete this walk</button>
   </section>
   <section id="install" class="card" hidden>
     <b>📲 Put Walk mode on your home screen</b>
@@ -220,8 +237,27 @@ function renderGl(){if(!A.ot)return;const v=[['URL',A.ot.url],['HTTP method','PO
   $('gl-values').replaceChildren(...v.flatMap(([k,x])=>{const c=el('code',null,x);c.title='Tap to copy';c.onclick=async()=>{try{await navigator.clipboard.writeText(x);const o=c.textContent;c.textContent='Copied ✓';setTimeout(()=>c.textContent=o,1200)}catch(e){}};return [el('span','small',k),c]}))}
 $('recs-reload').onclick=async()=>{try{A.data=await api('/api/admin');renderList()}catch(e){$('msg').textContent='Could not refresh: '+e.message}};
 $('gl-setup').addEventListener('toggle',()=>{if($('gl-setup').open)loadOt().then(renderGl)});
+// ---- Tabs: Day (bookings of one day) · Walks (every finished walk, by card status) · Recordings · Setup ----
+let tab='day',wFilter='all';try{tab=localStorage.getItem('walk-tab')||'day';wFilter=localStorage.getItem('walk-filter')||'all'}catch(e){}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;try{localStorage.setItem('walk-tab',tab)}catch(e){}renderList()});
+const WSTATE={all:'All',nocard:'No card yet',waiting:'Waiting for you',home:'On home page'};
+const wState=(w)=>w.pub?'home':w.card?'waiting':'nocard';
+function allWalks(){return A.data.bookings.flatMap(b=>Object.entries(b.walks||{}).map(([date,w])=>({...w,date,dog:(b.petList||[]).map(p=>p.name).filter(Boolean).join(' & ')||b.dog||'Walk',owner:b.name,own:!!b.own,service:b.service})))
+  .sort((a,b)=>b.date.localeCompare(a.date)||(b.startedAt||0)-(a.startedAt||0))}
+function renderAll(){const all=allWalks(),n=(f)=>f==='all'?all.length:all.filter(w=>wState(w)===f).length;
+  $('w-filters').replaceChildren(...Object.keys(WSTATE).map(f=>{const b=el('button',null,WSTATE[f]+' ('+n(f)+')');b.type='button';b.setAttribute('aria-pressed',String(f===wFilter));b.onclick=()=>{wFilter=f;try{localStorage.setItem('walk-filter',f)}catch(e){}renderAll()};return b}));
+  const list=all.filter(w=>wFilter==='all'||wState(w)===wFilter);
+  $('w-list').replaceChildren(...(list.length?list.map(w=>{const r=el('button','wrow');r.type='button';r.onclick=()=>openCard(w.key);
+    let th;if(w.card){th=el('img','th');th.src='/api/club?photo='+w.card;th.loading='lazy';th.alt=''}else th=el('span','th','🐾');
+    const mid=el('div');mid.append(el('b',null,w.dog+' · '+new Date(w.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})),el('span','small',w.km+' km · '+w.minutes+' min · '+(w.own?'my walk':w.owner)));
+    r.append(th,mid,el('span','pill',{home:'on home page',waiting:'waiting',nocard:'no card'}[wState(w)]));return r}):[el('p','small','Nothing here.')]))}
+function renderTabs(){const waiting=allWalks().filter(w=>wState(w)!=='home').length;$('n-all').textContent=waiting||'';$('n-recs').textContent=(A.data.recs||[]).length||'';
+  document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===tab)));
+  document.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==tab);if(tab==='all')renderAll()}
+$('c-del').onclick=async()=>{const b=$('c-del');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to delete the walk and its card';setTimeout(()=>{delete b.dataset.sure;b.textContent='Delete this walk'},4000);return}
+  try{await api('/api/track',{action:'walk-delete',key:C.key});delete b.dataset.sure;b.textContent='Delete this walk';A.data=null;load()}catch(e){$('c-state').textContent='Could not delete: '+e.message}};
 function renderList(){
-  $('list').hidden=false;$('active').hidden=true;$('done').hidden=true;renderRecs();
+  $('list').hidden=false;$('active').hidden=true;$('done').hidden=true;renderRecs();renderTabs();
   const today=A.data.today;$('list-title').textContent=A.day===today?'Today':new Date(A.day+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
   const list=A.data.bookings.filter(b=>covers(b,A.day)).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
   $('walks').replaceChildren(...(list.length?list.map(b=>{const c=el('div','card');

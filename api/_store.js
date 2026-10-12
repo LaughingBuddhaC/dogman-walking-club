@@ -200,6 +200,15 @@ export const shortName = (n) => { const [f, ...r] = String(n || '').trim().split
 // ---- GPS walk tracking (the walker's phone records the route; owners see a map report) ----
 export const getTrack = async (key) => { const v = await cmd('HGET', 'tracks', key); return v ? JSON.parse(v) : null; };
 export const saveTrack = (key, t) => cmd('HSET', 'tracks', key, JSON.stringify(t));
+// Removes a finished walk: route, photo, card, home-page entry and the summary on the booking (and my own-walk
+// booking when it has no walks left). Customer totals and badges already earned stay as they are.
+export async function deleteWalk(key) {
+  const [id, date] = key.split('|'), t = await getTrack(key), bk = await getBooking(id);
+  if (t) { await deletePhoto(t.photo); await deletePhoto(t.card); await cmd('HDEL', 'tracks', key); await setLive(key, false); }
+  await cmd('HDEL', 'showcase', key);
+  if (bk?.walks?.[date]) { const w = bk.walks[date]; if (!t) { await deletePhoto(w.photo); await deletePhoto(w.card); } delete bk.walks[date];
+    if (bk.own && !Object.keys(bk.walks).length) await deleteBooking(bk.id); else await saveBooking(bk); }
+}
 // Walks in progress (hash 'live': key → startedAt), so points from a background tracker app (OwnTracks) find them.
 export const setLive = (key, on) => (on ? cmd('HSET', 'live', key, String(Date.now())) : cmd('HDEL', 'live', key));
 export const liveKeys = async () => Object.keys(pairs(await cmd('HGETALL', 'live')));

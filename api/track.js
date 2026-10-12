@@ -80,6 +80,8 @@ export default async function handler(req, res) {
       await s.deleteRec(r.id);
       return res.status(200).json({ key, km: done.km, minutes: done.minutes });
     }
+    // Walker: POST {action:'walk-delete', key} removes a finished walk with its card (see deleteWalk).
+    if (b.action === 'walk-delete') { if (!validKey(String(b.key || ''))) return res.status(400).json({ error: 'key' }); await s.deleteWalk(String(b.key)); return res.status(200).json({ ok: true }); }
     if (b.action === 'rec-delete') { await s.deleteRec(String(b.rec || '')); return res.status(200).json({ ok: true }); }
     if (b.action === 'import') {
       const bk = await s.getBooking(String(b.booking || ''));
