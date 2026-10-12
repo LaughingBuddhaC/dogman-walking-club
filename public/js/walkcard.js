@@ -3,7 +3,8 @@
 // and a transparent one to lay over a photo in a story. Every card carries the logo.
 // No map tiles are drawn, so the picture shows the shape of the walk but not where it was.
 // WalkCard.open({ points:[[lat,lon],…], km, minutes, date:'YYYY-MM-DD', title, lang, photoUrl? })
-// await WalkCard.ready(); WalkCard.draw(data, 'soft' | 'dark' | 'clear') → canvas (data.photo = a loaded image, optional)
+// await WalkCard.ready(); WalkCard.draw(data, 'soft' | 'dark' | 'clear') → canvas (data.photo = a loaded image, optional;
+// data.layout = 'over' (default) | 'split' | 'corner'; data.drawRoute(g, box, casing) replaces the GPS line)
 (function () {
   const W = 1080, H = 1920, ORANGE = ['#ffad5c', '#f07a1e'];
   const TXT = {
@@ -60,39 +61,63 @@
     text('DOGMAN WALKING CLUB', M + 180, 146, `800 46px ${FONT}`, k.ink);
     text(t.tag, M + 180, 196, `500 33px ${FONT}`, k.soft);
 
-    // The photo in a raised frame, with the route on it. Without a photo the route sits in a pressed-in panel.
-    const F = { x: M, y: 272, w: W - 2 * M, h: 1000 }, P = { x: F.x + 22, y: F.y + 22, w: F.w - 44, h: F.h - 44 };
-    raised(() => rr(g, F.x, F.y, F.w, F.h, 64), 20);
-    if (d.photo) {
-      const iw = d.photo.naturalWidth || d.photo.width, ih = d.photo.naturalHeight || d.photo.height, sc = Math.max(P.w / iw, P.h / ih);
-      g.save(); rr(g, P.x, P.y, P.w, P.h, 44); g.clip();
-      g.drawImage(d.photo, P.x + (P.w - iw * sc) / 2, P.y + (P.h - ih * sc) / 2, iw * sc, ih * sc); g.restore();
-    } else inset(P.x, P.y, P.w, P.h, 44, 12);
-    const pts = (d.points || []).length > 1 ? fit(d.points, { x: P.x + 120, y: P.y + 120, w: P.w - 240, h: P.h - 240 }) : [];
-    if (pts.length) {
-      const grad = g.createLinearGradient(P.x, P.y, P.x + P.w, P.y + P.h); grad.addColorStop(0, ORANGE[0]); grad.addColorStop(1, ORANGE[1]);
-      if (d.photo) { g.shadowColor = 'rgba(0,0,0,.4)'; g.shadowBlur = 16; g.shadowOffsetY = 3; routePath(g, pts); g.strokeStyle = 'rgba(255,255,255,.94)'; g.lineWidth = 26; g.stroke(); noShadow(); }
-      routePath(g, pts); g.strokeStyle = grad; g.lineWidth = 16; g.stroke();
-      const dot = (p, fill) => { g.beginPath(); g.arc(p[0], p[1], 19, 0, 7); g.fillStyle = fill; g.fill(); g.lineWidth = 8; g.strokeStyle = ORANGE[1]; g.stroke(); };
+    // Layouts (default 'over' until one is chosen): 'split' – photo on top, the route in its own pressed-in tile beside the numbers (never over the dog);
+    // 'corner' – the route in a small tile in the photo's corner; 'over' – the route drawn across the photo.
+    const layout = d.photo ? d.layout || 'over' : 'over';
+    const photoIn = (P) => { const iw = d.photo.naturalWidth || d.photo.width, ih = d.photo.naturalHeight || d.photo.height, sc = Math.max(P.w / iw, P.h / ih);
+      g.save(); rr(g, P.x, P.y, P.w, P.h, 44); g.clip(); g.drawImage(d.photo, P.x + (P.w - iw * sc) / 2, P.y + (P.h - ih * sc) / 2, iw * sc, ih * sc); g.restore(); };
+    // The route fitted into a box; `casing` puts a white outline under it so it reads on a photo.
+    const routeIn = (box, casing, lw = 16) => {
+      if (d.drawRoute) return d.drawRoute(g, box, casing);
+      const pts = (d.points || []).length > 1 ? fit(d.points, box) : [];
+      if (!pts.length) return;
+      const grad = g.createLinearGradient(box.x, box.y, box.x + box.w, box.y + box.h); grad.addColorStop(0, ORANGE[0]); grad.addColorStop(1, ORANGE[1]);
+      if (casing) { g.shadowColor = 'rgba(0,0,0,.4)'; g.shadowBlur = 16; g.shadowOffsetY = 3; routePath(g, pts); g.strokeStyle = 'rgba(255,255,255,.94)'; g.lineWidth = lw + 10; g.stroke(); noShadow(); }
+      routePath(g, pts); g.strokeStyle = grad; g.lineWidth = lw; g.stroke();
+      const r = lw * 1.2, dot = (p, fill) => { g.beginPath(); g.arc(p[0], p[1], r, 0, 7); g.fillStyle = fill; g.fill(); g.lineWidth = lw / 2; g.strokeStyle = ORANGE[1]; g.stroke(); };
       dot(pts[0], '#ffffff'); dot(pts[pts.length - 1], ORANGE[1]);
+    };
+    const title = d.title || t.walk;
+    const titleFit = (max, w) => { let size = max; g.font = `800 ${size}px ${FONT}`; while (g.measureText(title).width > w && size > 48) { size -= 4; g.font = `800 ${size}px ${FONT}`; } return size; };
+    const tile = (x, y, w, h, label, value, unit, big) => {
+      inset(x, y, w, h, 44, 10);
+      text(label.toUpperCase(), x + 36, y + (h < 200 ? 50 : 64), `600 ${h < 200 ? 25 : 28}px ${FONT}`, k.soft);
+      g.font = `800 ${big}px ${FONT}`; const vw = g.measureText(value).width;
+      const base = y + h - (h < 200 ? 32 : 44);
+      text(value, x + 34, base, `800 ${big}px ${FONT}`, k.ink);
+      text(unit, x + 34 + vw + 12, base, `600 ${h < 200 ? 34 : 38}px ${FONT}`, k.soft);
+    };
+    const dist = num(d.km, d.lang, 2), mins = String(d.minutes || 0);
+
+    if (layout === 'split') {
+      const F = { x: M, y: 272, w: W - 2 * M, h: 900 };
+      raised(() => rr(g, F.x, F.y, F.w, F.h, 64), 20);
+      photoIn({ x: F.x + 22, y: F.y + 22, w: F.w - 44, h: F.h - 44 });
+      const y0 = 1232, R = { x: M, y: y0, w: 440, h: 528 };
+      inset(R.x, R.y, R.w, R.h, 48, 12);
+      routeIn({ x: R.x + 56, y: R.y + 56, w: R.w - 112, h: R.h - 112 }, false, 13);
+      const cx = M + 440 + 36, cw = W - M - cx, size = titleFit(92, cw - 8);
+      text(title, cx + 4, y0 + 84, `800 ${size}px ${FONT}`, k.ink);
+      text(dateText(d), cx + 6, y0 + 136, `500 34px ${FONT}`, k.soft);
+      tile(cx, y0 + 176, cw, 166, t.dist, dist, 'km', 76);
+      tile(cx, y0 + 362, cw, 166, t.time, mins, t.min, 76);
+    } else {
+      const F = { x: M, y: 272, w: W - 2 * M, h: 1000 }, P = { x: F.x + 22, y: F.y + 22, w: F.w - 44, h: F.h - 44 };
+      raised(() => rr(g, F.x, F.y, F.w, F.h, 64), 20);
+      if (d.photo) photoIn(P); else inset(P.x, P.y, P.w, P.h, 44, 12);
+      if (layout === 'corner') {
+        // A raised tile in the bottom-right corner of the photo, on the card's own surface colour.
+        const s2 = 300, T = { x: P.x + P.w - s2 - 26, y: P.y + P.h - s2 - 26, w: s2, h: s2 };
+        g.save(); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 24; g.shadowOffsetY = 6; rr(g, T.x, T.y, T.w, T.h, 40); g.fillStyle = k.bg; g.globalAlpha = 0.93; g.fill(); g.restore(); noShadow();
+        routeIn({ x: T.x + 38, y: T.y + 38, w: T.w - 76, h: T.h - 76 }, false, 10);
+      } else routeIn({ x: P.x + 120, y: P.y + 120, w: P.w - 240, h: P.h - 240 }, !!d.photo);
+      const size = titleFit(104, W - 2 * M - 16);
+      text(title, M + 8, 1404, `800 ${size}px ${FONT}`, k.ink);
+      text(dateText(d), M + 10, 1462, `500 38px ${FONT}`, k.soft);
+      const gap = 32, tw = (W - 2 * M - gap) / 2;
+      tile(M, 1516, tw, 232, t.dist, dist, 'km', 98);
+      tile(M + tw + gap, 1516, tw, 232, t.time, mins, t.min, 98);
     }
-
-    // Dog's name and the date.
-    const title = d.title || t.walk; let size = 104; g.font = `800 ${size}px ${FONT}`;
-    while (g.measureText(title).width > W - 2 * M - 16 && size > 56) { size -= 6; g.font = `800 ${size}px ${FONT}`; }
-    text(title, M + 8, 1404, `800 ${size}px ${FONT}`, k.ink);
-    text(dateText(d), M + 10, 1462, `500 38px ${FONT}`, k.soft);
-
-    // Numbers in pressed-in tiles.
-    const cols = [[t.dist, num(d.km, d.lang, 2), 'km'], [t.time, String(d.minutes || 0), t.min]], gap = 32, tw = (W - 2 * M - gap * (cols.length - 1)) / cols.length;
-    cols.forEach(([label, value, unit], i) => {
-      const x = M + (tw + gap) * i, y = 1516;
-      inset(x, y, tw, 232, 48, 10);
-      text(label.toUpperCase(), x + 40, y + 76, `600 30px ${FONT}`, k.soft);
-      g.font = `800 98px ${FONT}`; const vw = g.measureText(value).width;
-      text(value, x + 38, y + 180, `800 98px ${FONT}`, k.ink);
-      text(unit, x + 38 + vw + 12, y + 180, `600 40px ${FONT}`, k.soft);
-    });
     text('dmw.cansasmaz.com', W / 2, 1852, `600 34px ${FONT}`, k.acc, 'center');
   }
 
