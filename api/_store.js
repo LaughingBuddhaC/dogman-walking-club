@@ -239,12 +239,12 @@ async function weatherNow(lat, lon) {
 // ---- Home-page showcase: the shape of a finished walk, with nothing that says where it was ----
 // The first and last 150 m are cut off (the customer's door), coordinates are replaced by a 0–1000 drawing
 // grid, and no name, address or time of day is kept.
-export function publicShape(points) {
+export function publicShape(points, cut = 150) {
   const pts = points.filter((p) => p[3] <= 40);
-  const trim = (arr) => { let d = 0, i = 0; while (i < arr.length - 1 && d < 150) { d += hav(arr[i], arr[i + 1]); i++; } return arr.slice(i); };
+  const trim = (arr) => { let d = 0, i = 0; while (i < arr.length - 1 && d < cut) { d += hav(arr[i], arr[i + 1]); i++; } return arr.slice(i); };
   const core = trim(trim(pts).reverse()).reverse();
   let len = 0; for (let i = 1; i < core.length; i++) len += hav(core[i - 1], core[i]);
-  if (core.length < 8 || len < 300) return null;
+  if (core.length < 8 || len < (cut ? 300 : 50)) return null;
   const k = Math.cos((core[0][0] * Math.PI) / 180), xy = core.map((p) => [p[1] * k, -p[0]]);
   const xs = xy.map((p) => p[0]), ys = xy.map((p) => p[1]);
   const x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, h = Math.max(...ys) - y0, sc = 1000 / Math.max(w, h, 1e-9);
@@ -290,6 +290,49 @@ export function borisTotals(config, day = today()) {
   if (!b?.since || day < b.since) return { walks: 0, km: 0, minutes: 0 };
   const days = Math.round((Date.parse(day) - Date.parse(b.since)) / 864e5) + 1, walks = days * b.perDay;
   return { walks, km: walks * b.km, minutes: walks * b.minutes, since: b.since };
+}
+// ---- Recordings from the GPSLogger app (Android) ----
+// GPSLogger records with the screen off and sends each fix while logging is switched on. Fixes are grouped into
+// recordings (a gap of 20 min starts a new one); in Walk mode a recording is then attached to a booking or to my
+// own walk with Boris. Recordings older than 30 days, or attached, are removed.
+const REC_GAP = 20 * 60e3;
+export const getRecs = async () => Object.values(pairs(await cmd('HGETALL', 'recs'))).map((v) => JSON.parse(v)).sort((a, b) => b.start - a.start);
+export const getRec = async (id) => { const v = await cmd('HGET', 'recs', id); return v ? JSON.parse(v) : null; };
+export const deleteRec = async (id) => { await cmd('HDEL', 'recs', id); if ((await cmd('GET', 'recCur')) === id) await cmd('SET', 'recCur', ''); };
+export async function addRecPoint(p) {
+  const cur = await cmd('GET', 'recCur');
+  let r = cur ? await getRec(cur) : null;
+  if (!r || p[2] > r.end + REC_GAP || p[2] < r.start - REC_GAP) {
+    r = { id: newId(), start: p[2], end: p[2], points: [] };
+    await cmd('SET', 'recCur', r.id);
+    for (const old of await getRecs()) if (old.end < Date.now() - 30 * 864e5) await cmd('HDEL', 'recs', old.id);
+  }
+  r.points = mergePoints(r.points, [p]); r.start = r.points[0][2]; r.end = r.points[r.points.length - 1][2];
+  await cmd('HSET', 'recs', r.id, JSON.stringify(r));
+}
+// Drops the standing-still part at both ends (waiting at the door, or logging left on at home): the walk starts
+// at the last fix within 40 m of the first one and ends at the first fix within 40 m of the last one.
+export function trimIdle(points) {
+  const pts = points.filter((p) => p[3] <= 40);
+  if (pts.length < 3) return pts;
+  let a = 0; while (a < pts.length - 1 && hav(pts[a + 1], pts[0]) <= 40) a++;
+  let z = pts.length - 1; while (z > a && hav(pts[z - 1], pts[pts.length - 1]) <= 40) z--;
+  return pts.slice(a, z + 1);
+}
+export const recSummary = (r) => {
+  const pts = trimIdle(r.points), a = pts[0] || r.points[0], z = pts[pts.length - 1] || r.points[r.points.length - 1];
+  return { id: r.id, start: a[2], end: z[2], rawEnd: r.end, km: routeKm(pts), n: r.points.length, live: Date.now() - r.end < 5 * 60e3, shape: publicShape(pts, 0) };
+};
+export const cphDate = (ms) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen' }).format(new Date(ms));
+// A booking for my own walk with Boris (not for a customer; left out of the customer counter, see showcaseTotals).
+export async function ownWalk(date, startedAt) {
+  const hh = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Copenhagen', hour: '2-digit', hour12: false }).format(new Date(startedAt));
+  const bk = { id: newId(), created: new Date().toISOString(), service: 'walk', plan: 'once', date, end: '', dates: [date], weekdays: [], time: `${hh}:00`,
+    nights: 0, days: 0, count: 1, pets: 1, petList: [{ name: 'Boris', type: 'dog', size: 'L', breed: 'Golden retriever' }], meet: false, minutes: 30,
+    estimate: null, name: 'Can (egen hund)', phone: DEFAULT_CONFIG.phone, email: '', address: '', dog: 'Boris', breed: 'Golden retriever', size: 'L',
+    notes: '', vet: '', emergency: '', terms: null, freq: 'once', lang: 'da', status: 'confirmed', paid: true, source: 'admin', own: true };
+  await saveBooking(bk);
+  return bk;
 }
 export const claimSeed = async (name) => (await cmd('HSETNX', 'seeds', name, new Date().toISOString())) === 1;
 export const dropShowcase = async (bookingId) => { for (const k of Object.keys(pairs(await cmd('HGETALL', 'showcase')))) if (k.startsWith(bookingId + '|')) await cmd('HDEL', 'showcase', k); };

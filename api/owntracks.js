@@ -1,7 +1,9 @@
 // Background GPS from the OwnTracks phone app (free, iOS + Android). A web page loses GPS when the screen
 // locks; OwnTracks keeps running and POSTs each fix here in HTTP mode (Basic auth).
 // Phone → POST {_type:'location', lat, lon, tst, acc} → added to every walk in progress, else discarded.
-// Walker (admin password) → GET → the OwnTracks settings, ready to import with one tap.
+// GPSLogger (Android) → POST lat=…&lon=…&tst=…&acc=… (form or JSON) → kept as a recording, attached to a walk later
+//   in Walk mode (see addRecPoint in _store.js). Same Basic-auth user and password as OwnTracks.
+// Walker (admin password) → GET → the OwnTracks settings, ready to import with one tap (also used for GPSLogger).
 import crypto from 'node:crypto';
 import * as s from './_store.js';
 
@@ -32,9 +34,16 @@ export default async function handler(req, res) {
     }
     if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
     if (!isPhone(req)) { await new Promise((r) => setTimeout(r, 600)); return res.status(401).json({ error: 'auth' }); }
-    const b = typeof req.body === 'string' ? (req.body ? JSON.parse(req.body) : {}) : (req.body || {});
-    const lat = Number(b.lat), lon = Number(b.lon), ms = Number(b.tst) * 1000;
-    if (b._type !== 'location' || !(Math.abs(lat) <= 90 && Math.abs(lon) <= 180) || !(ms > 1.6e12)) return res.status(200).json([]);
+    let b = req.body || {};
+    if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = Object.fromEntries(new URLSearchParams(b)); } }
+    const lat = Number(b.lat), lon = Number(b.lon), tst = Number(b.tst) || Date.parse(b.time || '') / 1000, ms = tst < 1e11 ? tst * 1000 : tst;
+    if (b._type !== 'location') {
+      // GPSLogger: only sends while logging is switched on, so every fix belongs to a recording.
+      if (!(Math.abs(lat) <= 90 && Math.abs(lon) <= 180) || !(ms > 1.6e12) || ms > Date.now() + 60e3) return res.status(200).json({ ok: false });
+      await s.addRecPoint([Math.round(lat * 1e6) / 1e6, Math.round(lon * 1e6) / 1e6, Math.round(ms), Math.round(Number(b.acc) || 0)]);
+      return res.status(200).json({ ok: true });
+    }
+    if ( !(Math.abs(lat) <= 90 && Math.abs(lon) <= 180) || !(ms > 1.6e12)) return res.status(200).json([]);
     const p = [Math.round(lat * 1e6) / 1e6, Math.round(lon * 1e6) / 1e6, ms, Math.round(Number(b.acc) || 0)];
     const now = Date.now();
     for (const key of await s.liveKeys()) {

@@ -93,7 +93,8 @@ export default async function handler(req, res) {
     // Profiles (dog declaration, vet, emergency contact) of customers with bookings – filled in on "Mine ture".
     const withBookings = new Set(bookings.map((b) => b.user).filter(Boolean));
     const profiles = Object.fromEntries(users.filter((u) => withBookings.has(u.sub)).map((u) => [u.sub, { pets: u.pets || [], vet: u.vet || '', emergency: u.emergency || '' }]));
-    res.status(200).json({ config, bookings, members, today: s.today(), blocked: Object.keys(slots).filter((k) => slots[k] === 'blocked'),
+    const recs = (await s.getRecs()).map(s.recSummary);
+    res.status(200).json({ config, bookings, members, recs, today: s.today(), blocked: Object.keys(slots).filter((k) => slots[k] === 'blocked'),
       reviews: reviews.sort((a, b) => b.at.localeCompare(a.at)), dogs, withdrawals, profiles,
       mail: { on: mailOn(), from: mailFrom(), log: mailLog } });
   } catch (e) { res.status(500).json({ error: 'server' }); }

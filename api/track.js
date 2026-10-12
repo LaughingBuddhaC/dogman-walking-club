@@ -2,6 +2,8 @@
 // Walker (admin password): POST {action:'start', booking, date} → POST {action:'points', key, pts:[[lat,lon,ms,acc],…]} → POST {action:'stop', key}
 // Points can also arrive from the OwnTracks phone app (api/owntracks.js), which keeps tracking with the screen off.
 // Walker, a route recorded elsewhere: POST {action:'import', booking, date, pts} (GPX file read in the browser).
+// Walker: POST {action:'assign', rec, booking | own:true} turns a GPSLogger recording into a finished walk (own = my
+// walk with Boris); POST {action:'rec-delete', rec} throws a recording away.
 // Walker, after the walk: POST {action:'card', key, photo?, card} stores the dog's photo and the finished card picture
 // (both JPEG data URLs made in the browser) and emails the card to the owner once.
 // Walker: POST {action:'show', key, on} approves the card for the home page or takes it off.
@@ -62,6 +64,23 @@ export default async function handler(req, res) {
       bk.live = key; await s.saveBooking(bk);
       return res.status(200).json({ key });
     }
+    if (b.action === 'assign') {
+      const r = await s.getRec(String(b.rec || ''));
+      if (!r) return res.status(404).json({ error: 'rec' });
+      const pts = s.trimIdle(r.points);
+      if (pts.length < 2) return res.status(400).json({ error: 'points' });
+      const date = s.cphDate(pts[0][2]);
+      const bk = b.own ? await s.ownWalk(date, pts[0][2]) : await s.getBooking(String(b.booking || ''));
+      if (!bk) return res.status(404).json({ error: 'booking' });
+      const key = `${bk.id}|${date}`;
+      if (await s.getTrack(key)) return res.status(409).json({ error: 'exists' });
+      const endedAt = pts[pts.length - 1][2];
+      // Weather is only known for "now", so it is looked up when the recording ended less than 3 hours ago.
+      const done = await s.finishTrack(key, { status: 'live', startedAt: pts[0][2], points: pts, imported: 'gpslogger' }, bk, { endedAt, weather: Date.now() - endedAt < 3 * 3600e3 });
+      await s.deleteRec(r.id);
+      return res.status(200).json({ key, km: done.km, minutes: done.minutes });
+    }
+    if (b.action === 'rec-delete') { await s.deleteRec(String(b.rec || '')); return res.status(200).json({ ok: true }); }
     if (b.action === 'import') {
       const bk = await s.getBooking(String(b.booking || ''));
       const date = String(b.date || '');

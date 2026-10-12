@@ -47,6 +47,9 @@ ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
 details summary{cursor:pointer;font-weight:600}
 .prev{width:min(260px,100%);aspect-ratio:9/16;border-radius:18px;overflow:hidden;box-shadow:var(--raise-sm);align-self:center}.prev canvas{width:100%;height:100%;display:block}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rec{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center;border-radius:18px;box-shadow:var(--inset-sm);padding:10px}
+.rec svg{width:72px;height:72px;display:block}.rec select{font:inherit;width:100%;padding:10px 12px;border:0;border-radius:12px;background:var(--bg);color:var(--text);box-shadow:var(--raise-sm)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;margin-top:8px;align-items:center}.kv code{font-size:.78rem;word-break:break-all;padding:6px 8px;border-radius:10px;box-shadow:var(--inset-sm);cursor:pointer;display:block}
 button.sm{font-size:.9rem;padding:9px 14px}
 .btn.sm{display:inline-block;margin-top:8px;font-size:.9rem;padding:9px 14px}
 </style>
@@ -69,6 +72,21 @@ button.sm{font-size:.9rem;padding:9px 14px}
   <section id="list" hidden>
     <div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 id="list-title">Today</h2><div class="row"><button type="button" id="prev-day">‹</button><button type="button" id="next-day">›</button></div></div>
     <div id="walks" style="display:flex;flex-direction:column;gap:14px"></div>
+    <div class="card" style="margin-top:20px" id="recs-card">
+      <div class="row" style="justify-content:space-between"><h2>Recordings · GPSLogger</h2><button type="button" class="sm" id="recs-reload">Refresh</button></div>
+      <p class="small">Record with the phone locked: start logging in GPSLogger, walk, stop logging. The recording shows up here – pick the walk it belongs to and the card follows. Standing still at the start or end is cut off.</p>
+      <div id="recs" style="display:flex;flex-direction:column;gap:12px"></div>
+      <details id="gl-setup"><summary>Set up GPSLogger (Android, once)</summary>
+        <ol class="small">
+          <li>Install the free <b>GPSLogger</b> app: <a href="https://play.google.com/store/apps/details?id=com.mendhak.gpslogger" target="_blank" rel="noopener">Google Play</a> · <a href="https://f-droid.org/packages/com.mendhak.gpslogger/" target="_blank" rel="noopener">F-Droid</a></li>
+          <li>Settings → <b>Logging details</b> → <b>Log to custom URL</b>: switch it on and fill in (tap a value to copy it):
+            <div class="kv" id="gl-values"></div></li>
+          <li>Settings → <b>Performance</b>: log every <b>5 seconds</b> and every <b>5 metres</b>, so the route follows the paths.</li>
+          <li>Android: location access <b>Allow all the time</b>, and Settings → Apps → GPSLogger → Battery → <b>Unrestricted</b> – otherwise the phone stops it when the screen is off.</li>
+          <li>Each walk: tap <b>Start logging</b> (in the app, its widget or the notification), lock the phone, walk, then <b>Stop logging</b>.</li>
+        </ol>
+      </details>
+    </div>
     <div class="card" style="margin-top:20px">
       <h2>GPS source</h2>
       <div class="seg"><button type="button" data-src="phone">This page<span>screen must stay on</span></button><button type="button" data-src="ot">OwnTracks app<span>phone can be locked</span></button></div>
@@ -176,8 +194,30 @@ function withProfile(b){const pr=(A.data.profiles||{})[b.user]||{},find=(n)=>(pr
   return {pets:(b.petList||[]).map(p=>({...find(p.name),...Object.fromEntries(Object.entries(p).filter(([k,v])=>v!==''&&v!=null))})),vet:b.vet||pr.vet||'',emergency:b.emergency||pr.emergency||''}}
 const tLabel=(b)=>b.windowEnd?b.time.slice(0,2)+'–'+b.windowEnd.slice(0,2):b.time;
 const covers=(b,d)=>b.status!=='cancelled'&&(b.end?d>=b.date&&d<b.end:(b.dates&&b.dates.length?b.dates:[b.date]).includes(d));
+// ---- GPSLogger recordings: recorded with the screen off, attached to a booking (or my walk with Boris) afterwards ----
+const hm=(ms)=>new Date(ms).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Copenhagen'});
+const dkDate=(ms)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Copenhagen'}).format(new Date(ms));
+function shapeSvg(shape){const NS='http://www.w3.org/2000/svg',sv=document.createElementNS(NS,'svg');sv.setAttribute('viewBox','-80 -80 1160 1160');
+  if(shape){const pl=document.createElementNS(NS,'polyline');pl.setAttribute('points',shape.map(p=>p.join(',')).join(' '));pl.setAttribute('fill','none');pl.setAttribute('stroke','#f07a1e');pl.setAttribute('stroke-width','60');pl.setAttribute('stroke-linecap','round');pl.setAttribute('stroke-linejoin','round');sv.append(pl)}return sv}
+function renderRecs(){const recs=A.data.recs||[];
+  $('recs').replaceChildren(...(recs.length?recs.map(r=>{const c=el('div','rec'),info=el('div');info.style.cssText='display:flex;flex-direction:column;gap:6px;min-width:0';
+    const day=dkDate(r.start),mins=Math.max(1,Math.round((r.end-r.start)/60000));
+    info.append(el('b',null,new Date(day+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+' · '+hm(r.start)+'–'+hm(r.end)),
+      el('span','small',r.km+' km · '+mins+' min'+(r.live?' · still recording…':'')+(r.rawEnd-r.end>120000?' · '+Math.round((r.rawEnd-r.end)/60000)+' min standing still cut off':'')));
+    const sel=el('select');sel.append(new Option('Which walk is this?',''));
+    A.data.bookings.filter(b=>covers(b,day)&&!(b.walks&&b.walks[day])).forEach(b=>sel.append(new Option((b.time?tLabel(b)+' · ':'')+b.name+((b.petList||[]).length?' – '+b.petList.map(p=>p.name).join(', '):''),b.id)));
+    sel.append(new Option('My walk with Boris','own'));
+    const row=el('div','row'),go=el('button','p','Save walk'),del=el('button','sm','Delete');go.type=del.type='button';go.disabled=true;sel.onchange=()=>{go.disabled=!sel.value};
+    go.onclick=async()=>{go.disabled=true;$('msg').textContent='';try{const j=await api('/api/track',{action:'assign',rec:r.id,...(sel.value==='own'?{own:true}:{booking:sel.value})});A.data=await api('/api/admin');openCard(j.key,true)}
+      catch(e){$('msg').textContent=e.message==='exists'?'That booking already has a walk for this day.':'Could not save: '+e.message;go.disabled=false}};
+    del.onclick=async()=>{if(!del.dataset.sure){del.dataset.sure=1;del.textContent='Sure?';return}try{await api('/api/track',{action:'rec-delete',rec:r.id});A.data=await api('/api/admin');renderList()}catch(e){$('msg').textContent='Could not delete: '+e.message}};
+    row.append(go,del);info.append(sel,row);c.append(shapeSvg(r.shape),info);return c}):[el('p','small','No recordings yet.')]))}
+function renderGl(){if(!A.ot)return;const v=[['URL',A.ot.url],['HTTP method','POST'],['HTTP body','lat=%LAT&lon=%LON&tst=%TIMESTAMP&acc=%ACC'],['HTTP headers','Content-Type: application/x-www-form-urlencoded'],['Basic auth – username',A.ot.username],['Basic auth – password',A.ot.password]];
+  $('gl-values').replaceChildren(...v.flatMap(([k,x])=>{const c=el('code',null,x);c.title='Tap to copy';c.onclick=async()=>{try{await navigator.clipboard.writeText(x);const o=c.textContent;c.textContent='Copied ✓';setTimeout(()=>c.textContent=o,1200)}catch(e){}};return [el('span','small',k),c]}))}
+$('recs-reload').onclick=async()=>{try{A.data=await api('/api/admin');renderList()}catch(e){$('msg').textContent='Could not refresh: '+e.message}};
+$('gl-setup').addEventListener('toggle',()=>{if($('gl-setup').open)loadOt().then(renderGl)});
 function renderList(){
-  $('list').hidden=false;$('active').hidden=true;$('done').hidden=true;
+  $('list').hidden=false;$('active').hidden=true;$('done').hidden=true;renderRecs();
   const today=A.data.today;$('list-title').textContent=A.day===today?'Today':new Date(A.day+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
   const list=A.data.bookings.filter(b=>covers(b,A.day)).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
   $('walks').replaceChildren(...(list.length?list.map(b=>{const c=el('div','card');

@@ -4,7 +4,7 @@ http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x');
   if (routes[u.pathname]) {
     let body = ''; for await (const c of req) body += c;
-    req.body = body ? JSON.parse(body) : {};
+    try { req.body = body ? JSON.parse(body) : {}; } catch { req.body = body; } // form posts (GPSLogger) stay a string
     res.status = (n) => { res.statusCode = n; return res; };
     res.json = (o) => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(o)); };
     return (await import(routes[u.pathname])).default(req, res);
