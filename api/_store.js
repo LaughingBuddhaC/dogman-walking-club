@@ -228,12 +228,17 @@ const hav = (a, b) => {
   return 2 * 6371000 * Math.asin(Math.sqrt(h));
 };
 // Distance in km, ignoring inaccurate fixes and impossible jumps (GPS jitter).
+// Background apps (OwnTracks) can hand over several fixes with almost the same time stamp, so speed is no
+// test of a bad fix. Instead a fix is dropped when it jumps away and straight back (a spike), and only
+// clearly impossible stretches (faster than 25 m/s over at least 5 s) are skipped.
 export function routeKm(points) {
-  let m = 0, prev = null;
-  for (const p of points) {
-    if (p[3] > 40) continue;                                   // accuracy worse than 40 m
-    if (prev) { const d = hav(prev, p), dt = Math.max(1, (p[2] - prev[2]) / 1000); if (d / dt < 4 && d > 2) m += d; else if (d / dt >= 4) continue; }
-    prev = p;
+  const pts = points.filter((p) => p[3] <= 60);
+  const keep = pts.filter((p, i) => i === 0 || i === pts.length - 1 || hav(pts[i - 1], p) + hav(p, pts[i + 1]) <= 2.5 * hav(pts[i - 1], pts[i + 1]) + 80);
+  let m = 0;
+  for (let i = 1; i < keep.length; i++) {
+    const d = hav(keep[i - 1], keep[i]), dt = (keep[i][2] - keep[i - 1][2]) / 1000;
+    if (d < 3 || (dt >= 5 && d / dt > 25)) continue;
+    m += d;
   }
   return Math.round(m / 10) / 100;
 }

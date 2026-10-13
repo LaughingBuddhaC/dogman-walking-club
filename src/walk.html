@@ -129,6 +129,9 @@ button.sm{font-size:.9rem;padding:9px 14px}
     <button class="p" type="button" id="c-save">Save card &amp; notify the owner</button>
     <div class="small" id="c-state" role="status"></div>
     <button type="button" id="c-side" hidden>Route side: automatic</button>
+    <details id="c-fix"><summary class="small">Distance or time wrong? Type the right numbers (e.g. from Strava)</summary>
+      <div class="row" style="margin-top:8px;flex-wrap:nowrap"><input id="c-km" inputmode="decimal" placeholder="km" style="flex:1"><input id="c-min" inputmode="numeric" placeholder="min" style="flex:1"><button type="button" class="sm" id="c-fix-go">Update</button></div>
+    </details>
     <div class="two"><button type="button" id="c-share">Share</button><button type="button" id="c-pub" disabled>Publish on home page</button></div>
     <p class="small">Tip: leave free space on one side of the dog when you take the photo – the route is drawn there. The card is saved with the walk and emailed to the owner once. It only appears on the home page after you tap <b>Publish</b>.</p>
     <button type="button" id="back">Back to the list</button>
@@ -165,13 +168,17 @@ function paintCard(){const j=C.j;
   $('c-save').textContent=j.card?(C.newPhoto?'Save the new photo':'Save card again'):(j.mailed?'Save card':'Save card & notify the owner');
   $('c-pub').disabled=!j.card;$('c-pub').textContent=j.pub?'On home page ✓ (remove)':'Publish on home page';$('c-pub').setAttribute('aria-pressed',String(!!j.pub))}
 async function openCard(key,finished){$('msg').textContent='';$('c-state').textContent='';
-  try{const j=await api('/api/track?key='+encodeURIComponent(key));await WalkCard.ready();Object.assign(C,{key,j,img:null,newPhoto:null,side:''});
+  try{const j=await api('/api/track?key='+encodeURIComponent(key));await WalkCard.ready();Object.assign(C,{key,j,img:null,newPhoto:null,side:''});$('c-km').value=j.km;$('c-min').value=j.minutes;$('c-fix').open=false;
     if(j.fixed&&j.card){C.img=await WalkCard.loadImage('/api/club?photo='+j.card)}else if(finished&&pending){C.newPhoto=pending;C.img=await WalkCard.loadImage(pending)}else if(j.photo){try{C.img=await WalkCard.loadImage('/api/club?photo='+j.photo)}catch(e){}}
     $('list').hidden=true;$('active').hidden=true;$('done').hidden=false;$('done-title').hidden=!finished;$('done-text').hidden=!finished;$('ot-quiet').hidden=!finished||A.src!=='ot';
     if(j.fixed)$('c-state').textContent='This card was made by hand from a Strava picture, so it can be published or shared but not redrawn here.';else if(!j.card)$('c-state').textContent=C.img?'Not saved yet – tap Save.':'Add a photo of the dog, then save.';paintCard();scrollTo(0,0)}
   catch(e){$('msg').textContent='Could not load the walk card: '+e.message;if($('list').hidden){A.data=null;load()}}}
 async function gotPhoto(input){const f=input.files[0];input.value='';if(!f)return null;try{return await WalkCard.photoFile(f)}catch(e){$('msg').textContent='Could not read that photo.';return null}}
 $('c-side').onclick=()=>{C.side=C.side===''?'left':C.side==='left'?'right':'';if(C.j.card)$('c-state').textContent='Changed – tap Save to keep it.';paintCard()};
+$('c-fix-go').onclick=async()=>{const kmv=Number(String($('c-km').value).replace(',','.')),mv=Number($('c-min').value);
+  if(!(kmv>=0)||!(mv>=1)){$('c-state').textContent='Type the distance in km and the time in minutes.';return}
+  try{const r=await api('/api/track',{action:'stats',key:C.key,km:kmv,minutes:mv});Object.assign(C.j,{km:r.km,minutes:r.minutes});$('c-fix').open=false;
+    $('c-state').textContent=C.j.fixed?'Numbers updated (the hand-made picture keeps its old numbers).':'Numbers updated – tap Save card again to keep the picture.';paintCard()}catch(e){$('c-state').textContent='Could not update: '+e.message}};
 $('c-cam').onclick=()=>$('f-cam').click();$('c-pick').onclick=()=>$('f-pick').click();
 // The same two file inputs serve the card editor and the photo button shown during a walk.
 for(const id of ['f-cam','f-pick'])$(id).onchange=async()=>{const p=await gotPhoto($(id));if(!p||!p.url)return;
@@ -205,7 +212,8 @@ async function loadOt(){if(A.ot)return;try{A.ot=await api('/api/owntracks')}catc
 document.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{A.src=b.dataset.src;try{localStorage.setItem('walk-src',A.src)}catch(e){}renderSrc();if(A.src==='ot')loadOt()});
 const ago=(ms)=>{const s=Math.max(0,Math.round((Date.now()-ms)/1000));return s<90?s+' s ago':Math.round(s/60)+' min ago'};
 function hav(a,b){const r=Math.PI/180,dLat=(b[0]-a[0])*r,dLon=(b[1]-a[1])*r,h=Math.sin(dLat/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLon/2)**2;return 2*6371000*Math.asin(Math.sqrt(h))}
-function km(pts){let m=0,prev=null;for(const p of pts){if(p[3]>40)continue;if(prev){const d=hav(prev,p),dt=Math.max(1,(p[2]-prev[2])/1000);if(d/dt>=4)continue;if(d>2)m+=d}prev=p}return m/1000}
+// Same rule as routeKm on the server: drop spikes (out and straight back), skip only clearly impossible stretches.
+function km(pts){const q=pts.filter(p=>p[3]<=60),k=q.filter((p,i)=>i===0||i===q.length-1||hav(q[i-1],p)+hav(p,q[i+1])<=2.5*hav(q[i-1],q[i+1])+80);let m=0;for(let i=1;i<k.length;i++){const d=hav(k[i-1],k[i]),dt=(k[i][2]-k[i-1][2])/1000;if(d<3||(dt>=5&&d/dt>25))continue;m+=d}return m/1000}
 async function api(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json','x-admin-password':pw},body:body?JSON.stringify(body):undefined});
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'server');return j}
 // Booking pets enriched with the owner's profile (dog declaration, vet, emergency contact from "Mine ture").

@@ -80,6 +80,19 @@ export default async function handler(req, res) {
       await s.deleteRec(r.id);
       return res.status(200).json({ key, km: done.km, minutes: done.minutes });
     }
+    // Walker: POST {action:'stats', key, km, minutes} corrects distance/time (e.g. with Strava's numbers).
+    if (b.action === 'stats') {
+      const key = String(b.key || ''), km = Math.round(Number(b.km) * 100) / 100, minutes = Math.round(Number(b.minutes));
+      if (!validKey(key) || !(km >= 0 && km < 100) || !(minutes >= 1 && minutes < 1000)) return res.status(400).json({ error: 'stats' });
+      const [id, date] = key.split('|'), track = await s.getTrack(key), bk = await s.getBooking(id);
+      if (!track || track.status !== 'done' || !bk?.walks?.[date]) return res.status(404).json({ error: 'none' });
+      const dKm = km - (track.km || 0);
+      track.km = km; track.minutes = minutes; track.manual = true; await s.saveTrack(key, track);
+      Object.assign(bk.walks[date], { km, minutes }); await s.saveBooking(bk);
+      if (await s.showcaseRaw().then((r) => r[key])) await s.setShowcase(key, track, bk, !!bk.walks[date].pub);
+      if (bk.user) { const u = await s.getUser(bk.user); if (u?.stats) { u.stats.km = Math.max(0, Math.round((u.stats.km + dKm) * 100) / 100); await s.saveUser(u); await s.awardBadges(u, []); } }
+      return res.status(200).json({ km, minutes });
+    }
     // Walker: POST {action:'walk-delete', key} removes a finished walk with its card (see deleteWalk).
     if (b.action === 'walk-delete') { if (!validKey(String(b.key || ''))) return res.status(400).json({ error: 'key' }); await s.deleteWalk(String(b.key)); return res.status(200).json({ ok: true }); }
     if (b.action === 'rec-delete') { await s.deleteRec(String(b.rec || '')); return res.status(200).json({ ok: true }); }
