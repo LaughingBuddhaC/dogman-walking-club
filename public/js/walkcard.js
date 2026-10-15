@@ -107,11 +107,11 @@
     g.fillStyle = k.bg; g.fillRect(0, 0, W, H);
 
     // Head: logo in a raised round badge, club name beside it.
-    const lx = M + 74, ly = 152;
-    raised(() => { g.beginPath(); g.arc(lx, ly, 74, 0, 7); }, 14);
-    if (logo) { g.save(); g.beginPath(); g.arc(lx, ly, 64, 0, 7); g.clip(); g.drawImage(logo, lx - 64, ly - 64, 128, 128); g.restore(); }
-    text('DOGMAN WALKING CLUB', M + 180, 146, `800 46px ${FONT}`, k.ink);
-    text(t.tag, M + 180, 196, `500 33px ${FONT}`, k.soft);
+    const lx = M + 104, ly = 140;
+    raised(() => { g.beginPath(); g.arc(lx, ly, 104, 0, 7); }, 16);
+    if (logo) { g.save(); g.beginPath(); g.arc(lx, ly, 92, 0, 7); g.clip(); g.drawImage(logo, lx - 92, ly - 92, 184, 184); g.restore(); }
+    text('DOGMAN WALKING CLUB', M + 238, 134, `800 46px ${FONT}`, k.ink);
+    text(t.tag, M + 238, 184, `500 33px ${FONT}`, k.soft);
 
     // Layouts: 'side' (default with a photo) – the route on the photo beside the dog, on the side with room;
     // 'split' – photo on top, the route in its own pressed-in tile beside the numbers (never over the dog);
@@ -212,8 +212,8 @@
       text(unit, x + vw + 14, 1556, `600 44px ${FONT}`, soft);
     });
     // Brand line with the logo.
-    const bx = logo ? 230 : 90;
-    if (logo) { g.save(); g.beginPath(); g.arc(150, 1730, 60, 0, 7); g.clip(); shadow(false); g.drawImage(logo, 90, 1670, 120, 120); g.restore(); shadow(true); }
+    const bx = logo ? 280 : 90;
+    if (logo) { g.save(); g.beginPath(); g.arc(174, 1724, 84, 0, 7); g.clip(); shadow(false); g.drawImage(logo, 90, 1640, 168, 168); g.restore(); shadow(true); }
     text('DOGMAN WALKING CLUB', bx, 1724, `800 48px ${FONT}`, ink);
     text(t.tag + ' · dmw.cansasmaz.com', bx, 1778, `500 ${logo ? 31 : 36}px ${FONT}`, soft);
     shadow(false);
