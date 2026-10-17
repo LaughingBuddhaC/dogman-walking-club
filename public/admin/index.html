@@ -58,13 +58,16 @@ dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
     <div class="box"><h2>Members</h2><div class="row" style="margin-bottom:12px" id="m-filters"></div><div class="list" id="members"></div></div>
     <div class="box" id="wd-box" hidden><h2>Withdrawals (fortrydelser)</h2><p class="label" style="margin:6px 0 12px">Refund what was paid for the part not delivered within 14 days, then mark it handled.</p><div class="list" id="withdrawals"></div></div>
     <div class="box"><h2>Reviews</h2><p class="label" style="margin:6px 0 12px">Only customers who have had a walk can write one. Nothing is public until you approve it.</p><div class="list" id="reviews"></div></div>
-    <div class="box"><h2>Dogs I have walked (gallery)</h2>
+    <div class="box"><h2>The DogMan Pack (guest dogs)</h2>
       <form id="dog-form" class="grid" style="margin:10px 0 16px">
         <div class="f"><label class="label" for="g-name">Dog's name</label><input id="g-name" required></div>
         <div class="f"><label class="label" for="g-breed">Breed</label><input id="g-breed"></div>
         <div class="f"><label class="label" for="g-note">Short note (optional)</label><input id="g-note" placeholder="e.g. Walked since 2025"></div>
         <div class="f"><label class="label" for="g-photo">Photo</label><input id="g-photo" type="file" accept="image/*"></div>
-        <div class="f" style="justify-content:flex-end"><button class="p" type="submit" id="g-add">Add to gallery</button></div>
+        <div class="f"><label class="label" for="g-stay">Stay (month)</label><input id="g-stay" type="month"></div>
+        <div class="f" style="grid-column:1/-1"><label class="label" for="g-feedback">Public feedback (shown on the card)</label><textarea id="g-feedback" rows="4" maxlength="700" style="font:inherit;padding:10px;border-radius:12px"></textarea></div>
+        <div class="f" style="grid-column:1/-1"><span class="label">On the card</span><label><input type="checkbox" name="g-tr" value="again" checked> Would look after again</label> <label><input type="checkbox" name="g-tr" value="calm" checked> Never tried to escape</label> <label><input type="checkbox" name="g-tr" value="tidy" checked> No damage</label> <label><input type="checkbox" name="g-tr" value="gentle" checked> Gentle with people and dogs</label> <label><input type="checkbox" id="g-bff" checked> Best Friend Forever badge</label></div>
+        <div class="f" style="justify-content:flex-end"><button class="p" type="submit" id="g-add">Add to The DogMan Pack</button></div>
       </form>
       <p class="label" style="margin-bottom:12px">Ask the owner before you show their dog.</p>
       <div class="gal" id="gallery"></div></div>
@@ -163,7 +166,7 @@ function renderExtras(){renderMail();
     return el('div',{className:'card'},g.photo?el('img',{src:photoUrl(g.photo),alt:g.name}):el('span',{textContent:'🐾',style:'font-size:2rem'}),el('b',{textContent:g.name}),el('span',{className:'label',textContent:[g.breed,g.note].filter(Boolean).join(' · ')}),del)}));
 }
 $('dog-form').onsubmit=async(e)=>{e.preventDefault();const f=$('g-photo').files[0],btn=$('g-add');btn.disabled=true;
-  try{const photo=f?await shrink(f):'';await act({action:'dog-add',name:$('g-name').value.trim(),breed:$('g-breed').value.trim(),note:$('g-note').value.trim(),photo});
+  try{const photo=f?await shrink(f):'';await act({action:'dog-add',name:$('g-name').value.trim(),breed:$('g-breed').value.trim(),note:$('g-note').value.trim(),photo,stay:$('g-stay').value,feedback:$('g-feedback').value.trim(),traits:[...document.querySelectorAll('[name=g-tr]:checked')].map(x=>x.value),bff:$('g-bff').checked});
     if(!$('msg').textContent){$('dog-form').reset()}}catch(x){$('msg').textContent='That photo could not be read.'}btn.disabled=false};
 // Slots a booking holds: every walk day at its time, plus the next hour for a 60-minute walk.
 function keysOf(b){if(!b.time)return[];const n=String(Number(b.time.slice(0,2))+1).padStart(2,'0')+':00';

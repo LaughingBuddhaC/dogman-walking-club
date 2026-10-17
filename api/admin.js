@@ -39,7 +39,10 @@ export default async function handler(req, res) {
         if (!name) return res.status(400).json({ error: 'dogName' });
         const photo = b.photo ? await s.savePhoto(b.photo) : '';
         if (b.photo && !photo) return res.status(400).json({ error: 'photo' });
-        await s.saveDog({ id: s.newId(), name, breed: String(b.breed || '').trim().slice(0, 40), note: String(b.note || '').trim().slice(0, 120), photo, at: new Date().toISOString() });
+        // A guest of The DogMan Pack: my public feedback (like a Rover review), the stay month and behaviour notes.
+        const TRAITS = ['again', 'calm', 'gentle', 'tidy'];
+        await s.saveDog({ id: s.newId(), name, breed: String(b.breed || '').trim().slice(0, 40), note: String(b.note || '').trim().slice(0, 120), photo, at: new Date().toISOString(),
+          feedback: String(b.feedback || '').trim().slice(0, 700), stay: /^\d{4}-\d{2}$/.test(b.stay || '') ? b.stay : '', traits: (Array.isArray(b.traits) ? b.traits : []).filter((x) => TRAITS.includes(x)), bff: b.bff !== false });
       } else if (b.action === 'dog-delete') {
         const d = (await s.getDogs()).find((x) => x.id === b.did);
         if (d) { await s.deletePhoto(d.photo); await s.deleteDog(d.id); }

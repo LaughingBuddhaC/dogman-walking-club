@@ -53,6 +53,12 @@ window.DogBadges = (() => {
       da: ['Regnvejrshelt', 'Gik tur i regnvejr.'],
       en: ['Rain hero', 'Walked in the rain.'],
     },
+    bff: {
+      colors: ['#ffd0a8', '#f07a1e', '#b44d08', '#7d3404'],
+      da: ['Bedste ven for altid', 'En gæst i The DogMan Pack – altid velkommen tilbage.'],
+      en: ['Best Friend Forever', 'A guest of The DogMan Pack – always welcome back.'],
+      pack: true,
+    },
     snow: {
       colors: ['#ffffff', '#bcd3e6', '#8aa9c4', '#5f7f9c'],
       da: ['Snehund', 'Gik tur i sne.'],
@@ -139,5 +145,5 @@ window.DogBadges = (() => {
     close.focus();
   }
 
-  return { BADGES, svg, texts, ui, style, celebrate, ids: Object.keys(BADGES) };
+  return { BADGES, svg, texts, ui, style, celebrate, ids: Object.keys(BADGES).filter((k) => !BADGES[k].pack) }; // pack badges belong to guest dogs, not customers
 })();

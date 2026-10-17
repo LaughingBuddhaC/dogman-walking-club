@@ -213,6 +213,15 @@ form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .rev p{padding-inline:8px;line-height:1.5}.rev .who{padding-inline:8px;font-size:.88rem;color:var(--muted);font-weight:600}
 .rev-sum{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:12px}.rev-sum b{font-size:1.4rem}
 .pack{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px;margin-top:40px}
+.pack.bffs{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:28px}
+.bff{border-radius:32px;box-shadow:var(--raise);padding:12px 12px 22px;display:flex;flex-direction:column;gap:10px;margin:0;position:relative}
+.bff .ph{aspect-ratio:4/5;border-radius:22px;overflow:hidden;box-shadow:var(--inset-sm);display:grid;place-items:center;color:var(--accent)}
+.bff .ph img{width:100%;height:100%;object-fit:cover;display:block}.bff .ph svg{width:46px;height:46px}
+.bff .rosette{position:absolute;top:-14px;right:-6px;width:96px;transform:rotate(8deg)}
+.bff .tag{align-self:flex-start;margin:4px 10px 0;font-size:.74rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);padding:5px 12px;border-radius:999px;box-shadow:var(--inset-sm)}
+.bff h3{font-size:1.7rem;letter-spacing:-.02em;margin:0;padding-inline:10px}.bff .meta{padding-inline:10px;color:var(--muted);font-size:.88rem;margin-top:-6px}
+.bff blockquote{margin:0;padding-inline:10px;line-height:1.55;font-size:.97rem}
+.bff ul{list-style:none;margin:0;padding:0 10px;display:flex;flex-direction:column;gap:6px;font-size:.9rem}.bff li::before{content:'✓';color:var(--ok);font-weight:800;margin-right:8px}
 .pdog{text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center}
 .pdog .ph{width:100%;aspect-ratio:1;border-radius:50%;padding:8px;box-shadow:var(--raise);margin-bottom:8px;display:grid;place-items:center;color:var(--accent)}
 .pdog .ph img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}.pdog .ph svg{width:40%;height:40%}
@@ -494,15 +503,15 @@ footer{padding-block:40px 56px;display:flex;gap:16px;justify-content:space-betwe
     </div>
   </section>
 
-  <section id="pack" hidden>
-    <div class="head reveal"><span class="eyebrow" data-t="packLabel"></span><h2 data-t="packTitle"></h2><p id="pack-count"></p></div>
-    <div class="pack" id="pack-list"></div>
-  </section>
-
   <section id="walks" hidden>
     <div class="head reveal"><span class="eyebrow" data-t="walksLabel"></span><h2 data-t="walksTitle"></h2><p data-t="walksText"></p></div>
     <div class="tally reveal" id="tally"><div><b id="t-h">0</b><span id="t-h-l"></span></div><div><b id="t-km">0</b><span id="t-km-l"></span></div><div><b id="t-d">0</b><span id="t-d-l"></span></div></div>
     <div class="walks" id="walk-list"></div>
+  </section>
+
+  <section id="pack" hidden>
+    <div class="head reveal"><span class="eyebrow" data-t="packLabel"></span><h2 data-t="packTitle"></h2><p id="pack-count"></p></div>
+    <div class="pack" id="pack-list"></div>
   </section>
 
   <section>
@@ -549,7 +558,7 @@ moreLabel:'Andre ydelser',moreTitle:'Brug for mere end en gåtur?',moreText:'Jeg
 boarding:'Hundepasning (24 t hos mig)',daycare:'Hundedagpleje (om dagen hos mig)',housesit:'Huspasning (24 t hos dig)',visit1:'Ét hjemmebesøg om dagen (30 min.)',visit2:'To hjemmebesøg om dagen (2 × 30 min.)',
 uNight:'pr. nat',uDay:'pr. dag',xPet:'+{n} kr. pr. ekstra dyr',footer:'Hundeluftning i Skovlunde',privacyLink:'Privatlivspolitik',menu:'Menu',termsLink:'Handelsbetingelser',dur30:'30 min',dur60:'60 min · +{p} %',longOffer:'60 min. tur: {p}',longLine:'60 min. tur (+{p} %)',withdrawLink:'Fortryd køb',termsLine:'Når du sender bookingen, accepterer du <a href="/vilkaar/" target="_blank">handelsbetingelserne</a>. Hundeerklæring, dyrlæge og nødkontakt kan du udfylde bagefter under Mine ture – det er frivilligt.',
 revLabel:'Anmeldelser',revTitle:'Det siger hundeejerne',revAvg:'★ {a} ud af 5',revCount:'{n} anmeldelser fra kunder',revCount1:'1 anmeldelse fra en kunde',revWrite:'Skriv en anmeldelse →',
-packLabel:'Galleri',walksLabel:'GPS på hver tur',walksTitle:'De seneste ture',tHours:'timer på tur',tKm:'km gået',tDogs:'hunde luftet',tDog:'hund luftet',walksText:'Hver tur bliver optaget med GPS, og du får et turkort bagefter: et foto af din hund med ruten, distancen og tiden.',walkMin:'{n} min',packTitle:'Hunde, jeg har gået med',packCount:'{n} hunde indtil nu – og Boris, selvfølgelig.',packCount1:'1 hund indtil nu – og Boris, selvfølgelig.'},
+packLabel:'Bedste venner for altid',walksLabel:'GPS på hver tur',walksTitle:'De seneste ture',tHours:'timer på tur',tKm:'km gået',tDogs:'hunde luftet',tDog:'hund luftet',walksText:'Hver tur bliver optaget med GPS, og du får et turkort bagefter: et foto af din hund med ruten, distancen og tiden.',walkMin:'{n} min',packTitle:'The DogMan Pack',packCount:'{n} gæstevenner har boet hos os – og Boris, selvfølgelig.',bffTag:'Best Friend Forever',stayAt:'Gæst · {m}',tr_again:'Altid velkommen igen',tr_calm:'Prøvede aldrig at stikke af',tr_tidy:'Ingen skader i hjemmet',tr_gentle:'Venlig mod mennesker og hunde',packCount1:'1 gæsteven har boet hos os – og Boris, selvfølgelig.'},
 en:{plan_flex10:'10-walk card',plan_weekly2:'Weekly walker',plan_daily5:'Every weekday',plan_alfa:'Premium Alfa',planSub_alfa:'22 solo walks a month · follow the walk live on GPS · priority times · 1 night boarding',premTag:'Premium',planSub_flex10:'10 walks – use them whenever you like',planSub_weekly2:'8 walks a month – 2 a week',planSub_daily5:'22 walks a month – every weekday',perPack:'valid for {m} months',perMonth:'per month',perWalkSave:'{p} per walk · save {s}%',navMember:'DogMan Pack',memLabel:'DogMan Pack',memTitle:'Join the DogMan Pack',memText:'Regular walks at a lower price. No lock-in – you pay with MobilePay when the period starts.',memPerk1:'Lower price per walk',memPerk2:'Book up to 3 months ahead',memPerk3:'A GPS route report after every walk – and badges for km and walks',joinCta:'Join the Pack',recTag:'Recommended',useCreditsLbl:'Use my credits ({n} left) – extra dogs are still charged.',noCredits:'You have {n} credits – not enough for all chosen walks.',creditsLine:'{n} with credits',eCredits:'You do not have enough credits for all chosen walks.',eCreditsEnd:'Some walks are after your membership ends.',creditsUsed:'{n} credits used',bookTitle2:'What do you need?',step1b:'Choose a service',step4:'Your details',step2b:'Your pets',step3b:'When?',sv_walk:'Dog walk',sv_visit1:'Home visit',sv_visit2:'2 visits a day',sv_daycare:'Day care',sv_boarding:'Boarding',sv_housesit:'House sitting',onReq:'Price on request',petName:'Name',dog:'Dog',cat:'Cat',addPet:'+ Add a pet',remove:'Remove',petNote:'This service is for dogs only.',peplanOnce:'One or more days',planWeekly:'Every week',prevMonth:'Previous month',nextMonth:'Next month',hintOnce:'Pick one or more days in the calendar.',hintWeekly:'Choose weekdays and the first day in the calendar.',hintRange:'Pick the drop-off day and the pick-up day.',hintEnd:'Now pick the pick-up day.',pickDayFirst:'Pick a day first.',noSlotsAll:'No window is free on all the chosen days.',sumPick2:'Choose a service, pets and days.',sumTime:'Choose a time window.',walk1:'walk',walkN:'walks',day1:'day',dayN:'days',night1:'night',nightN:'nights',visitDay1:'visit day',visitDayN:'visit days',at:'at',every:'Every',from:'from',desc_walk:'At least 30 minutes. I pick up and drop off at your door.',desc_visit1:'One visit a day at your home (at least 30 min.): food, water, play and company.',desc_visit2:'Two visits a day at your home (2 × 30 min.).',desc_daycare:'Daytime at my home with Boris: walks, play and rest.',desc_boarding:'24 hours at my home with Boris while you are away.',desc_housesit:'24 hours at your home – I stay in and look after your pets.',extraLine:'+{n} extra pet(s)',perWeek:'Per week',est8:'8 weeks in total',weeklyNote:'Repeats every week. I reserve the next 8 weeks, and then we extend together.',meetLabel:'I would like a free meet & greet (15 min.) before the first booking.',fMsg:'Message to Can',msgPh:'Tell me about your pet, keys, routines…',eDates:'Choose at least one day.',eRange:'Choose drop-off and pick-up days.',ePets:"Cats can't be booked for this service.",eTakenOn:'The window on {d} just filled up. Choose another.',navWalk:'The walk',navAbout:'About',navBook:'Book',heroLabel:'Walks in',capRiver:'By the river',h1a:'Dog walking',h1b:'in Skovlunde',
 lead:'A <b>30-minute walk</b> for your dog – picked up and dropped off at your door. <b>{p} per walk.</b>',ctaBook:'Book a walk',ctaMore:'How the walk works',demo:'Preview: bookings are not saved here.',
 trust1:'30 min. per walk',trust2:'Picked up at your door',trust3:'Pay with MobilePay',borisSub:'Golden retriever · 7 years',altRiver:'Can and Boris by a river',
@@ -577,7 +586,7 @@ moreLabel:'Other services',moreTitle:'Need more than a walk?',moreText:'I also o
 boarding:'Dog boarding (24h at my home)',daycare:'Doggy day care (daytime at my home)',housesit:'House sitting (24h at your home)',visit1:'One home visit a day (30 min.)',visit2:'Two home visits a day (2 × 30 min.)',
 uNight:'per night',uDay:'per day',xPet:'+{n} kr. per extra pet',footer:'Dog walking in Skovlunde',privacyLink:'Privacy policy',menu:'Menu',termsLink:'Terms',dur30:'30 min',dur60:'60 min · +{p}%',longOffer:'60-min walk: {p}',longLine:'60-min walk (+{p}%)',withdrawLink:'Withdraw a purchase',termsLine:'By sending the booking you accept the <a href="/vilkaar/" target="_blank">terms</a>. You can add the dog declaration, vet and emergency contact afterwards under My walks – it is optional.',
 revLabel:'Reviews',revTitle:'What dog owners say',revAvg:'★ {a} out of 5',revCount:'{n} reviews from customers',revCount1:'1 review from a customer',revWrite:'Write a review →',
-packLabel:'Gallery',walksLabel:'GPS on every walk',walksTitle:'The latest walks',tHours:'hours on walks',tKm:'km walked',tDogs:'dogs walked',tDog:'dog walked',walksText:'Every walk is recorded with GPS, and you get a walk card afterwards: a photo of your dog with the route, the distance and the time.',walkMin:'{n} min',packTitle:'Dogs I have walked',packCount:'{n} dogs so far – and Boris, of course.',packCount1:'1 dog so far – and Boris, of course.'}};
+packLabel:'Best friends forever',walksLabel:'GPS on every walk',walksTitle:'The latest walks',tHours:'hours on walks',tKm:'km walked',tDogs:'dogs walked',tDog:'dog walked',walksText:'Every walk is recorded with GPS, and you get a walk card afterwards: a photo of your dog with the route, the distance and the time.',walkMin:'{n} min',packTitle:'The DogMan Pack',packCount:'{n} guest friends have stayed with us – and Boris, of course.',bffTag:'Best Friend Forever',stayAt:'Guest · {m}',tr_again:'Always welcome back',tr_calm:'Never tried to escape',tr_tidy:'No damage at home',tr_gentle:'Gentle with people and dogs',packCount1:'1 guest friend has stayed with us – and Boris, of course.'}};
 const SV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
 const PAW='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="10" r="2.1"/><circle cx="9.2" cy="5.4" r="2.1"/><circle cx="14.8" cy="5.4" r="2.1"/><circle cx="18.5" cy="10" r="2.1"/><path d="M12 11.2c-3 0-6 4-6 6.4 0 1.7 1.3 2.6 3 2.6 1.3 0 2-.6 3-.6s1.7.6 3 .6c1.7 0 3-.9 3-2.6 0-2.4-3-6.4-6-6.4z"/></svg>';
 const ICON={paw:PAW,
@@ -893,7 +902,14 @@ function renderClub(){const d=C.data;if(!d||C.lang===lang)return;C.lang=lang;
       if(r.photo||r.avatar){const i=el('img');i.src=r.photo?photo(r.photo):r.avatar;i.alt=r.dog||r.name;i.loading='lazy';i.referrerPolicy='no-referrer';ph.append(i)}else ph.innerHTML=PAW;
       c.append(ph,el('div','stars','★'.repeat(r.stars)+'☆'.repeat(5-r.stars)),el('p',null,'“'+r.text+'”'),el('figcaption','who','— '+r.name+(r.dog?' & '+r.dog:'')));return c}))}
   if(d.dogs.length){$('pack-count').textContent=d.dogs.length===1?t('packCount1'):t('packCount').replace('{n}',d.dogs.length);
-    $('pack-list').replaceChildren(...d.dogs.map(g=>{const c=el('figure','pdog'),ph=el('div','ph');
+    // The DogMan Pack: guest dogs with my feedback, behaviour notes and the Best Friend Forever badge.
+    $('pack-list').classList.toggle('bffs',d.dogs.some(g=>g.feedback||g.bff));
+    $('pack-list').replaceChildren(...d.dogs.map(g=>{if(g.feedback||g.bff){const c=el('figure','bff'),ph=el('div','ph');
+      if(g.photo){const i=el('img');i.src=photo(g.photo);i.alt=g.name;i.loading='lazy';ph.append(i)}else ph.innerHTML=PAW;c.append(ph);
+      if(g.bff){const r=el('div','rosette');r.innerHTML=DogBadges.svg('bff');r.title=t('bffTag');c.append(r,el('span','tag',t('bffTag')))}
+      c.append(el('h3',null,g.name));const m=[g.breed,g.stay?t('stayAt').replace('{m}',new Date(g.stay+'-15').toLocaleDateString(lang==='da'?'da-DK':'en-GB',{month:'long',year:'numeric'})):''].filter(Boolean).join(' · ');if(m)c.append(el('div','meta',m));
+      if(g.feedback)c.append(el('blockquote',null,'“'+g.feedback+'”'));if((g.traits||[]).length){const u=el('ul');g.traits.forEach(x=>u.append(el('li',null,t('tr_'+x))));c.append(u)}return c}
+      const c=el('figure','pdog'),ph=el('div','ph');
       if(g.photo){const i=el('img');i.src=photo(g.photo);i.alt=g.name;i.loading='lazy';ph.append(i)}else ph.innerHTML=PAW;
       c.append(ph,el('b',null,g.name));if(g.breed)c.append(el('small',null,g.breed));if(g.note)c.append(el('small',null,g.note));return c}))}}
 fetch('/api/club').then(r=>r.ok?r.json():null).then(d=>{if(d){C.data=d;C.lang=null;renderClub()}}).catch(()=>{});
