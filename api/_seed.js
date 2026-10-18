@@ -18,9 +18,12 @@ async function seedNewton() {
 
 // Boris's walk of 18 Oct 2026 (Strava, card made by hand).
 async function seedBorisWalk() {
-  if (!(await s.claimSeed('boris-2026-10-18-midday'))) return;
+  if (!(await s.claimSeed('boris-2026-10-18-midday-v2'))) return;
+  // The first try saved the walk without its pictures (they were over the photo size limit): remove that one.
+  for (const [k, e] of Object.entries(await s.showcaseRaw())) if (e.date === '2026-10-18' && e.own && !e.card) await s.deleteWalk(k);
   const date = '2026-10-18', km = 1.82, minutes = 32, startedAt = Date.parse('2026-10-18T12:05:00+02:00'), endedAt = startedAt + minutes * 60e3;
   const photo = await s.savePhoto(WPHOTO), card = await s.savePhoto(WCARD);
+  if (!photo || !card) return;
   const bk = await s.ownWalk(date, startedAt), key = `${bk.id}|${date}`;
   bk.notes = 'Strava-tur, kortet er lavet i hånden';
   bk.walks = { [date]: { km, minutes, startedAt, key, photo, card, pub: true } };
