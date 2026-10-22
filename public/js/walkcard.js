@@ -83,13 +83,15 @@
   const dateText = (d) => (d.date ? new Date(d.date + 'T12:00:00').toLocaleDateString(d.lang === 'en' ? 'en-GB' : 'da-DK', { weekday: 'long', day: 'numeric', month: 'long' }) : '');
   // Soft UI (the site's look): one surface colour, depth from a dark shadow below-right and a light one above-left.
   const SOFT = { light: { bg: '#e7ebf0', ink: '#1d1d1f', soft: '#62636a', sd: '#c3cad4', sl: '#ffffff', acc: '#b44d08' },
-    dark: { bg: '#23262c', ink: '#f5f5f7', soft: '#a1a1a8', sd: '#16181c', sl: '#30343c', acc: '#ffab66' } };
+    dark: { bg: '#23262c', ink: '#f5f5f7', soft: '#a1a1a8', sd: '#16181c', sl: '#30343c', acc: '#ffab66' },
+    // Special days (e.g. Leash Off Day): deep forest green.
+    forest: { bg: '#24352a', ink: '#f2f6ee', soft: '#a9bfa8', sd: '#16221a', sl: '#33493a', acc: '#b6e07a' } };
 
   // style: 'soft' (light soft-UI card), 'dark' (the same in dark) or 'clear' (transparent, for laying over a photo).
   function draw(d, style) {
     const c = document.createElement('canvas'); c.width = W; c.height = H;
     const g = c.getContext('2d'); g.textBaseline = 'alphabetic'; g.lineJoin = 'round'; g.lineCap = 'round';
-    if (style === 'clear') drawClear(g, d); else drawSoft(g, d, SOFT[style === 'dark' ? 'dark' : 'light']);
+    if (style === 'clear') drawClear(g, d); else drawSoft(g, d, SOFT[SOFT[style] ? style : 'light']);
     return c;
   }
 
@@ -183,6 +185,22 @@
       tile(M + tw + gap, 1516, tw, 232, t.time, mins, t.min, 98);
     }
     text('dmw.cansasmaz.com', W / 2, 1852, `600 34px ${FONT}`, k.acc, 'center');
+    // Special-day badge (d.badge = { label, colors: [light, mid, ribbon1, ribbon2] }): a rosette on the photo's
+    // top-right corner and the label as a pill on the photo's bottom edge.
+    if (d.badge) {
+      const [c1, c2, r1, r2] = d.badge.colors, cx = W - M - 100, cy = 300, R = 104;
+      g.save(); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 22; g.shadowOffsetY = 8;
+      for (const [col, sx] of [[r1, -1], [r2, 1]]) { g.beginPath(); g.moveTo(cx + sx * 34, cy + 60); g.lineTo(cx + sx * 64, cy + 196); g.lineTo(cx + sx * 34, cy + 176); g.lineTo(cx + sx * 8, cy + 206); g.lineTo(cx, cy + 80); g.closePath(); g.fillStyle = col; g.fill(); }
+      const grad = g.createLinearGradient(cx - R, cy - R, cx + R, cy + R); grad.addColorStop(0, c1); grad.addColorStop(1, c2);
+      g.beginPath(); for (let i = 0; i < 28; i++) { const an = (i / 28) * Math.PI * 2; g.moveTo(cx + R * Math.cos(an) + 16, cy + R * Math.sin(an)); g.arc(cx + R * Math.cos(an), cy + R * Math.sin(an), 16, 0, 7); }
+      g.arc(cx, cy, R, 0, 7); g.fillStyle = grad; g.fill(); g.restore();
+      if (logo) { g.save(); g.beginPath(); g.arc(cx, cy, R - 22, 0, 7); g.clip(); g.drawImage(logo, cx - R + 22, cy - R + 22, 2 * (R - 22), 2 * (R - 22)); g.restore(); }
+      g.save(); g.setLineDash([7, 7]); g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,.6)'; g.beginPath(); g.arc(cx, cy, R - 14, 0, 7); g.stroke(); g.restore();
+      g.font = `800 34px ${FONT}`; const lw = g.measureText(d.badge.label).width + 70, ly = layout === 'split' ? 1150 : 1250;
+      g.save(); g.shadowColor = 'rgba(0,0,0,.3)'; g.shadowBlur = 18; g.shadowOffsetY = 6; rr(g, W / 2 - lw / 2, ly - 38, lw, 76, 38);
+      const pg = g.createLinearGradient(W / 2 - lw / 2, 0, W / 2 + lw / 2, 0); pg.addColorStop(0, c1); pg.addColorStop(1, c2); g.fillStyle = pg; g.fill(); g.restore();
+      text(d.badge.label, W / 2, ly + 12, `800 34px ${FONT}`, '#14200f', 'center');
+    }
   }
 
   function drawClear(g, d) {
