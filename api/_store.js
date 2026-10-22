@@ -48,7 +48,8 @@ export const DEFAULT_CONFIG = {
   openDays: [0, 1, 2, 3, 4, 5, 6],   // 0 = Sunday
   closedDates: [],
   mobilepay: '+45 53 51 42 00',   // MobilePay number customers pay to (admin can change it)
-  phone: '+45 53 51 42 00',       // contact number shown on the site (admin can change it)
+  phone: '+45 53 51 42 00',       // contact number shown on the site (admin can change it); also the WhatsApp button
+  email: 'm.cansasmaz@gmail.com',  // address behind the e-mail button on the site (admin can change it)
   pawshake: 'https://en.pawshake.dk/sitter/EU_Yn7jKcOmgSP',
   // My own walks with Boris since we came to Denmark, added to the home-page counter: walks a day, km and minutes each.
   borisWalks: { since: '2026-07-21', perDay: 2, km: 2, minutes: 30 },
@@ -78,6 +79,7 @@ export async function getConfig() {
   // An empty admin field falls back to the default number instead of hiding MobilePay.
   config.mobilepay = config.mobilepay || DEFAULT_CONFIG.mobilepay;
   config.phone = config.phone || DEFAULT_CONFIG.phone;
+  config.email = config.email || DEFAULT_CONFIG.email;
   config.googleClientId = config.googleClientId || process.env.GOOGLE_CLIENT_ID || '';
   return config;
 }

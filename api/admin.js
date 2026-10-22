@@ -83,6 +83,7 @@ export default async function handler(req, res) {
           openDays: (c.openDays || []).map(Number).filter((n) => n >= 0 && n <= 6),
           closedDates: (c.closedDates || []).filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)).slice(0, 200),
           mobilepay: String(c.mobilepay || '').slice(0, 30), phone: String(c.phone || '').slice(0, 30),
+          email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(c.email || '').trim()) ? String(c.email).trim().slice(0, 120) : '',
           pawshake: /^https:\/\//.test(c.pawshake || '') ? String(c.pawshake).slice(0, 200) : d.pawshake,
           plans: d.plans.map((x) => { const y = (c.plans || []).find((z) => z.id === x.id) || {}; return { ...x, price: num(y.price) ?? x.price, walks: Math.max(1, Math.min(60, parseInt(y.walks, 10) || x.walks)), active: y.active === undefined ? x.active : !!y.active }; }),
           googleClientId: /^[\w.-]+\.apps\.googleusercontent\.com$/.test(String(c.googleClientId || '').trim()) ? String(c.googleClientId).trim() : '',
