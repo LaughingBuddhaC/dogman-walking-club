@@ -30,7 +30,7 @@ export default async function handler(req, res) {
         .map(({ name, dog, stars, text, photo, avatar, at }) => ({ name, dog, stars, text, photo, avatar, at: at.slice(0, 10) })),
       dogs: dogs.map(({ id, name, breed, note, photo, feedback, stay, traits, bff }) => ({ id, name, breed, note, photo, feedback: feedback || '', stay: stay || '', traits: traits || [], bff: !!bff })),
       totals,
-      walks: walks.filter((w) => w.ok && (w.card || w.shape)).slice(0, 6).map(({ date, km, minutes, service, shape, card, dog }) => ({ date, km, minutes, service, shape, card: card || '', dog: card ? dog : '' })),
+      walks: walks.filter((w) => w.ok && (w.card || w.shape)).slice(0, 120).map(({ date, km, minutes, service, shape, card, dog }) => ({ date, km, minutes, service, shape, card: card || '', dog: card ? dog : '' })),
     });
   } catch (e) { res.status(500).json({ error: 'server' }); }
 }

@@ -142,7 +142,8 @@
       text(value, x + 34, base, `800 ${big}px ${FONT}`, k.ink);
       text(unit, x + 34 + vw + 12, base, `600 ${h < 200 ? 34 : 38}px ${FONT}`, k.soft);
     };
-    const dist = num(d.km, d.lang, 2), mins = String(d.minutes || 0);
+    // An hour or more reads as h:mm (2:37 t) instead of 157 min.
+    const m0 = Math.round(d.minutes || 0), long = m0 >= 60, mins = long ? `${Math.floor(m0 / 60)}:${String(m0 % 60).padStart(2, '0')}` : String(m0), dist = num(d.km, d.lang, 2), mU = long ? (d.lang === 'en' ? 'h' : 't') : t.min;
 
     if (layout === 'split') {
       const F = { x: M, y: 272, w: W - 2 * M, h: 900 };
@@ -155,7 +156,7 @@
       text(title, cx + 4, y0 + 84, `800 ${size}px ${FONT}`, k.ink);
       text(dateText(d), cx + 6, y0 + 136, `500 34px ${FONT}`, k.soft);
       tile(cx, y0 + 176, cw, 166, t.dist, dist, 'km', 76);
-      tile(cx, y0 + 362, cw, 166, t.time, mins, t.min, 76);
+      tile(cx, y0 + 362, cw, 166, t.time, mins, mU, 76);
     } else {
       const F = { x: M, y: 272, w: W - 2 * M, h: 1000 }, P = { x: F.x + 22, y: F.y + 22, w: F.w - 44, h: F.h - 44 };
       raised(() => rr(g, F.x, F.y, F.w, F.h, 64), 20);
@@ -182,7 +183,7 @@
       text(dateText(d), M + 10, 1462, `500 38px ${FONT}`, k.soft);
       const gap = 32, tw = (W - 2 * M - gap) / 2;
       tile(M, 1516, tw, 232, t.dist, dist, 'km', 98);
-      tile(M + tw + gap, 1516, tw, 232, t.time, mins, t.min, 98);
+      tile(M + tw + gap, 1516, tw, 232, t.time, mins, mU, 98);
     }
     text('dmw.cansasmaz.com', W / 2, 1852, `600 34px ${FONT}`, k.acc, 'center');
     // Special-day badge (d.badge = { label, colors: [light, mid, ribbon1, ribbon2] }): a rosette on the photo's
