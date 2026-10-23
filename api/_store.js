@@ -299,7 +299,8 @@ export function showcaseTotals(entries) {
   // Own walks with Boris are left out of time and distance: the Boris estimate in borisTotals already covers them.
   // Dogs are counted over every published walk, own walks too (guests like Baloo), but never Boris: club.js adds him once.
   const ok = entries.filter((e) => e.ok && !e.own), names = (e) => String(e.dog || '').split(' & ');
-  const dogs = new Set(entries.filter((e) => e.ok).flatMap((e) => (e.dogIds || [e.date + e.at]).filter((id, i) => names(e)[i]?.trim().toLowerCase() !== 'boris')));
+  // Counted by name, so a dog walked under several bookings (Newton, Baloo) is one dog.
+  const dogs = new Set(entries.filter((e) => e.ok).flatMap((e) => names(e).map((n) => n.trim().toLowerCase()).filter((n) => n && n !== 'boris')));
   return { walks: ok.length, km: Math.round(ok.reduce((n, e) => n + (e.km || 0), 0) * 10) / 10, minutes: ok.reduce((n, e) => n + (e.minutes || 0), 0), dogs: dogs.size };
 }
 // Boris's and my walks since we came to Denmark (twice a day), counted up to today.
