@@ -296,8 +296,10 @@ export async function setShowcase(key, track, bk, on) {
 }
 // Counter for the home page, over the walks whose card is published: time, distance and how many different dogs.
 export function showcaseTotals(entries) {
-  // Own walks with Boris are left out: the Boris estimate in borisTotals already covers them.
-  const ok = entries.filter((e) => e.ok && !e.own), dogs = new Set(ok.flatMap((e) => e.dogIds || [e.date + e.at]));
+  // Own walks with Boris are left out of time and distance: the Boris estimate in borisTotals already covers them.
+  // Guest dogs on an own walk (Boris is first in its dog list) still count as dogs walked.
+  const ok = entries.filter((e) => e.ok && !e.own), guests = entries.filter((e) => e.ok && e.own).flatMap((e) => (e.dogIds || []).slice(1));
+  const dogs = new Set([...ok.flatMap((e) => e.dogIds || [e.date + e.at]), ...guests]);
   return { walks: ok.length, km: Math.round(ok.reduce((n, e) => n + (e.km || 0), 0) * 10) / 10, minutes: ok.reduce((n, e) => n + (e.minutes || 0), 0), dogs: dogs.size };
 }
 // Boris's and my walks since we came to Denmark (twice a day), counted up to today.
