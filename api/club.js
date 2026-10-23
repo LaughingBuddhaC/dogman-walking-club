@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     // Counter = published customer walks + my walks with Boris since we came to Denmark (Boris counts as one dog).
     const pub = s.showcaseTotals(walks), boris = s.borisTotals(config);
     const totals = { walks: pub.walks + boris.walks, km: Math.round((pub.km + boris.km) * 10) / 10, minutes: pub.minutes + boris.minutes,
-      dogs: pub.dogs + (boris.walks ? 1 : 0), borisSince: boris.since || null };
+      dogs: pub.dogs + (boris.walks ? 1 : 0), borisSince: boris.since || null, dn: pub.dn, n: walks.length };
     const ok = reviews.filter((r) => r.status === 'approved');
     const avg = ok.length ? Math.round((ok.reduce((n, r) => n + r.stars, 0) / ok.length) * 10) / 10 : null;
     res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=300');
