@@ -301,7 +301,7 @@ export function showcaseTotals(entries) {
   const ok = entries.filter((e) => e.ok && !e.own && (e.card || e.shape)), names = (e) => String(e.dog || '').split(' & ');
   // Counted by name, so a dog walked under several bookings (Newton, Baloo) is one dog.
   const dogs = new Set(entries.filter((e) => e.ok && (e.card || e.shape)).flatMap((e) => names(e).map((n) => n.trim().toLowerCase()).filter((n) => n && n !== 'boris')));
-  return { walks: ok.length, km: Math.round(ok.reduce((n, e) => n + (e.km || 0), 0) * 10) / 10, minutes: ok.reduce((n, e) => n + (e.minutes || 0), 0), dogs: dogs.size, dn: [...dogs] };
+  return { walks: ok.length, km: Math.round(ok.reduce((n, e) => n + (e.km || 0), 0) * 10) / 10, minutes: ok.reduce((n, e) => n + (e.minutes || 0), 0), dogs: dogs.size };
 }
 // Boris's and my walks since we came to Denmark (twice a day), counted up to today.
 export function borisTotals(config, day = today()) {
