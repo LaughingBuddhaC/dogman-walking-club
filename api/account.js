@@ -71,6 +71,12 @@ export default async function handler(req, res) {
       const str = (v, n) => String(v ?? '').trim().slice(0, n);
       user.pets = (Array.isArray(b.pets) ? b.pets : []).slice(0, 10).map(s.cleanPet).filter((p) => p.name);
       user.vet = str(b.vet, 120); user.emergency = str(b.emergency, 120);
+      // Contact details (the booking form fills them the first time; here the customer can change them).
+      if ('name' in b || 'phone' in b || 'address' in b) {
+        const name = str(b.name, 80), phone = str(b.phone, 30), address = str(b.address, 160);
+        if (!name || phone.replace(/\D/g, '').length < 8) return res.status(400).json({ error: 'contact' });
+        Object.assign(user, { name, phone, address });
+      }
       if (user.pets[0]) { user.dog = user.pets[0].name; user.breed = user.pets[0].breed; user.size = user.pets[0].size; }
       await s.saveUser(user);
     }
