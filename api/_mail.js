@@ -4,6 +4,8 @@
 import { setMailLog } from './_store.js';
 const SITE = process.env.SITE_URL || 'https://dogman.cansasmaz.com';
 const FROM = process.env.MAIL_FROM || 'DogMan Walking Club <booking@dogman.cansasmaz.com>';
+// The old sender, used once if Resend refuses the new one (e.g. while dogman.cansasmaz.com is not verified yet).
+const FROM_OLD = 'DogMan Walking Club <booking@dmw.cansasmaz.com>';
 const ADMIN = process.env.ADMIN_EMAIL || 'm.cansasmaz@gmail.com';
 // The key may be saved with a prefix or stray spaces – match on the name's ending and trim.
 const apiKey = () => String(process.env[Object.keys(process.env).find((k) => k.endsWith('RESEND_API_KEY'))] || '').trim();
@@ -15,12 +17,13 @@ export async function sendMail({ to, subject, html, text, replyTo, attachments }
   if (!mailOn() || !to) return false;
   let log;
   try {
-    const r = await fetch('https://api.resend.com/emails', {
+    const send = (from) => fetch('https://api.resend.com/emails', {
       method: 'POST', signal: AbortSignal.timeout(8000),
       headers: { Authorization: `Bearer ${apiKey()}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: FROM, to: [to], subject, html, text, reply_to: replyTo || undefined, attachments }),
+      body: JSON.stringify({ from, to: [to], subject, html, text, reply_to: replyTo || undefined, attachments }),
     });
-    const body = await r.text().catch(() => '');
+    let r = await send(FROM), body = await r.text().catch(() => '');
+    if (!r.ok && FROM !== FROM_OLD && /domain/i.test(body)) { r = await send(FROM_OLD); body = await r.text().catch(() => ''); }
     log = { ok: r.ok, status: r.status, error: r.ok ? '' : body.slice(0, 300) };
     if (!r.ok) console.error('mail', r.status, body);
   } catch (e) { log = { ok: false, status: 0, error: e.message }; console.error('mail', e.message); }
