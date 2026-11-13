@@ -1,6 +1,6 @@
 <title>Mine ture · DogMan Walking Club</title>
 <meta name="robots" content="noindex">
-<link rel="canonical" href="https://dmw.cansasmaz.com/account/">
+<link rel="canonical" href="https://dogman.cansasmaz.com/account/">
 <link rel="icon" type="image/png" href="/img/brand/favicon-64.png">
 <link rel="apple-touch-icon" href="/img/brand/apple-touch-icon.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -219,7 +219,7 @@ async function account(body){
 // Calendar file: one event per walk/visit/day; an overnight stay is one all-day event from drop-off to pick-up.
 function ics(b){
   const stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z',ymd=(d)=>d.replace(/-/g,''),title=t('sv_'+b.service)+' · DogMan Walking Club';
-  const ev=(uid,start,extra)=>['BEGIN:VEVENT','UID:'+uid+'@dmw.cansasmaz.com','DTSTAMP:'+stamp,...start,...extra,'SUMMARY:'+title,'URL:https://dmw.cansasmaz.com/account/','END:VEVENT'];
+  const ev=(uid,start,extra)=>['BEGIN:VEVENT','UID:'+uid+'@dogman.cansasmaz.com','DTSTAMP:'+stamp,...start,...extra,'SUMMARY:'+title,'URL:https://dogman.cansasmaz.com/account/','END:VEVENT'];
   let events=[];
   if(b.end)events=ev(b.id,['DTSTART;VALUE=DATE:'+ymd(b.date),'DTEND;VALUE=DATE:'+ymd(b.end)],[]);
   else{const ds=b.dates&&b.dates.length?b.dates:[b.date];

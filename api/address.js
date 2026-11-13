@@ -2,7 +2,7 @@
 // Proxied through this function so customers' IP addresses are not sent to a third party.
 const HOME = { lat: 55.7225, lon: 12.4015 }; // Skovlunde
 const BBOX = '12.15,55.60,12.65,55.85';     // greater Copenhagen west; keeps suggestions local
-const UA = { 'User-Agent': 'DogMan Walking Club (https://dmw.cansasmaz.com)' };
+const UA = { 'User-Agent': 'DogMan Walking Club (https://dogman.cansasmaz.com)' };
 // Official Danish postal districts nearby (OpenStreetMap often names the town instead, e.g. "2740 Ballerup").
 const POSTAL = { '2600': 'Glostrup', '2605': 'Brøndby', '2610': 'Rødovre', '2620': 'Albertslund', '2625': 'Vallensbæk', '2650': 'Hvidovre',
   '2700': 'Brønshøj', '2720': 'Vanløse', '2730': 'Herlev', '2740': 'Skovlunde', '2750': 'Ballerup', '2760': 'Måløv', '2765': 'Smørum',

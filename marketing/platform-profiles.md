@@ -62,7 +62,7 @@ Hej! Jeg er Can fra Skovlunde og går gerne tur med din hund. Jeg har selv en go
 ### 4. DBA – dba.dk (ücretsiz ilan)
 - [ ] Kategori: **Dyr → Hunde → Tilbehør & service** (veya "Andet")
 - [ ] Başlık: `Hundeluftning i Skovlunde, Ballerup, Herlev – 120 kr.`
-- [ ] Metin: Dansk profil metni + `Book på dmw.cansasmaz.com`
+- [ ] Metin: Dansk profil metni + `Book på dogman.cansasmaz.com`
 - [ ] Fotoğraf: river.jpg + reklam kiti `marketing/ads/ad-square-logo.png`
 
 ### 5. Ücretsiz kanallar (kendi müşterin, komisyon yok)

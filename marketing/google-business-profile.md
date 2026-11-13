@@ -18,7 +18,7 @@ but it **stays hidden** from the public.
 
 ## 4. Contact
 - **Phone:** your mobile number
-- **Website:** `https://dmw.cansasmaz.com`
+- **Website:** `https://dogman.cansasmaz.com`
 
 ## 5. Opening hours
 Monday–Sunday **06:00–00:00**
@@ -29,7 +29,7 @@ The DogMan er hundeluftning i Skovlunde, Ballerup, Herlev og omegn. Jeg hedder C
 
 Book en enkelt tur eller en fast ugentlig tid. Pris: 120 kr. pr. tur, +80 kr. pr. ekstra hund. Ture alle dage kl. 06–24. Du betaler med MobilePay, når turen er bekræftet.
 
-Book online på 1 minut: dmw.cansasmaz.com
+Book online på 1 minut: dogman.cansasmaz.com
 
 Jeg bor selv med Boris, en rolig golden retriever på 7 år. Booking also in English.
 ```
@@ -50,7 +50,7 @@ Jeg bor selv med Boris, en rolig golden retriever på 7 år. Booking also in Eng
 - Add new photos from real walks as you go. Profiles with recent photos rank better.
 
 ## 9. Booking button
-Under **Edit profile → Bookings**, add the link: `https://dmw.cansasmaz.com/#book`
+Under **Edit profile → Bookings**, add the link: `https://dogman.cansasmaz.com/#book`
 
 ## 10. Verification
 Google usually asks service-area businesses to **record a short video** that shows:
@@ -64,4 +64,4 @@ Follow the steps in the app. Approval often takes a few days.
    (Profile → *Ask for reviews*). Example text:
    `Tak fordi jeg måtte gå tur med [hund]! Vil du hjælpe mig med en kort anmeldelse? Det betyder meget for en ny lille virksomhed: [link]`
 2. **Reply to every review**, even with just a short thank-you.
-3. **Post once a week** (Profile → *Add update*): a photo from a walk and one line, e.g. "Ledige morgenture i uge 42 – book på dmw.cansasmaz.com".
+3. **Post once a week** (Profile → *Add update*): a photo from a walk and one line, e.g. "Ledige morgenture i uge 42 – book på dogman.cansasmaz.com".

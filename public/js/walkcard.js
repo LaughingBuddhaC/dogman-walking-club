@@ -185,7 +185,7 @@
       tile(M, 1516, tw, 232, t.dist, dist, 'km', 98);
       tile(M + tw + gap, 1516, tw, 232, t.time, mins, mU, 98);
     }
-    text('dmw.cansasmaz.com', W / 2, 1852, `600 34px ${FONT}`, k.acc, 'center');
+    text('dogman.cansasmaz.com', W / 2, 1852, `600 34px ${FONT}`, k.acc, 'center');
     // Special-day badge (d.badge = { label, colors: [light, mid, ribbon1, ribbon2] }): a rosette on the photo's
     // top-right corner and the label as a pill on the photo's bottom edge.
     if (d.badge) {
@@ -234,7 +234,7 @@
     const bx = logo ? 280 : 90;
     if (logo) { g.save(); g.beginPath(); g.arc(174, 1724, 84, 0, 7); g.clip(); shadow(false); g.drawImage(logo, 90, 1640, 168, 168); g.restore(); shadow(true); }
     text('DOGMAN WALKING CLUB', bx, 1724, `800 48px ${FONT}`, ink);
-    text(t.tag + ' · dmw.cansasmaz.com', bx, 1778, `500 ${logo ? 31 : 36}px ${FONT}`, soft);
+    text(t.tag + ' · dogman.cansasmaz.com', bx, 1778, `500 ${logo ? 31 : 36}px ${FONT}`, soft);
     shadow(false);
   }
 

@@ -41,7 +41,7 @@ ADS = {
     <div class="wrap"><img class="logo" src="%(LOGO)s">
     <h1>Hundeluftning<br><span class="g">i Skovlunde</span></h1>
     <div class="chips"><span class="chip">30 min.</span><span class="chip">120 kr. pr. tur</span><span class="chip">Hentet ved døren</span></div>
-    <span class="btn">Book på dmw.cansasmaz.com</span></div>'''),
+    <span class="btn">Book på dogman.cansasmaz.com</span></div>'''),
   'ad-square-photo': (1080, 1080, '''
     .photo{position:absolute;left:40px;right:40px;top:40px;height:620px;border-radius:44px;overflow:hidden;box-shadow:14px 14px 30px #c3cad4,-14px -14px 30px #ffffff}
     .photo img{width:100%;height:100%;object-fit:cover;object-position:50% 50%}
@@ -54,7 +54,7 @@ ADS = {
     .btn{position:absolute;left:80px;bottom:56px;font-size:30px;padding:20px 38px}''', '''
     <div class="photo"><img src="%(PHOTO)s"></div><div class="badge"><img src="%(HIKER)s"></div>
     <div class="text"><h1>Din hund. <span class="g">Vores tur.</span></h1><p>30 min. gåtur i Skovlunde · 120 kr.</p></div>
-    <span class="btn">Book på dmw.cansasmaz.com</span>'''),
+    <span class="btn">Book på dogman.cansasmaz.com</span>'''),
   'ad-story': (1080, 1920, '''
     .wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;text-align:center;padding:170px 80px 200px;gap:44px}
     .logo{width:760px}
@@ -66,7 +66,7 @@ ADS = {
     <h1>Hundeluftning<br><span class="g">i Skovlunde</span></h1>
     <div class="list"><span class="chip">30 minutters gåtur</span><span class="chip">Hentet og afleveret ved døren</span><span class="chip">120 kr. pr. tur · alle dage 06–24</span></div>
     <span class="area">Skovlunde · Ballerup · Herlev · Måløv · Glostrup</span>
-    <span class="btn">Book på dmw.cansasmaz.com</span></div>'''),
+    <span class="btn">Book på dogman.cansasmaz.com</span></div>'''),
   'ad-link': (1200, 630, '''
     .logo{position:absolute;left:70px;top:60px;height:510px}
     .text{position:absolute;left:620px;right:60px;top:110px}
@@ -76,7 +76,7 @@ ADS = {
     <img class="logo" src="%(LOGO)s">
     <div class="text"><h1>Hundeluftning<br><span class="g">i Skovlunde</span></h1>
     <p>30 min. gåtur, hentet og afleveret ved din dør.<br>120 kr. pr. tur · alle dage 06–24</p>
-    <span class="btn">dmw.cansasmaz.com</span></div>'''),
+    <span class="btn">dogman.cansasmaz.com</span></div>'''),
 }
 
 for name, (w, h, css, body) in ADS.items():

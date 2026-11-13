@@ -2,7 +2,7 @@
 // New booking → receipt to the customer + notice to the admin. Admin confirms → confirmation to the customer
 // with "Add to Google Calendar" buttons and a calendar file (.ics) with reminders 1 day and 1 hour before.
 import { setMailLog } from './_store.js';
-const SITE = process.env.SITE_URL || 'https://dmw.cansasmaz.com';
+const SITE = process.env.SITE_URL || 'https://dogman.cansasmaz.com';
 const FROM = process.env.MAIL_FROM || 'DogMan Walking Club <booking@dmw.cansasmaz.com>';
 const ADMIN = process.env.ADMIN_EMAIL || 'm.cansasmaz@gmail.com';
 // The key may be saved with a prefix or stray spaces – match on the name's ending and trim.
@@ -90,7 +90,7 @@ export function icsFile(b, lang) {
   const t = L[lang], stamp = utc(new Date()), title = t.title.replace('{s}', t[b.service] + (b.dog ? ' – ' + b.dog : ''));
   const alarm = (trigger) => ['BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(title), 'TRIGGER:' + trigger, 'END:VALARM'];
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//DogMan Walking Club//Booking//DA', 'METHOD:PUBLISH',
-    ...events(b).flatMap((e, i) => ['BEGIN:VEVENT', `UID:${b.id}-${i}@dmw.cansasmaz.com`, 'DTSTAMP:' + stamp,
+    ...events(b).flatMap((e, i) => ['BEGIN:VEVENT', `UID:${b.id}-${i}@dogman.cansasmaz.com`, 'DTSTAMP:' + stamp,
       e.allDay ? 'DTSTART;VALUE=DATE:' + e.start : 'DTSTART:' + e.start, e.allDay ? 'DTEND;VALUE=DATE:' + e.end : 'DTEND:' + e.end,
       'SUMMARY:' + icsText(title), 'DESCRIPTION:' + icsText(t.calDetails.replace('{s}', b.id).replace('{u}', SITE + '/account/')),
       ...(b.address ? ['LOCATION:' + icsText(b.address)] : []), 'URL:' + SITE + '/account/',
@@ -188,8 +188,8 @@ export async function mailCard(b, { date, km, minutes, card, dog }) {
   const name = dog || (en ? 'your dog' : 'din hund');
   const head = en ? `${dog || 'Your dog'}'s walk card` : `Turkort: ${dog || 'din hund'}`;
   const intro = en
-    ? `Here is the card from today's walk with ${name}. You can see the route on a map under "My walks". I may show the card on the front page of dmw.cansasmaz.com – just reply to this email if you would rather I did not.`
-    : `Her er kortet fra dagens tur med ${name}. Du kan se ruten på et kort under "Mine ture". Jeg viser måske kortet på forsiden af dmw.cansasmaz.com – svar bare på denne mail, hvis du helst vil være fri.`;
+    ? `Here is the card from today's walk with ${name}. You can see the route on a map under "My walks". I may show the card on the front page of dogman.cansasmaz.com – just reply to this email if you would rather I did not.`
+    : `Her er kortet fra dagens tur med ${name}. Du kan se ruten på et kort under "Mine ture". Jeg viser måske kortet på forsiden af dogman.cansasmaz.com – svar bare på denne mail, hvis du helst vil være fri.`;
   const table = [[en ? 'Date' : 'Dato', day], [en ? 'Distance' : 'Distance', dist], [en ? 'Time' : 'Tid', `${minutes} min`]];
   const img = `${SITE}/api/club?photo=${card}`;
   const extra = `<tr><td style="padding-top:20px" align="center"><img src="${img}" width="300" alt="${esc(head)}" style="display:block;width:300px;max-width:100%;height:auto;border-radius:18px"></td></tr>
