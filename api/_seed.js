@@ -3,8 +3,8 @@ import * as s from './_store.js';
 import { WALKS_DJANGO } from './_seed-data.js';
 
 export async function seedWalk() {
-  // Evening walk with Boris and Django, 15 Nov.
-  if (await s.claimSeed('boris-django-2026-11-15-evening')) {
+  // Morning walk with Boris and Django, 16 Nov.
+  if (await s.claimSeed('boris-django-2026-11-16-morning')) {
     for (const w of WALKS_DJANGO) {
       const startedAt = Date.parse(`${w.date}T${w.time}:00+01:00`), endedAt = startedAt + w.minutes * 60e3;
       const photo = await s.savePhoto(w.photo), card = await s.savePhoto(w.card);
