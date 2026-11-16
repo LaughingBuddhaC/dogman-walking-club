@@ -52,6 +52,27 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
     if (!isAdmin(req)) { await new Promise((r) => setTimeout(r, 600)); return res.status(401).json({ error: 'auth' }); }
     const b = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    // Card studio (/walk/studio/): a walk with Boris made by hand from a photo and a Strava screenshot.
+    // POST {action:'own-card', date, time, km, minutes, dogs:['Django'], leash, photo, card} → a published own walk.
+    if (b.action === 'own-card') {
+      const date = String(b.date || ''), time = /^\d{2}:\d{2}$/.test(b.time || '') ? b.time : '12:00';
+      const km = Math.round(Number(b.km) * 100) / 100, minutes = Math.round(Number(b.minutes));
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !(km > 0 && km < 60) || !(minutes > 0 && minutes < 600)) return res.status(400).json({ error: 'data' });
+      const guests = (Array.isArray(b.dogs) ? b.dogs : []).map((n) => String(n || '').trim().slice(0, 30)).filter((n) => n && n.toLowerCase() !== 'boris').slice(0, 4);
+      const photo = b.photo ? await s.savePhoto(b.photo) : '', card = await s.savePhoto(b.card);
+      if (!card || (b.photo && !photo)) { if (photo) await s.deletePhoto(photo); if (card) await s.deletePhoto(card); return res.status(400).json({ error: 'photo' }); }
+      const off = new Intl.DateTimeFormat('en', { timeZone: 'Europe/Copenhagen', timeZoneName: 'longOffset' }).format(new Date(`${date}T12:00:00Z`)).match(/GMT([+-]\d{2}:\d{2})/)?.[1] || '+01:00';
+      const startedAt = Date.parse(`${date}T${time}:00${off}`), endedAt = startedAt + minutes * 60e3;
+      const bk = await s.ownWalk(date, startedAt), key = `${bk.id}|${date}`;
+      for (const name of guests) bk.petList.push({ name, type: 'dog', size: '', breed: '' });
+      bk.pets = bk.petList.length; bk.dog = bk.petList.map((p) => p.name).join(' & ');
+      bk.notes = (b.leash ? 'Leash Off Day – ' : '') + 'Kort lavet i kortstudiet';
+      bk.walks = { [date]: { km, minutes, startedAt, key, photo, card, pub: true } };
+      const track = { status: 'done', startedAt, endedAt, km, minutes, points: [], imported: 'strava-image', photo, card, weather: { rain: false, snow: false } };
+      await s.saveTrack(key, track); await s.saveBooking(bk);
+      await s.setShowcase(key, track, bk, true);
+      return res.status(200).json({ ok: true, key });
+    }
     if (b.action === 'start') {
       const bk = await s.getBooking(String(b.booking || ''));
       const date = String(b.date || '');

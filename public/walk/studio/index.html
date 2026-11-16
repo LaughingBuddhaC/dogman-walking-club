@@ -1,0 +1,167 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Card studio · DogMan Walking Club</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#e7ebf0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#23262c" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DogMan Cards">
+<link rel="icon" type="image/png" href="/img/brand/favicon-64.png">
+<link rel="apple-touch-icon" href="/img/brand/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<style>
+:root{--bg:#e7ebf0;--text:#1d1d1f;--muted:#62636a;--sh-d:#c3cad4;--sh-l:#fff;--accent:#b44d08;--grad:linear-gradient(135deg,#ffad5c,#f07a1e);--ok:#1f7a45;--err:#b8311a;
+  --raise:8px 8px 18px var(--sh-d),-8px -8px 18px var(--sh-l);--raise-sm:4px 4px 9px var(--sh-d),-4px -4px 9px var(--sh-l);--inset-sm:inset 3px 3px 6px var(--sh-d),inset -3px -3px 6px var(--sh-l)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#23262c;--text:#f5f5f7;--muted:#a1a1a8;--sh-d:#16181c;--sh-l:#30343c;--accent:#ffab66;--ok:#5fd08a;--err:#ff8a70;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font:400 16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:980px;margin:0 auto;padding:20px 16px 60px;display:flex;flex-direction:column;gap:20px}
+h1{font-size:1.6rem;margin:0;letter-spacing:-.02em}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mark{width:40px;height:40px;border-radius:50%;overflow:hidden;box-shadow:var(--raise-sm)}.mark img{width:100%;height:100%;display:block}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.card{border-radius:24px;box-shadow:var(--raise);padding:18px;display:flex;flex-direction:column;gap:12px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:24px;align-items:start}
+@media (max-width:760px){.grid{grid-template-columns:1fr}.pv{position:static!important}}
+label{display:flex;flex-direction:column;gap:6px;font-size:.85rem;font-weight:600;color:var(--muted)}
+input{font:400 1rem inherit;font-family:inherit;padding:12px 14px;border:0;border-radius:14px;background:var(--bg);color:var(--text);box-shadow:var(--inset-sm);width:100%;outline:none;min-width:0}
+input[type=range]{box-shadow:none;padding:0;accent-color:#f07a1e}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,.btn{font:600 1rem inherit;font-family:inherit;padding:13px 18px;border:0;border-radius:999px;background:var(--bg);color:var(--text);box-shadow:var(--raise-sm);cursor:pointer;text-decoration:none;text-align:center;min-height:44px}
+button.p{background:var(--grad);color:#1d1d1f}
+button:disabled{opacity:.5}
+.file{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:18px;box-shadow:var(--raise-sm);padding:14px;font-weight:600;cursor:pointer;min-height:56px;text-align:center}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file[data-on="1"]{box-shadow:var(--inset-sm);color:var(--accent)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.seg button{border-radius:16px}
+.seg button[aria-pressed="true"]{box-shadow:var(--inset-sm);color:var(--accent)}
+.pv{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.pv canvas{width:min(380px,100%);aspect-ratio:9/16;border-radius:22px;box-shadow:var(--raise);touch-action:none;display:block;background:var(--bg)}
+.small{font-size:.85rem;color:var(--muted)}
+.msg{font-weight:600;min-height:1.3em}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chips button{font-size:.85rem;padding:8px 12px;min-height:36px}
+a{color:var(--accent)}
+</style>
+<main>
+  <div class="top"><div class="row"><span class="mark"><img src="/img/brand/mark-emboss-round.png" alt=""></span><h1>Card studio</h1></div><a href="/walk/" class="small">Walk mode →</a></div>
+
+  <form id="login" class="card" hidden><label for="pw">Admin password<input id="pw" type="password" autocomplete="current-password"></label><button class="p" type="submit">Log in</button><span class="msg err" id="lmsg"></span></form>
+
+  <div class="grid" id="app" hidden>
+    <div class="card">
+      <div class="two">
+        <label class="file" id="f-photo">📷 Dog photo<input type="file" accept="image/*" id="photo"></label>
+        <label class="file" id="f-route">🗺️ Strava route<input type="file" accept="image/*" id="route"></label>
+      </div>
+      <label>Dogs (Boris first, others after "&amp;")<input id="dogs" value="Boris" autocomplete="off"></label>
+      <div class="chips" id="recent"></div>
+      <div class="two">
+        <label>Date<input id="date" type="date"></label>
+        <label>Time<input id="time" type="time"></label>
+      </div>
+      <div class="two">
+        <label>Distance (km)<input id="km" inputmode="decimal" placeholder="1.85"></label>
+        <label>Time (min)<input id="min" inputmode="numeric" placeholder="38"></label>
+      </div>
+      <div class="chips"><button type="button" id="plus10">+10 min for stops</button><button type="button" id="min30">At least 30 min</button></div>
+      <div class="seg"><button type="button" data-style="soft" aria-pressed="true">Normal walk</button><button type="button" data-style="leash" aria-pressed="false">🌿 Leash Off Day</button></div>
+      <label>Route size<input type="range" id="size" min="40" max="160" value="100"></label>
+      <p class="small" style="margin:0">Drag the route on the card to move it off the dogs. 📍 "Reset" puts it back where it was placed automatically.</p>
+      <div class="row"><button type="button" id="reset">📍 Reset route</button></div>
+    </div>
+    <div class="pv">
+      <canvas id="cv" width="1080" height="1920" aria-label="Card preview"></canvas>
+      <div class="row" style="justify-content:center"><button type="button" id="share">⬇️ Save / share</button><button type="button" class="p" id="publish">Publish on the site</button></div>
+      <span class="msg" id="msg"></span>
+    </div>
+  </div>
+</main>
+<script src="/js/walkcard.js"></script>
+<script>
+const $=(id)=>document.getElementById(id);
+let pw='';try{pw=sessionStorage.getItem('pw')||''}catch(e){}
+const S={photo:null,photoUrl:'',route:null,style:'soft',box:null,auto:null,scale:1,busy:false};
+
+// ---- Login: same admin password as Walk mode ----
+async function api(body){const r=await fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':pw},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'server');return j}
+async function check(){if(!pw){$('login').hidden=false;return}
+  try{await api({action:'ping'})}catch(e){if(e.message==='auth'){$('login').hidden=false;$('lmsg').textContent=pw?'Wrong password.':'';pw='';return}}
+  try{sessionStorage.setItem('pw',pw)}catch(e){}$('login').hidden=true;$('app').hidden=false;draw()}
+$('login').onsubmit=(e)=>{e.preventDefault();pw=$('pw').value;check()};
+
+// ---- Inputs ----
+const pad=(n)=>String(n).padStart(2,'0'),now=new Date();
+$('date').value=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;$('time').value=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
+const num=(v)=>Number(String(v).replace(',','.'));
+const dogs=()=>$('dogs').value.split(/&|,|\+/).map((s)=>s.trim()).filter(Boolean);
+let recent=[];try{recent=JSON.parse(localStorage.getItem('studio-dogs')||'[]')}catch(e){}
+function renderRecent(){$('recent').replaceChildren(...recent.map((n)=>{const b=document.createElement('button');b.type='button';b.textContent='+ '+n;
+  b.onclick=()=>{const d=dogs();if(!d.includes(n)){d.push(n);$('dogs').value=d.join(' & ');draw()}};return b}))}
+renderRecent();
+const readImg=(file)=>new Promise((ok,no)=>{const u=URL.createObjectURL(file),i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
+$('photo').onchange=async(e)=>{const f=e.target.files[0];if(!f)return;S.photo=await readImg(f);$('f-photo').dataset.on='1';$('f-photo').firstChild.textContent='📷 Photo ✓ ';S.box=null;draw()};
+$('route').onchange=async(e)=>{const f=e.target.files[0];if(!f)return;S.route=prepRoute(await readImg(f));$('f-route').dataset.on='1';$('f-route').firstChild.textContent='🗺️ Route ✓ ';S.box=null;draw()};
+['dogs','date','km','min'].forEach((id)=>$(id).oninput=()=>draw());
+$('plus10').onclick=()=>{$('min').value=Math.round(num($('min').value)||0)+10;draw()};
+$('min30').onclick=()=>{if((num($('min').value)||0)<30)$('min').value=30+Math.floor(Math.random()*4);draw()};
+document.querySelectorAll('[data-style]').forEach((b)=>b.onclick=()=>{S.style=b.dataset.style;document.querySelectorAll('[data-style]').forEach((x)=>x.setAttribute('aria-pressed',String(x===b)));draw()});
+$('size').oninput=()=>{S.scale=$('size').value/100;draw()};
+$('reset').onclick=()=>{S.box=null;S.scale=1;$('size').value=100;draw()};
+
+// ---- The Strava screenshot: keep only the orange line (the white stats text and the logo are dropped) ----
+function prepRoute(img){const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const g=c.getContext('2d');g.drawImage(img,0,0);
+  const px=g.getImageData(0,0,c.width,c.height),D=px.data;let x0=1e9,y0=1e9,x1=-1,y1=-1;
+  for(let i=0;i<D.length;i+=4){const on=D[i+3]>40&&D[i]>180&&D[i+1]<170&&D[i+2]<110;if(!on){D[i+3]=0;continue}
+    const p=i/4,x=p%c.width,y=(p-x)/c.width;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  if(x1<0)return null;g.putImageData(px,0,0);const cw=x1-x0+1,ch=y1-y0+1;
+  const tint=(fill)=>{const t=document.createElement('canvas');t.width=cw;t.height=ch;const tg=t.getContext('2d');tg.drawImage(c,x0,y0,cw,ch,0,0,cw,ch);tg.globalCompositeOperation='source-in';tg.fillStyle=fill(tg);tg.fillRect(0,0,cw,ch);return t};
+  return {w:cw,h:ch,white:tint(()=>'#ffffff'),orange:tint((tg)=>{const gr=tg.createLinearGradient(0,0,cw,ch);gr.addColorStop(0,'#ffad5c');gr.addColorStop(1,'#f07a1e');return gr})}}
+// Fits the route into a box (keeping its shape), with a white casing and a soft shadow.
+function paintRoute(g,b){const R=S.route,sc=Math.min(b.w/R.w,b.h/R.h),W=R.w*sc,H=R.h*sc,X=b.x+(b.w-W)/2,Y=b.y+(b.h-H)/2;
+  g.save();g.shadowColor='rgba(0,0,0,.4)';g.shadowBlur=14;g.shadowOffsetY=3;
+  for(let a=0;a<24;a++){const t=a/24*Math.PI*2;g.drawImage(R.white,X+6*Math.cos(t),Y+6*Math.sin(t),W,H)}g.restore();
+  for(let a=0;a<12;a++){const t=a/12*Math.PI*2;g.drawImage(R.orange,X+2*Math.cos(t),Y+2*Math.sin(t),W,H)}g.drawImage(R.orange,X,Y,W,H);
+  return {x:X,y:Y,w:W,h:H}}
+
+// ---- Drawing: WalkCard lays out the card; the route goes where WalkCard puts it, or where it was dragged ----
+const LEASH={label:'Leash Off Day',colors:['#d9f2a6','#7fb83f','#2f6b3a','#1f4a28']};
+let drawn=null;
+function card(){const d={km:num($('km').value)||0,minutes:Math.round(num($('min').value)||0),date:$('date').value,title:dogs().join(' & ')||'Boris',lang:'da'};
+  if(S.photo)d.photo=S.photo;if(S.style==='leash')d.badge=LEASH;
+  d.drawRoute=(g,b)=>{if(!S.route)return;S.auto={x:b.x,y:b.y,w:b.w,h:b.h};const base=S.box||S.auto,cx=base.x+base.w/2,cy=base.y+base.h/2,w=base.w*S.scale,h=base.h*S.scale;
+    // Kept inside the photo frame, so the route never runs over the logo or the numbers.
+    const F=S.photo?{x0:96,y0:304,x1:984,y1:1240}:{x0:60,y0:280,x1:1020,y1:1300},cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+    const x=cl(cx-w/2,F.x0,Math.max(F.x0,F.x1-w)),y=cl(cy-h/2,F.y0,Math.max(F.y0,F.y1-h));
+    drawn=paintRoute(g,{x,y,w:Math.min(w,F.x1-F.x0),h:Math.min(h,F.y1-F.y0)})};
+  return WalkCard.draw(d,S.style==='leash'?'forest':'soft')}
+let raf=0;function draw(){cancelAnimationFrame(raf);raf=requestAnimationFrame(async()=>{await WalkCard.ready();drawn=null;const c=card();const g=$('cv').getContext('2d');g.clearRect(0,0,1080,1920);g.drawImage(c,0,0,1080,1920)})}
+
+// Dragging the route on the preview (finger or mouse).
+let drag=null;const toCard=(e)=>{const r=$('cv').getBoundingClientRect();return {x:(e.clientX-r.left)*1080/r.width,y:(e.clientY-r.top)*1920/r.height}};
+$('cv').onpointerdown=(e)=>{if(!drawn)return;const p=toCard(e),m=40;if(p.x<drawn.x-m||p.x>drawn.x+drawn.w+m||p.y<drawn.y-m||p.y>drawn.y+drawn.h+m)return;
+  const base=S.box||S.auto;drag={p,base:{...base}};$('cv').setPointerCapture(e.pointerId)};
+$('cv').onpointermove=(e)=>{if(!drag)return;const p=toCard(e);const b=drag.base;S.box={...b,x:Math.max(-b.w/2,Math.min(1080-b.w/2,b.x+p.x-drag.p.x)),y:Math.max(200-b.h/2,Math.min(1400-b.h/2,b.y+p.y-drag.p.y))};draw()};
+$('cv').onpointerup=$('cv').onpointercancel=()=>{drag=null};
+
+// ---- Output ----
+// JPEG data URL under the server's photo limit (~420k characters), shrinking if needed.
+function jpeg(src,maxW=1080){for(const w of [maxW,960,880,800,720]){const s=Math.min(1,w/src.width),c=document.createElement('canvas');c.width=Math.round(src.width*s);c.height=Math.round(src.height*s);
+  c.getContext('2d').drawImage(src,0,0,c.width,c.height);for(const q of [.88,.82,.76,.7]){const u=c.toDataURL('image/jpeg',q);if(u.length<420000)return u}}return null}
+const fileName=()=>`dogman-${$('date').value}-${dogs().join('-').toLowerCase()||'walk'}.png`;
+$('share').onclick=async()=>{const c=card(),blob=await new Promise((r)=>c.toBlob(r,'image/png')),f=new File([blob],fileName(),{type:'image/png'});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=f.name;a.click()};
+$('publish').onclick=async()=>{const m=$('msg');m.className='msg';
+  if(!(num($('km').value)>0)||!(num($('min').value)>0)){m.className='msg err';m.textContent='Fill in distance and time first.';return}
+  const btn=$('publish');btn.disabled=true;m.textContent='Publishing…';
+  try{const ph=S.photo?(()=>{const c=document.createElement('canvas');c.width=S.photo.naturalWidth;c.height=S.photo.naturalHeight;c.getContext('2d').drawImage(S.photo,0,0);return jpeg(c)})():'';
+    await api({action:'own-card',date:$('date').value,time:$('time').value,km:num($('km').value),minutes:Math.round(num($('min').value)),dogs:dogs(),leash:S.style==='leash',photo:ph,card:jpeg(card())});
+    const guests=dogs().filter((n)=>n.toLowerCase()!=='boris');recent=[...new Set([...guests,...recent])].slice(0,6);try{localStorage.setItem('studio-dogs',JSON.stringify(recent))}catch(e){}renderRecent();
+    m.className='msg ok';m.textContent='Published ✓ It is now on the home page.'}
+  catch(e){m.className='msg err';m.textContent=e.message==='auth'?'Log in again.':'Could not publish ('+e.message+').'}btn.disabled=false};
+check();
+</script>
+
+</body></html>
